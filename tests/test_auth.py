@@ -1,10 +1,4 @@
-"""Testes para api/auth/security.py — JWT, refresh token, validações.
-
-NOTA: Suite temporariamente desativada — depende de hash_password,
-create_refresh_token, create_token_pair, verify_refresh_token,
-get_current_user, TokenData e TokenPair, que ainda não foram implementados
-em api/auth/security.py. Reativar quando o módulo de auth for completado.
-"""
+"""Testes para api/auth/security.py — JWT, refresh token, validações."""
 
 import sys
 import os
@@ -12,11 +6,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
-pytest.skip(
-    "api.auth.security ainda não exporta hash_password/refresh_token/TokenPair",
-    allow_module_level=True,
-)
 
 # Setar JWT_SECRET_KEY antes de importar o módulo
 os.environ["JWT_SECRET_KEY"] = "a" * 64

@@ -27,7 +27,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
+app.add_middleware(RateLimitMiddleware, rate=60, window=60)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -55,7 +55,7 @@ except Exception:
 
 @app.get("/ping")
 async def ping():
-    return {"message": "pong", "version": "8.0.0"}
+    return {"status": "ok", "message": "pong", "version": "8.0.0"}
 
 
 @app.get("/stats")
