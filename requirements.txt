@@ -15,7 +15,7 @@ supabase>=2.0.0            # cliente Supabase para infra de categorias/transaç�
 # ── Auth / JWT ───────────────────────────────────────────────────────────────
 python-jose[cryptography]>=3.3.0   # JWT encode/decode em api/auth/security
 passlib[bcrypt]>=1.7.4             # hash de senhas com bcrypt
-bcrypt>=4.0.0                      # backend do passlib
+bcrypt<4.0                         # passlib 1.7.4 não suporta bcrypt 4.x (detect_wrap_bug)
 
 # ── PDF / Excel / Imagens ────────────────────────────────────────────────────
 pdfplumber>=0.10.0
