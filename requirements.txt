@@ -5,6 +5,7 @@ python-multipart>=0.0.9
 
 # ── Pydantic ─────────────────────────────────────────────────────────────────
 pydantic>=2.0.0
+email-validator>=2.0.0     # backend para pydantic.EmailStr
 
 # ── Banco de Dados ───────────────────────────────────────────────────────────
 sqlalchemy>=2.0.0
