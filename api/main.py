@@ -1,6 +1,30 @@
 """OrgAudi Sovereign API v8.0 — Motor unificado com 4 módulos."""
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 import logging
+
+
+def _carregar_env_local() -> None:
+    """Carrega config.env (ou .env) na raiz do projeto em os.environ.
+    Variáveis já existentes no ambiente NÃO são sobrescritas."""
+    base = Path(__file__).resolve().parent.parent
+    for nome in ("config.env", ".env"):
+        caminho = base / nome
+        if not caminho.exists():
+            continue
+        for linha in caminho.read_text(encoding="utf-8").splitlines():
+            linha = linha.strip()
+            if not linha or linha.startswith("#") or "=" not in linha:
+                continue
+            chave, _, valor = linha.partition("=")
+            chave, valor = chave.strip(), valor.strip().strip('"').strip("'")
+            if chave and chave not in os.environ:
+                os.environ[chave] = valor
+        break  # carrega apenas o primeiro encontrado
+
+
+_carregar_env_local()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,7 +51,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
+app.add_middleware(RateLimitMiddleware, rate=60, window=60)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -55,7 +79,7 @@ except Exception:
 
 @app.get("/ping")
 async def ping():
-    return {"message": "pong", "version": "8.0.0"}
+    return {"status": "ok", "message": "pong", "version": "8.0.0"}
 
 
 @app.get("/stats")
