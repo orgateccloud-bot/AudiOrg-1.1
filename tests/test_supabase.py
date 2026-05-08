@@ -108,7 +108,7 @@ class TestSchemas:
 
 class TestCategories:
 
-    @patch("src.infrastructure.supabase.categories.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.categories.get_supabase_client")
     def test_list_categories(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -119,7 +119,7 @@ class TestCategories:
         assert len(result) == 1
         assert result[0]["name"] == "Salário"
 
-    @patch("src.infrastructure.supabase.categories.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.categories.get_supabase_client")
     def test_create_category(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -130,7 +130,7 @@ class TestCategories:
         assert result is not None
         assert result["name"] == "Transporte"
 
-    @patch("src.infrastructure.supabase.categories.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.categories.get_supabase_client")
     def test_delete_category(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -140,11 +140,11 @@ class TestCategories:
         assert delete_category("cat-1", "user-123") is True
 
     def test_list_categories_sem_supabase(self):
-        with patch("src.infrastructure.supabase.categories.get_supabase_client", return_value=None):
+        with patch("nfa_extractor.infrastructure.supabase.categories.get_supabase_client", return_value=None):
             assert list_categories("user-123") == []
 
-    @patch("src.infrastructure.supabase.categories.get_supabase_client")
-    @patch("src.infrastructure.supabase.categories.list_categories")
+    @patch("nfa_extractor.infrastructure.supabase.categories.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.categories.list_categories")
     def test_seed_default_categories(self, mock_list, mock_client):
         mock_list.return_value = []  # Nenhuma existente
         client = _mock_supabase()
@@ -155,8 +155,8 @@ class TestCategories:
         count = seed_default_categories("user-123")
         assert count == len(DEFAULT_CATEGORIES)
 
-    @patch("src.infrastructure.supabase.categories.get_supabase_client")
-    @patch("src.infrastructure.supabase.categories.list_categories")
+    @patch("nfa_extractor.infrastructure.supabase.categories.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.categories.list_categories")
     def test_seed_skip_se_ja_tem(self, mock_list, mock_client):
         mock_list.return_value = [{"id": "1"}]  # Já tem categorias
         count = seed_default_categories("user-123")
@@ -167,7 +167,7 @@ class TestCategories:
 
 class TestTransactions:
 
-    @patch("src.infrastructure.supabase.transactions.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.transactions.get_supabase_client")
     def test_create_transaction(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -178,7 +178,7 @@ class TestTransactions:
         assert result is not None
         assert result["amount"] == 1500.0
 
-    @patch("src.infrastructure.supabase.transactions.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.transactions.get_supabase_client")
     def test_delete_transaction(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -188,10 +188,10 @@ class TestTransactions:
         assert delete_transaction("tx-1", "user-123") is True
 
     def test_create_sem_supabase(self):
-        with patch("src.infrastructure.supabase.transactions.get_supabase_client", return_value=None):
+        with patch("nfa_extractor.infrastructure.supabase.transactions.get_supabase_client", return_value=None):
             assert create_transaction("user-123", TransactionCreate(type="expense", amount=100)) is None
 
-    @patch("src.infrastructure.supabase.transactions.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.transactions.get_supabase_client")
     def test_get_summary(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -207,7 +207,7 @@ class TestTransactions:
         assert summary.transaction_count == 3
 
     def test_get_summary_sem_supabase(self):
-        with patch("src.infrastructure.supabase.transactions.get_supabase_client", return_value=None):
+        with patch("nfa_extractor.infrastructure.supabase.transactions.get_supabase_client", return_value=None):
             s = get_summary("user-123")
             assert s.balance == 0
 
@@ -216,7 +216,7 @@ class TestTransactions:
 
 class TestPredictions:
 
-    @patch("src.infrastructure.supabase.predictions.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.predictions.get_supabase_client")
     def test_create_prediction(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -238,7 +238,7 @@ class TestPredictions:
         assert result is not None
         assert result["confidence_score"] == 0.87
 
-    @patch("src.infrastructure.supabase.predictions.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.predictions.get_supabase_client")
     def test_get_latest_prediction(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -252,7 +252,7 @@ class TestPredictions:
         assert result["prediction_type"] == "expense_trend"
 
     def test_list_predictions_sem_supabase(self):
-        with patch("src.infrastructure.supabase.predictions.get_supabase_client", return_value=None):
+        with patch("nfa_extractor.infrastructure.supabase.predictions.get_supabase_client", return_value=None):
             assert list_predictions("user-123") == []
 
 
@@ -260,7 +260,7 @@ class TestPredictions:
 
 class TestProfiles:
 
-    @patch("src.infrastructure.supabase.profiles.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.profiles.get_supabase_client")
     def test_get_profile(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -273,7 +273,7 @@ class TestProfiles:
         assert result is not None
         assert result["display_name"] == "Veloso"
 
-    @patch("src.infrastructure.supabase.profiles.get_supabase_client")
+    @patch("nfa_extractor.infrastructure.supabase.profiles.get_supabase_client")
     def test_update_profile(self, mock_client):
         client = _mock_supabase()
         mock_client.return_value = client
@@ -285,7 +285,7 @@ class TestProfiles:
         assert result["display_name"] == "Veloso Updated"
 
     def test_get_profile_sem_supabase(self):
-        with patch("src.infrastructure.supabase.profiles.get_supabase_client", return_value=None):
+        with patch("nfa_extractor.infrastructure.supabase.profiles.get_supabase_client", return_value=None):
             assert get_profile("user-123") is None
 
 
@@ -295,6 +295,6 @@ class TestClient:
 
     def test_supabase_desabilitado_sem_env(self):
         with patch.dict(os.environ, {}, clear=True):
-            with patch("src.infrastructure.supabase.client.get_supabase_client") as mock:
+            with patch("nfa_extractor.infrastructure.supabase.client.get_supabase_client") as mock:
                 mock.return_value = None
                 assert is_supabase_enabled() is False
