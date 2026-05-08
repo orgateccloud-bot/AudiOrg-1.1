@@ -8,7 +8,7 @@ import pytest
 # Garante que o diretório raiz do projeto está no path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from extractor import NFA, Parte, Produto
+from nfa_extractor.domain.extractor import NFA, Parte, Produto
 
 
 @pytest.fixture
