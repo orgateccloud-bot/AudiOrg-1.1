@@ -20,7 +20,7 @@ matplotlib>=3.7.0
 # ── IA / LLM ─────────────────────────────────────────────────────────────────
 anthropic>=0.49.0
 google-genai>=0.2.0
-httpx>=0.27.0
+httpx>=0.28.1
 
 # ── LangGraph (pipeline legado Squad Antigravity) ────────────────────────────
 langgraph>=0.1.0
