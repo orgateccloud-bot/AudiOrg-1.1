@@ -1,0 +1,21 @@
+# Code owners do OrgAudi
+# Sintaxe: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-security/customizing-your-repository/about-code-owners
+
+# Owner padrão (todos os arquivos)
+* @orgateccloud-bot
+
+# Áreas críticas — revisão obrigatória
+/api/                    @orgateccloud-bot
+/horizon_blue_one/       @orgateccloud-bot
+/nfa_extractor/          @orgateccloud-bot
+/alembic/                @orgateccloud-bot
+
+# Infra e CI/CD
+/.github/                @orgateccloud-bot
+/.github/workflows/      @orgateccloud-bot
+
+# Segurança e licença — extra cuidado
+/SECURITY.md             @orgateccloud-bot
+/LICENSE                 @orgateccloud-bot
+/.env.example            @orgateccloud-bot
+/.gitignore              @orgateccloud-bot
