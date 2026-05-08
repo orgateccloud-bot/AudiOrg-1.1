@@ -1,0 +1,62 @@
+# Baseline local-only ignores
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+id_rsa
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+.next/
+dist/
+build/
+coverage/
+
+# Editor and local tooling
+.idea/
+.vscode/
+.cursor/
+.claude/
+.uix/
+
+# Local artifacts
+*.db
+*.sqlite
+*.sqlite3
+*.pkl
+*.joblib
+*.log
+tmp/
+.cache/
+
+
+
+
+
+
+# Credenciais e config local
+config.env
+
+# Outputs gerados (relatórios, laudos, extrações)
+relatorios/
+data/laudos/
+*.xlsx
+!src/**/*.xlsx
+
+# Logs
+extractor.log
