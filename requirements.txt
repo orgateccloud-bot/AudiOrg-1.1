@@ -19,6 +19,7 @@ bcrypt>=4.0.0                      # backend do passlib
 
 # ── PDF / Excel / Imagens ────────────────────────────────────────────────────
 pdfplumber>=0.10.0
+PyMuPDF>=1.24.0            # fitz — usado em nfa_extractor/domain/nfa_parser_ai
 reportlab>=4.0.0
 openpyxl>=3.1.0
 Pillow>=10.0.0
