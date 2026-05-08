@@ -1,0 +1,30 @@
+PROPRIETARY LICENSE — ALL RIGHTS RESERVED
+
+Copyright (c) 2026 ORGATEC. All rights reserved.
+
+Este software e seus arquivos associados ("Software") são propriedade
+exclusiva da ORGATEC. O acesso ao código-fonte neste repositório é
+disponibilizado para fins de transparência, auditoria e revisão técnica.
+
+PROIBIDO sem autorização prévia, expressa e por escrito da ORGATEC:
+  1. Copiar, redistribuir ou sublicenciar o Software, no todo ou em parte;
+  2. Modificar, criar trabalhos derivados ou compilar o Software;
+  3. Usar o Software em ambientes de produção, comerciais ou não;
+  4. Remover ou alterar avisos de copyright, marca ou autoria.
+
+PERMITIDO sem autorização prévia:
+  1. Visualizar o código para fins educacionais e de auditoria de segurança;
+  2. Reportar vulnerabilidades de segurança via SECURITY.md;
+  3. Submeter pull requests com correções e melhorias — ao fazer isso,
+     o contribuidor concorda que sua contribuição passa a ser propriedade
+     da ORGATEC sob esta mesma licença.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ORGATEC BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Para licenciamento comercial, parcerias ou uso autorizado, contate:
+orgatec.cloud@gmail.com

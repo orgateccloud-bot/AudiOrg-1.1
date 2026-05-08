@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Vulnerabilidade de Segurança
+    url: https://github.com/orgateccloud-bot/AudiOrg-1.1/security/advisories/new
+    about: NÃO abra issue pública para vulnerabilidades. Use o canal privado de Security Advisories.
+  - name: 💬 Dúvida ou Suporte
+    url: mailto:orgatec.cloud@gmail.com
+    about: Para dúvidas comerciais, suporte ou licenciamento, envie e-mail.
