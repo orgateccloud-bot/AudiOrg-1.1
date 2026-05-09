@@ -6,6 +6,8 @@ ROADMAP: Q2 2026
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Planejador-Tributario da ORGATEC IA, especialista em otimização fiscal.
 Analise: ICMS (alíquota interna/interestadual/DIFAL), PIS/COFINS (cumulativo vs não-cumulativo),
@@ -38,7 +40,7 @@ Regime atual: {regime_atual}
 Simule Lucro Real, Lucro Presumido e Simples Nacional.
 Avalie impacto da Reforma Tributária (IBS/CBS/IS) para 2026-2027."""
 
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=2048)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=2048, agent_id=self.agent_id))[0]
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:

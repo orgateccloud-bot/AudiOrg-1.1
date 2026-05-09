@@ -7,6 +7,8 @@ Hardening v1.1:
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 
 class ExtratorFaturasAgent(BaseAgent):
@@ -38,7 +40,7 @@ class ExtratorFaturasAgent(BaseAgent):
         else:
             # Fallback para LLM se for texto puro/OCR
             prompt = f"Extraia os campos da NFA-e/NF-e abaixo e retorne JSON: {texto}"
-            resultado = await call_model(ModelType.HAIKU, prompt)
+            resultado = (await call_otimizado(prompt, agent_id=self.agent_id))[0]
             try:
                 data = json.loads(resultado)
             except (json.JSONDecodeError, TypeError, ValueError) as exc:

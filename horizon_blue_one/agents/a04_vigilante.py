@@ -4,6 +4,8 @@ from collections import Counter
 from datetime import datetime
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 from horizon_blue_one.orgaudi.anomalias import CATALOGO, listar_criticos
 
 SYSTEM = """Você é o @Vigilante da ORGATEC IA, especialista em detecção comportamental de fraude fiscal.
@@ -54,7 +56,7 @@ Tipologias pré-detectadas: {list(set(alertas_pre))}
 Catálogo CRÍTICO disponível: {criticos_info}
 Dados resumidos: destinatários únicos={len(set(destinos))}, total_notas={len(notas)}"""
 
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=2048)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=2048, agent_id=self.agent_id))[0]
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:

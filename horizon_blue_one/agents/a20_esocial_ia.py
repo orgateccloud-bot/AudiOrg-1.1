@@ -8,6 +8,8 @@ Hardening v1.2 (R-02): parse_json_response + coerção segura de campos numéric
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Esocial-IA da ORGATEC IA, especialista em eSocial do produtor rural.
 Verifique: S-1200 (remuneração), S-1210 (pagamentos), S-2200 (admissão), S-2299 (desligamento).
@@ -50,7 +52,7 @@ class EsocialIAAgent(BaseAgent):
 {json.dumps(esocial_data, ensure_ascii=False, indent=2)[:3000]}
 Calcule contribuições previdenciárias, SENAR e verifique pendências de eventos obrigatórios."""
 
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=2048)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=2048, agent_id=self.agent_id))[0]
         data, parseou_ok = self.parse_json_response(resp, _FALLBACK, _CAMPOS)
         data = _coerce_numericos(data)
         confidence = self.derivar_confidence(parseou_ok, data, _CAMPOS)

@@ -5,6 +5,9 @@ Migrado de A-12 para A-23 conforme spec oficial 05/05/2026.
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.core.privacy import anonymize_payload
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 from horizon_blue_one.orgaudi.anomalias import CATALOGO, buscar_por_codigo, listar_criticos
 from horizon_blue_one.ml.xgboost_scorer import calcular_score
 from horizon_blue_one.agents.detectores_forenses import (
@@ -41,17 +44,31 @@ class AnalistaAnomaliasAgent(BaseAgent):
             }
         self.log("Detectores determinísticos", **{k: v for k, v in det_pre.items() if v})
         catalogo_resumido = {k: {"nome": v.nome, "severidade": v.severidade} for k, v in CATALOGO.items()}
+
+        # Protocolo @Delta — anonimiza det_pre antes de enviar ao Claude (LGPD)
+        det_pre_anon = anonymize_payload(det_pre)
+
         prompt = f"""Score XGBoost: {score_info['score']} | SHAP: {score_info['shap_values']}
-Detectores determinísticos: {det_pre}
+Detectores determinísticos (PII anonimizada): {det_pre_anon}
 Catálogo AN-01..AN-18: {catalogo_resumido}
 Identifique tipologias prováveis e proponha cruzamentos documentais."""
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=4096)
+
+        # call_otimizado: A-Token decide Haiku/Sonnet/Opus pelo score (economia ~35%)
+        resp, _decision = await call_otimizado(
+            prompt, SYSTEM,
+            tipo_tarefa=TipoTarefa.AUDITORIA,
+            score_risco=float(score_info.get("score", 0)),
+            num_notas=len(notas),
+            agent_id=self.agent_id,
+            max_tokens=4096,
+        )
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:
             data = {"anomalias_detectadas": [], "score_global": score_info["score"], "acoes_recomendadas": []}
         data["score_xgboost"] = score_info
         data["detectores_pre"] = det_pre
+        data["modelo_usado"] = _decision.modelo.value
         status = "ESCALADO" if score_info["score"] > 65 else "APROVADO"
         return AgentResult(agent_id=self.agent_id, status=status, output=data,
                            confidence=min(1.0, score_info["score"] / 100))

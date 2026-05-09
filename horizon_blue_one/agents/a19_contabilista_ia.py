@@ -6,6 +6,8 @@ Nota: Agente funcional. Migrado de A-17 para A-19 conforme spec oficial 05/05/20
 """
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Contabilista-IA da ORGATEC IA, especialista em contabilidade rural e NBC TG.
 Gere lançamentos contábeis completos para cada operação fiscal classificada.
@@ -29,7 +31,7 @@ class ContabilistaIAAgent(BaseAgent):
 {notas_classificadas[:20]}
 Use plano de contas ORGATEC. Para notas com REGRA_ESPECIAL_1, debite 1.1.2.01 e credite 2.1.1.1.01."""
 
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=4096)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=4096, agent_id=self.agent_id))[0]
         data, parseou_ok = self.parse_json_response(resp, _FALLBACK, _CAMPOS)
         confidence = self.derivar_confidence(parseou_ok, data, _CAMPOS)
 

@@ -10,6 +10,9 @@ import json
 from pydantic import BaseModel, Field
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.core.privacy import anonymize_payload, anonymize_pii
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 
 class RelationshipGraphSchema(BaseModel):
@@ -83,18 +86,29 @@ class EpsilonAgent(BaseAgent):
         if not metricas:
             # networkx não disponível ou notas vazias — análise degradada via LLM
             entidades = payload.get("entidades", [])
-            prompt = f"Analise risco de conluio com {len(notas)} notas e entidades: {entidades[:20]}"
+            entidades_anon = anonymize_payload({"e": entidades[:20]})["e"]  # LGPD
+            prompt = f"Analise risco de conluio com {len(notas)} notas e entidades (PII protegida): {entidades_anon}"
             metricas = {"nos": 0, "arestas": 0, "ciclos_detectados": 0, "score_conluio": 0.0}
         else:
+            # entidades_suspeitas pode conter CPF/CNPJ — anonimiza no prompt
+            ent_susp_anon = [anonymize_pii(str(e)) for e in (metricas.get("entidades_suspeitas") or [])[:10]]
             prompt = (
                 f"Grafo de {metricas['nos']} entidades e {metricas['arestas']} transações. "
                 f"Ciclos detectados: {metricas['ciclos_detectados']}. "
                 f"Score de conluio (0-1): {metricas['score_conluio']}. "
-                f"Entidades mais centrais: {metricas['entidades_suspeitas']}. "
+                f"Entidades mais centrais (PII protegida): {ent_susp_anon}. "
                 f"Interprete o risco fiscal e recomende ações."
             )
 
-        resp = await call_model(ModelType.SONNET, prompt, SYSTEM)
+        # call_otimizado: A-Token decide modelo. Score >0.5 -> Opus automático.
+        resp, _decision = await call_otimizado(
+            prompt, SYSTEM,
+            tipo_tarefa=TipoTarefa.FORENSE,
+            score_risco=float(metricas.get("score_conluio", 0)) * 100,
+            num_notas=len(notas),
+            agent_id=self.agent_id,
+            max_tokens=4096,
+        )
 
         try:
             analise = json.loads(resp)

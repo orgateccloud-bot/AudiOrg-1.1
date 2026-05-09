@@ -8,6 +8,8 @@ import asyncio
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Classificador-CFOP da ORGATEC IA. Para cada nota, verifique se o CFOP está correto.
 Retorne JSON: {"notas_cfop": [{"numero": "...", "cfop_atual": "...", "cfop_correto": "...", "diverge": false, "justificativa": "..."}], "total_divergencias": 0}"""
@@ -29,7 +31,7 @@ class ClassificadorCFOPAgent(BaseAgent):
         async def _processar_batch(lote: list) -> dict:
             amostra = [{k: n.get(k) for k in campos} for n in lote]
             prompt = f"Valide os CFOPs das notas fiscais rurais:\n{amostra}"
-            resp = await call_model(ModelType.HAIKU, prompt, SYSTEM, max_tokens=4096)
+            resp = (await call_otimizado(prompt, SYSTEM, max_tokens=4096, agent_id=self.agent_id))[0]
             try:
                 return json.loads(resp)
             except json.JSONDecodeError:

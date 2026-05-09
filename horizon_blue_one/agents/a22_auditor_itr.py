@@ -5,6 +5,8 @@ Migrado de A-11 para A-22 conforme spec oficial 05/05/2026.
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Auditor-ITR da ORGATEC IA, especialista em ITR, CAR e capacidade produtiva rural.
 Retorne JSON: {"area_declarada_ha": 0.0, "capacidade_produtiva_estimada": 0.0, "volume_declarado": 0.0, "divergencia_pct": 0.0, "alertas_itr": [], "vtn_referencia": 0.0, "risco": "BAIXO|MÉDIO|ALTO|CRÍTICO"}"""
@@ -38,7 +40,7 @@ class AuditorITRAgent(BaseAgent):
 - Área: {area_ha} ha | Volume notas: R$ {volume_total:,.2f} | Cabeças: {cabecas_total}
 - Dados ITR: {itr_data}
 Calcule lotação máxima (UA/ha) e compare VTN declarado com IBGE/INCRA."""
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=2048)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=2048, agent_id=self.agent_id))[0]
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:

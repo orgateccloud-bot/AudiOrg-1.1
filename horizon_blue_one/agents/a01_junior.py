@@ -17,6 +17,8 @@ import uuid
 from datetime import datetime, timezone
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 ROTAS = {
     # ─── Auditoria Rural ──────────────────────────────────────────────────────
@@ -75,7 +77,7 @@ class JuniorAgent(BaseAgent):
         )
 
         try:
-            destino = await call_model(ModelType.HAIKU, f"Rota para: {tipo}", system_prompt, max_tokens=10)
+            destino = (await call_otimizado(f"Rota para: {tipo}", system_prompt, max_tokens=10, agent_id=self.agent_id))[0]
             destino = destino.strip().upper()
             # Rejeita qualquer ID fora do registry — impede injeção de destino arbitrário
             if destino not in AGENTES_VALIDOS:

@@ -8,6 +8,8 @@ Migrado de A-09 para A-26. Pode ser incorporado ao A-08 @AuditorNFA-e no futuro.
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
 
 SYSTEM = """Você é o @Auditor-Biologicos da ORGATEC IA, especialista em ativos biológicos conforme NBC TG 29 (CPC 29).
@@ -28,7 +30,7 @@ class AuditorBiologicosAgent(BaseAgent):
         prompt = f"""Analise os ativos biológicos do contribuinte {contribuinte}:
 {notas_classificadas}
 Aplique NBC TG 29: calcule valor justo por cabeça, identifique ganhos por transformação biológica."""
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM)
+        resp = (await call_otimizado(prompt, SYSTEM, agent_id=self.agent_id))[0]
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:

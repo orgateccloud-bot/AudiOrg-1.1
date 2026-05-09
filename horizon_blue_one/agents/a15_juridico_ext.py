@@ -5,6 +5,8 @@ CRITICIDADE: 🟡 ALTA
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Juridico-Ext da ORGATEC IA.
 Sua função é fornecer pareceres jurídicos focados no agronegócio e legislação tributária.
@@ -21,7 +23,7 @@ class JuridicoExtAgent(BaseAgent):
         prompt = f"Elabore parecer jurídico para os seguintes apontamentos fiscais:\n{json.dumps(payload)[:1500]}"
         
         try:
-            resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=1024)
+            resp = (await call_otimizado(prompt, SYSTEM, max_tokens=1024, agent_id=self.agent_id))[0]
             data = json.loads(resp)
         except Exception as e:
             self.log_error("Falha ao gerar parecer", exc=e)

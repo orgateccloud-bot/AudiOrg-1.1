@@ -7,6 +7,8 @@ Hardening v1.1:
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Analista-CSuite da ORGATEC IA, responsável por relatórios executivos para CTO, CFO e CEO.
 Consolide resultados de todos os agentes em um resumo executivo acionável (MD&A).
@@ -33,7 +35,7 @@ class AnalistaCsuiteAgent(BaseAgent):
 Destaque: score de risco, principais anomalias, impacto financeiro estimado e ações urgentes."""
 
         try:
-            resp = await call_model(ModelType.SONNET, prompt, SYSTEM, max_tokens=4096)
+            resp = (await call_otimizado(prompt, SYSTEM, max_tokens=4096, agent_id=self.agent_id))[0]
         except Exception as exc:
             self.log_error("Falha ao chamar modelo C-Suite", exc=exc)
             resp = ""

@@ -13,6 +13,8 @@ from pydantic import BaseModel, Field
 
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 from horizon_blue_one.core.privacy import anonymize_payload
 from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
 
@@ -79,7 +81,7 @@ class AuditorNFAAgent(BaseAgent):
             + json.dumps(payload_protegido, ensure_ascii=False)
         )
         try:
-            resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM)
+            resp = (await call_otimizado(prompt, SYSTEM, agent_id=self.agent_id))[0]
             data_dict = json.loads(resp)
             validated = NFAAuditSchema(**data_dict)
             status    = "ESCALADO" if validated.probabilidade_autuacao > 0.6 else "APROVADO"

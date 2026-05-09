@@ -60,3 +60,10 @@ data/laudos/
 
 # Logs
 extractor.log
+
+# Outputs gerados nos scripts de auditoria
+out/
+
+# SQLite WAL/SHM (runtime, não commitar)
+*.db-shm
+*.db-wal

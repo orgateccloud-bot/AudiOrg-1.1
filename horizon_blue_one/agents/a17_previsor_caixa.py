@@ -7,6 +7,8 @@ Nota: Agente funcional. Migrado de A-15 para A-17 conforme spec oficial 05/05/20
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Previsor-Caixa da ORGATEC IA, especialista em fluxo de caixa e sazonalidade do agronegócio.
 Analise histórico de receitas/despesas e projete os próximos 12 meses.
@@ -34,7 +36,7 @@ Receitas mensais históricas: {receitas_mes}
 Período de referência: {periodo}
 Considere sazonalidade do agronegócio goiano e ciclos produtivos."""
 
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=4096)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=4096, agent_id=self.agent_id))[0]
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:

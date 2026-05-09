@@ -5,10 +5,23 @@ Hierarquia de custo (Anthropic 2026):
   Sonnet $3.00/$15.00 por MTok
   Opus   $15.00/$75.00 por MTok
 
-Política de roteamento:
-  HAIKU   → tarefas simples: classificação, extração, roteamento, LGPD
-  SONNET  → auditoria padrão: fiscal rural, ICMS, ITR, planejamento, jurídico
-  OPUS    → análise rigorosa: score >= 85, >=3 tipologias criticas, prob. autuação >= 0.75
+Política de mix-alvo (rev 2026-05-09):
+  HAIKU   80%  → roteamento, classificação, extração, LGPD, conformidade,
+                 ICMS, ITR, LCDPR, planejamento tributário, eSocial,
+                 patrimônio, contábil, deduções, fluxo de caixa, CFOP, etc.
+  SONNET  15%  → trabalho intermediário com Claude: assurance, anomalias
+                 AN-01..AN-18, forense de grafo, jurídico complexo
+  OPUS     5%  → exclusivo para AUDITORIA (A-08 @Auditor-NFA) e
+                 DECISÃO FINAL (A-00 @CEO). Nenhuma outra tarefa usa Opus.
+
+Escalada para Opus (override do mix):
+  - Tarefa AUDITORIA com score >= 85
+  - Tarefa AUDITORIA com prob. autuação >= 0.75
+  - 3+ tipologias críticas
+  - Tipo FORENSE_CRITICO ou DECISAO_FINAL (sempre Opus)
+
+Downgrade Sonnet→Haiku permanece quando o score for muito baixo (<25)
+e o volume mínimo (<=5 notas) e tarefa não-forense.
 """
 from __future__ import annotations
 
@@ -59,51 +72,66 @@ class TipoTarefa(str, Enum):
     DECISAO_FINAL   = "decisao_final"
 
 
+# ── Mix-alvo 80/15/5 (rev 2026-05-09) ────────────────────────────────────────
+# 80% HAIKU — toda operação de baixa/média complexidade fica aqui.
+# 15% SONNET — só os agentes que cruzam evidências (assurance, anomalias, grafo).
+#  5% OPUS  — exclusivo para AUDITORIA (A-08) e DECISAO_FINAL (A-00).
 _MODELO_BASE: dict[TipoTarefa, ModelType] = {
+    # ── HAIKU (80%) — tarefas operacionais ────────────────────────────────────
     TipoTarefa.ROTEAMENTO:      ModelType.HAIKU,
     TipoTarefa.CLASSIFICACAO:   ModelType.HAIKU,
     TipoTarefa.EXTRACAO:        ModelType.HAIKU,
     TipoTarefa.LGPD:            ModelType.HAIKU,
     TipoTarefa.CONFORMIDADE:    ModelType.HAIKU,
-    TipoTarefa.AUDITORIA:       ModelType.SONNET,
-    TipoTarefa.ICMS:            ModelType.SONNET,
-    TipoTarefa.ITR:             ModelType.SONNET,
-    TipoTarefa.LCDPR:           ModelType.SONNET,
-    TipoTarefa.PLANEJAMENTO:    ModelType.SONNET,
-    TipoTarefa.JURIDICO:        ModelType.SONNET,
-    TipoTarefa.ESOCIAL:         ModelType.SONNET,
-    TipoTarefa.FORENSE:         ModelType.SONNET,
-    TipoTarefa.PATRIMONIO:      ModelType.SONNET,
-    TipoTarefa.FORENSE_CRITICO: ModelType.OPUS,
-    TipoTarefa.DECISAO_FINAL:   ModelType.OPUS,
+    TipoTarefa.ICMS:            ModelType.HAIKU,
+    TipoTarefa.ITR:             ModelType.HAIKU,
+    TipoTarefa.LCDPR:           ModelType.HAIKU,
+    TipoTarefa.PLANEJAMENTO:    ModelType.HAIKU,
+    TipoTarefa.ESOCIAL:         ModelType.HAIKU,
+    TipoTarefa.PATRIMONIO:      ModelType.HAIKU,
+    # ── SONNET (15%) — raciocínio cruzado, não-final ─────────────────────────
+    TipoTarefa.FORENSE:         ModelType.SONNET,   # A-07 / A-23 / A-27
+    TipoTarefa.JURIDICO:        ModelType.SONNET,   # A-15
+    # ── OPUS (5%) — auditoria + decisão final ────────────────────────────────
+    TipoTarefa.AUDITORIA:       ModelType.OPUS,     # A-08 @Auditor-NFA
+    TipoTarefa.FORENSE_CRITICO: ModelType.OPUS,     # escalada por critério
+    TipoTarefa.DECISAO_FINAL:   ModelType.OPUS,     # A-00 @CEO
 }
 
-# Agente → TipoTarefa (para roteamento automático por agent_id)
+# Agente → TipoTarefa (rev 2026-05-09)
+# Distribuição alvo: 22 Haiku · 4 Sonnet · 2 Opus = 78.6% / 14.3% / 7.1%
 _AGENTE_TAREFA: dict[str, TipoTarefa] = {
-    "A-01": TipoTarefa.ROTEAMENTO,
-    "A-06": TipoTarefa.EXTRACAO,
-    "A-13": TipoTarefa.CONFORMIDADE,
-    "A-16": TipoTarefa.LGPD,
-    "A-24": TipoTarefa.CLASSIFICACAO,
-    "A-07": TipoTarefa.FORENSE,
-    "A-08": TipoTarefa.AUDITORIA,
-    "A-09": TipoTarefa.CONFORMIDADE,
-    "A-10": TipoTarefa.PATRIMONIO,
-    "A-11": TipoTarefa.PLANEJAMENTO,
-    "A-12": TipoTarefa.PLANEJAMENTO,
-    "A-14": TipoTarefa.FORENSE,
-    "A-15": TipoTarefa.JURIDICO,
-    "A-17": TipoTarefa.PLANEJAMENTO,
-    "A-18": TipoTarefa.PLANEJAMENTO,
-    "A-19": TipoTarefa.PATRIMONIO,
-    "A-20": TipoTarefa.ESOCIAL,
-    "A-21": TipoTarefa.ICMS,
-    "A-22": TipoTarefa.ITR,
-    "A-23": TipoTarefa.FORENSE,
-    "A-25": TipoTarefa.LCDPR,
-    "A-26": TipoTarefa.PATRIMONIO,
-    "A-27": TipoTarefa.FORENSE_CRITICO,
-    "A-00": TipoTarefa.DECISAO_FINAL,
+    # ── HAIKU (22 agentes) ────────────────────────────────────────────────────
+    "A-01": TipoTarefa.ROTEAMENTO,        # @Junior
+    "A-02": TipoTarefa.CONFORMIDADE,      # @Protetor
+    "A-03": TipoTarefa.CONFORMIDADE,      # @ZeroTrust
+    "A-04": TipoTarefa.CONFORMIDADE,      # @Vigilante
+    "A-05": TipoTarefa.EXTRACAO,          # @Engenheiro-ERP
+    "A-06": TipoTarefa.EXTRACAO,          # @Extrator-Faturas
+    "A-09": TipoTarefa.CONFORMIDADE,      # @Auditor-TI
+    "A-10": TipoTarefa.PATRIMONIO,        # @Auditor-Patrimonio
+    "A-11": TipoTarefa.PLANEJAMENTO,      # @Planejador-Tributario
+    "A-12": TipoTarefa.PLANEJAMENTO,      # @Descobridor-Deducoes
+    "A-13": TipoTarefa.CONFORMIDADE,      # @Monitor-Conformidade
+    "A-14": TipoTarefa.CLASSIFICACAO,     # @Avaliador-Risco (downgrade Forense->Haiku)
+    "A-16": TipoTarefa.LGPD,              # @LGPD
+    "A-17": TipoTarefa.PLANEJAMENTO,      # @Previsor-Caixa
+    "A-18": TipoTarefa.CLASSIFICACAO,     # @Analista-CSuite (resumo executivo curto)
+    "A-19": TipoTarefa.PATRIMONIO,        # @Contabilista-IA
+    "A-20": TipoTarefa.ESOCIAL,           # @Esocial-IA
+    "A-21": TipoTarefa.ICMS,              # @Auditor-ICMS
+    "A-22": TipoTarefa.ITR,               # @Auditor-ITR
+    "A-24": TipoTarefa.CLASSIFICACAO,     # @Classificador-CFOP
+    "A-25": TipoTarefa.LCDPR,             # @Auditor-LCDPR
+    "A-26": TipoTarefa.PATRIMONIO,        # @Auditor-Biologicos
+    # ── SONNET (4 agentes) ────────────────────────────────────────────────────
+    "A-07": TipoTarefa.FORENSE,           # @Auditoria-Assurance (entrada do funil)
+    "A-15": TipoTarefa.JURIDICO,          # @Juridico-Ext
+    "A-23": TipoTarefa.FORENSE,           # @Analista-Anomalias AN-01..AN-18
+    "A-27": TipoTarefa.FORENSE,           # @Epsilon (grafo) — Sonnet salvo escalada
+    # ── OPUS (2 agentes) ──────────────────────────────────────────────────────
+    "A-08": TipoTarefa.AUDITORIA,         # @Auditor-NFA  → Opus (auditoria fiscal rural)
+    "A-00": TipoTarefa.DECISAO_FINAL,     # @CEO          → Opus (veredito final)
 }
 
 
@@ -144,26 +172,30 @@ def rotear(
 
     modelo_base = _MODELO_BASE.get(tipo_tarefa, ModelType.SONNET)
 
-    # ── Escalada para Opus ────────────────────────────────────────────────────
-    if modelo_base != ModelType.OPUS:
+    # ── Escalada para Opus (só Sonnet→Opus; Haiku permanece Haiku) ───────────
+    # Política: Opus é caro 5x Sonnet — só escalamos os agentes que JÁ são
+    # Sonnet (raciocínio cruzado: A-07 assurance, A-23 anomalias, A-27 grafo,
+    # A-15 jurídico). Os 22 Haiku ficam Haiku mesmo em cenário crítico —
+    # quem decide o caso crítico no fim é A-08 (Opus) e A-00 (Opus).
+    if modelo_base == ModelType.SONNET:
         if score_risco >= 85:
             return RotingDecision(
                 modelo=ModelType.OPUS, tipo_tarefa=tipo_tarefa,
-                motivo=f"Score critico {score_risco:.0f} >= 85 -> Opus",
+                motivo=f"Score critico {score_risco:.0f} >= 85 -> Opus (Sonnet escalado)",
                 score_risco=score_risco, tipologias_criticas=tipologias_criticas,
                 upgrade_aplicado=True,
             )
         if tipologias_criticas >= 3:
             return RotingDecision(
                 modelo=ModelType.OPUS, tipo_tarefa=tipo_tarefa,
-                motivo=f"{tipologias_criticas} tipologias criticas >= 3 -> Opus",
+                motivo=f"{tipologias_criticas} tipologias criticas >= 3 -> Opus (Sonnet escalado)",
                 score_risco=score_risco, tipologias_criticas=tipologias_criticas,
                 upgrade_aplicado=True,
             )
         if probabilidade_autuacao >= 0.75:
             return RotingDecision(
                 modelo=ModelType.OPUS, tipo_tarefa=tipo_tarefa,
-                motivo=f"Prob. autuacao {probabilidade_autuacao:.0%} >= 75% -> Opus",
+                motivo=f"Prob. autuacao {probabilidade_autuacao:.0%} >= 75% -> Opus (Sonnet escalado)",
                 score_risco=score_risco, tipologias_criticas=tipologias_criticas,
                 upgrade_aplicado=True,
             )

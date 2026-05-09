@@ -3,6 +3,8 @@ import json
 import hashlib
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @ZeroTrust da ORGATEC IA, especialista em validação documental Zero-Trust.
 Verifique: assinaturas digitais, chaves de acesso NFA-e, consistência de dados entre campos.
@@ -35,7 +37,7 @@ class ZeroTrustAgent(BaseAgent):
         prompt = f"""Valide a autenticidade das {len(notas)} notas fiscais.
 Inconsistências detectadas automaticamente: {inconsistencias}
 Dados das notas: {[{k: n.get(k) for k in ['numero','data','natureza','valor_total','cfop']} for n in notas[:10]]}"""
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=1024)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=1024, agent_id=self.agent_id))[0]
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:

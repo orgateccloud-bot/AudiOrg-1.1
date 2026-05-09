@@ -18,6 +18,8 @@ from horizon_blue_one.agents.detectores_forenses import (
     detectar_anomalia_temporal,
 )
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 from horizon_blue_one.ml.xgboost_scorer import calcular_score
 
 logger = structlog.get_logger()
@@ -85,7 +87,7 @@ class AuditoriaAssuranceAgent(BaseAgent):
         )
 
         try:
-            resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=2048)
+            resp = (await call_otimizado(prompt, SYSTEM, max_tokens=2048, agent_id=self.agent_id))[0]
             data = json.loads(resp)
         except Exception:
             score = score_info["score"]

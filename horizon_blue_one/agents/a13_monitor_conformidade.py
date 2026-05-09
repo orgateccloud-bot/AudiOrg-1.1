@@ -5,6 +5,8 @@ CRITICIDADE: 🔴 CRÍTICA
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Monitor-Conformidade da ORGATEC IA, responsável por QA transversal.
 Valide outputs de outros agentes quanto a: NBC TG compliance, LGPD (dados pessoais),
@@ -31,7 +33,7 @@ class MonitorConformidadeAgent(BaseAgent):
 {json.dumps(resultados_agentes, ensure_ascii=False)[:3000]}
 Verifique: contradições entre agentes, compliance NBC TG, exposição de dados LGPD."""
 
-        resp = await call_model(ModelType.CLAUDE, prompt, SYSTEM, max_tokens=2048)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=2048, agent_id=self.agent_id))[0]
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:

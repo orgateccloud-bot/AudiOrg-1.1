@@ -3,6 +3,8 @@ import json
 import re
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Protetor da ORGATEC IA, responsável por compliance LGPD e segurança de dados.
 Analise payloads em busca de PII exposta (CPF, CNPJ, dados bancários não mascarados).
@@ -29,7 +31,7 @@ class ProtetorAgent(BaseAgent):
             campos_expostos.append(f"Possível conta bancária: {len(contas)} ocorrência(s)")
 
         prompt = f"Analise a estrutura de dados para compliance LGPD:\n{list(payload.keys())}\nCampos PII detectados: {campos_expostos}"
-        resp = await call_model(ModelType.SONNET, prompt, SYSTEM, max_tokens=1024)
+        resp = (await call_otimizado(prompt, SYSTEM, max_tokens=1024, agent_id=self.agent_id))[0]
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:

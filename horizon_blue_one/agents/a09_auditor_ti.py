@@ -8,6 +8,8 @@ Hardening v1.1:
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @Auditor-TI da ORGATEC IA.
 Sua função é avaliar controles internos de TI, segurança da informação e rastreabilidade sistêmica.
@@ -32,7 +34,7 @@ class AuditorTIAgent(BaseAgent):
         prompt = f"Avalie a integridade sistêmica e controles de TI dos dados:\n{json.dumps(payload)[:1500]}"
 
         try:
-            resp = await call_model(ModelType.SONNET, prompt, SYSTEM, max_tokens=1024)
+            resp = (await call_otimizado(prompt, SYSTEM, max_tokens=1024, agent_id=self.agent_id))[0]
         except Exception as exc:
             self.log_error("Falha ao chamar modelo", exc=exc)
             resp = ""

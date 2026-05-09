@@ -7,6 +7,8 @@ Hardening v1.1:
 import json
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.model_adapter import call_model, ModelType
+from horizon_blue_one.agents.a_token import call_otimizado
+from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = """Você é o @LGPD da ORGATEC IA.
 Avalie o tratamento de dados pessoais (PII) nas operações analisadas, garantindo aderência à Lei Geral de Proteção de Dados.
@@ -30,7 +32,7 @@ class LGPDAgent(BaseAgent):
         prompt = f"Avalie o nível de exposição de dados pessoais:\n{json.dumps(payload)[:1500]}"
 
         try:
-            resp = await call_model(ModelType.HAIKU, prompt, SYSTEM, max_tokens=1024)
+            resp = (await call_otimizado(prompt, SYSTEM, max_tokens=1024, agent_id=self.agent_id))[0]
         except Exception as exc:
             self.log_error("Falha ao chamar modelo LGPD", exc=exc)
             resp = ""
