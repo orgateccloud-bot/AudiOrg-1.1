@@ -155,9 +155,9 @@ _AGENTE_TAREFA: dict[str, TipoTarefa] = {
     "A-15": TipoTarefa.JURIDICO,          # @Juridico-Ext
     "A-23": TipoTarefa.FORENSE,           # @Analista-Anomalias AN-01..AN-18
     "A-27": TipoTarefa.FORENSE,           # @Epsilon (grafo) — Sonnet salvo escalada
-    # ── OPUS (2 agentes) ──────────────────────────────────────────────────────
-    "A-08": TipoTarefa.AUDITORIA,         # @Auditor-NFA  → Opus (auditoria fiscal rural)
-    "A-00": TipoTarefa.DECISAO_FINAL,     # @CEO          → Opus (veredito final)
+    # ── Opus condicional (rev 2026-05-09: A-00 default Sonnet, escala se crítico) ──
+    "A-08": TipoTarefa.AUDITORIA,         # @Auditor-NFA  → Opus base (auditoria rigorosa)
+    "A-00": TipoTarefa.JURIDICO,          # @CEO → Sonnet base; rotear() escala p/ Opus em score>=85
 }
 
 
@@ -333,6 +333,35 @@ def registrar_uso(
 def get_stats() -> dict:
     """Retorna estatísticas acumuladas de uso e custo."""
     return _stats.resumo()
+
+
+def snapshot_stats() -> dict:
+    """Cria deepcopy do estado atual de _TokenStats — útil para isolar
+    medições entre PDFs em scripts de simulação. Não modifica o estado."""
+    import copy
+    with _stats._lock:
+        return {
+            "chamadas":      copy.deepcopy(_stats.chamadas),
+            "tokens_input":  copy.deepcopy(_stats.tokens_input),
+            "tokens_output": copy.deepcopy(_stats.tokens_output),
+            "custo_usd":     copy.deepcopy(_stats.custo_usd),
+            "economia_usd":  _stats.economia_usd,
+            "upgrades":      _stats.upgrades,
+            "downgrades":    _stats.downgrades,
+            "resumo":        _stats.resumo(),
+        }
+
+
+def reset_stats() -> None:
+    """Zera _TokenStats — usado entre PDFs/produtores na simulação."""
+    with _stats._lock:
+        _stats.chamadas.clear()
+        _stats.tokens_input.clear()
+        _stats.tokens_output.clear()
+        _stats.custo_usd.clear()
+        _stats.economia_usd = 0.0
+        _stats.upgrades = 0
+        _stats.downgrades = 0
 
 
 def estimar_tokens(texto: str) -> int:
