@@ -98,6 +98,32 @@ _MODELO_BASE: dict[TipoTarefa, ModelType] = {
     TipoTarefa.DECISAO_FINAL:   ModelType.OPUS,     # A-00 @CEO
 }
 
+
+# ── max_tokens ótimo por agente (rev 2026-05-09) ─────────────────────────────
+# Calibrado pelo tamanho real do JSON de saída de cada agente.
+# Default: 512. Justificativa em comentário ao lado.
+MAX_TOKENS_OTIMO: dict[str, int] = {
+    # ── 10 tokens — só nome de agente destino ────────────────────────────────
+    "A-01": 10,
+    # ── 256 — output curto, OK/ERRO + motivo ─────────────────────────────────
+    "A-02": 256, "A-03": 256, "A-04": 256, "A-09": 256, "A-13": 256,
+    "A-14": 256, "A-16": 256,
+    # ── 512 — JSON estruturado simples (5-8 chaves) ──────────────────────────
+    "A-05": 512, "A-06": 512, "A-10": 512, "A-12": 512, "A-15": 512,
+    "A-17": 512, "A-18": 512, "A-19": 512, "A-20": 512, "A-21": 512,
+    "A-22": 512, "A-24": 512, "A-25": 512, "A-26": 512,
+    # ── 1024 — JSON rico (assurance, anomalias) ──────────────────────────────
+    "A-07": 1024, "A-11": 1024, "A-23": 1024, "A-27": 1024,
+    # ── 2048 — auditoria completa ou decisão final ───────────────────────────
+    "A-08": 2048,                # NFAAuditSchema com 14+ campos
+    "A-00": 1024,                # decisão final compacta
+}
+
+
+def max_tokens_para(agent_id: str | None, fallback: int = 1024) -> int:
+    """Retorna max_tokens calibrado por agente, com fallback seguro."""
+    return MAX_TOKENS_OTIMO.get(agent_id or "", fallback)
+
 # Agente → TipoTarefa (rev 2026-05-09)
 # Distribuição alvo: 22 Haiku · 4 Sonnet · 2 Opus = 78.6% / 14.3% / 7.1%
 _AGENTE_TAREFA: dict[str, TipoTarefa] = {

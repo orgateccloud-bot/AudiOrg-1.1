@@ -26,6 +26,7 @@ from horizon_blue_one.core.token_router import (
     RotingDecision,
     estimar_tokens,
     get_stats,
+    max_tokens_para,
     registrar_uso,
     rotear,
 )
@@ -94,7 +95,7 @@ class TokenAgent(BaseAgent):
 async def call_otimizado(
     prompt: str,
     system: str = "",
-    max_tokens: int = 4096,
+    max_tokens: Optional[int] = None,
     tipo_tarefa: TipoTarefa = TipoTarefa.AUDITORIA,
     score_risco: float = 0.0,
     tipologias_criticas: int = 0,
@@ -128,11 +129,16 @@ async def call_otimizado(
         agent_id=agent_id,
     )
 
+    # max_tokens calibrado por agente (rev 80/15/5) — fallback 1024
+    if max_tokens is None:
+        max_tokens = max_tokens_para(agent_id, fallback=1024)
+
     logger.info(
         "call_otimizado",
         modelo=decision.modelo.value,
         motivo=decision.motivo,
         agent_id=agent_id or "direto",
+        max_tokens=max_tokens,
     )
 
     resp = await call_model(
