@@ -24,8 +24,8 @@ from horizon_blue_one.core.model_adapter import ModelType
 # 1ª chamada com determinado system: paga 100% do input do system
 # Chamadas seguintes (até hit_rate): paga 10% do input do system
 _SYSTEM_CACHE_SEEN: set[str] = set()
-_CACHE_HIT_DESCONTO = 0.10   # cache hit custa 10% do preço
-_CACHE_HIT_RATE_TARGET = 0.90  # alvo: 90% das chamadas após a primeira
+_CACHE_HIT_DESCONTO = 0.10   # cache hit custa 10% do preço (Anthropic ephemeral)
+_CACHE_HIT_RATE_TARGET = 0.95  # alvo: 95% das chamadas após a primeira (rev v2)
 
 
 def reset_cache():
@@ -128,7 +128,8 @@ async def _fake_call_model(
             _SYSTEM_CACHE_SEEN.add(sys_hash)
 
     tokens_in = sys_tokens_efetivos + user_tokens
-    tokens_out = min(max_tokens, max(50, int(user_tokens * 0.40)))
+    # Output ratio 30% (Claude é conciso quando recebe schema rigoroso)
+    tokens_out = min(max_tokens, max(50, int(user_tokens * 0.30)))
 
     registrar_uso(decision.modelo, tokens_in, tokens_out, decision)
     return _make_fake_response(aid)

@@ -114,9 +114,9 @@ MAX_TOKENS_OTIMO: dict[str, int] = {
     "A-22": 512, "A-24": 512, "A-25": 512, "A-26": 512,
     # ── 1024 — JSON rico (assurance, anomalias) ──────────────────────────────
     "A-07": 1024, "A-11": 1024, "A-23": 1024, "A-27": 1024,
-    # ── 2048 — auditoria completa ou decisão final ───────────────────────────
-    "A-08": 2048,                # NFAAuditSchema com 14+ campos
-    "A-00": 1024,                # decisão final compacta
+    # ── 1024 — auditoria completa ou decisão final (rev 2026-05-09 v2) ───────
+    "A-08": 1024,                # NFAAuditSchema cabe em 1024 (era 2048)
+    "A-00": 768,                 # decisão final compacta (era 1024)
 }
 
 
@@ -155,9 +155,11 @@ _AGENTE_TAREFA: dict[str, TipoTarefa] = {
     "A-15": TipoTarefa.JURIDICO,          # @Juridico-Ext
     "A-23": TipoTarefa.FORENSE,           # @Analista-Anomalias AN-01..AN-18
     "A-27": TipoTarefa.FORENSE,           # @Epsilon (grafo) — Sonnet salvo escalada
-    # ── Opus condicional (rev 2026-05-09: A-00 default Sonnet, escala se crítico) ──
-    "A-08": TipoTarefa.AUDITORIA,         # @Auditor-NFA  → Opus base (auditoria rigorosa)
-    "A-00": TipoTarefa.JURIDICO,          # @CEO → Sonnet base; rotear() escala p/ Opus em score>=85
+    # ── Opus apenas em escalada (rev 2026-05-09 v2: máxima economia) ───────────
+    # A-08 e A-00 default Sonnet; rotear() escala para Opus se score>=85,
+    # tipologias>=3 ou prob_aut>=75% (controlado pela regra Sonnet→Opus existente).
+    "A-08": TipoTarefa.FORENSE,           # @Auditor-NFA  → Sonnet base (escala Opus)
+    "A-00": TipoTarefa.JURIDICO,          # @CEO          → Sonnet base (escala Opus)
 }
 
 

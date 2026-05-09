@@ -26,21 +26,69 @@ from scripts.simulacao.instrumentacao import (
 )
 
 
-# ── Caps de notas por modelo (otimização agressiva) ─────────────────────────
-# Quanto mais barato o modelo, mais notas pode receber.
-# Opus: muito caro → pequena amostra é suficiente para parecer rigoroso.
-# Sonnet: meio termo. Haiku: pode processar volume.
+# ── Caps de notas por modelo (rev v3) ─────────────────────────────────────
 NOTAS_CAP_POR_MODELO = {
-    "opus":   20,
-    "sonnet": 40,
-    "haiku":  150,
+    "opus":   8,
+    "sonnet": 20,
+    "haiku":  100,
+}
+
+# Cap específico por agente — sobrepõe o cap por modelo.
+# Agentes auditores especializados consomem amostra MÍNIMA (8 notas).
+NOTAS_CAP_POR_AGENTE = {
+    "A-07": 8,    # Assurance: amostra para detectar padrões
+    "A-08": 8,    # Auditor-NFA: amostra crítica (já era 50, agora 8)
+    "A-23": 12,   # Anomalias: precisa um pouco mais para AN-01..AN-18
+    "A-27": 8,    # Forense grafo: amostra de relacionamentos
+    "A-00": 5,    # CEO: vê só as 5 mais relevantes (recomenda decisão final)
 }
 
 
-def cap_notas_para_modelo(notas: list[dict], modelo: str) -> list[dict]:
-    """Trunca lista de notas conforme o cap do modelo destino."""
-    cap = NOTAS_CAP_POR_MODELO.get(modelo.lower(), 50)
+def cap_notas_para_modelo(notas: list[dict], modelo: str, agent_id: str = "") -> list[dict]:
+    """Trunca por agente (override) ou por modelo (default)."""
+    cap = NOTAS_CAP_POR_AGENTE.get(agent_id) or NOTAS_CAP_POR_MODELO.get(modelo.lower(), 50)
     return notas[:cap] if len(notas) > cap else notas
+
+
+# ── Mapa de abreviação para compactar JSON (-30% chars típico) ──────────────
+_KEYS_COMPACTAS = {
+    "valor_total": "v", "valor_icms": "vi", "quantidade_total": "q",
+    "natureza": "nat", "natureza_exibicao": "ne",
+    "categoria_contabil": "cc", "regra_aplicada": "ra",
+    "remetente": "r", "destinatario": "d", "transportador": "t",
+    "produtos": "p", "emissao": "e", "numero": "n",
+    "chave_acesso": "k", "posicao": "po", "atividade": "at",
+    "tipo_doc": "td", "produtor": "pr", "pdf_origem": "pf",
+    "efeito_irpf": "ei", "confianca": "cf", "alertas_re1": "al",
+}
+
+
+def compactar_nota(nota: dict) -> dict:
+    """Abrevia chaves para reduzir tamanho do JSON enviado ao LLM.
+    Mantém apenas campos relevantes para auditoria."""
+    out: dict = {}
+    for k, v in nota.items():
+        if v is None or v == "" or v == 0 or v == 0.0:
+            continue  # remove nulos/zeros
+        if isinstance(v, (dict, list)) and not v:
+            continue
+        nk = _KEYS_COMPACTAS.get(k, k)
+        # Trunca strings longas
+        if isinstance(v, str) and len(v) > 60:
+            v = v[:60] + "..."
+        # Recursão em dicts (remetente, destinatario)
+        if isinstance(v, dict):
+            v = {
+                _KEYS_COMPACTAS.get(kk, kk): vv
+                for kk, vv in v.items()
+                if vv not in (None, "", 0, 0.0)
+            }
+        out[nk] = v
+    return out
+
+
+def compactar_notas(notas: list[dict]) -> list[dict]:
+    return [compactar_nota(n) for n in notas]
 
 
 def comprimir_resultados(resultados: dict[str, Any]) -> dict[str, dict]:
@@ -58,6 +106,18 @@ def comprimir_resultados(resultados: dict[str, Any]) -> dict[str, dict]:
         else:
             out[aid] = {"status": "?", "raw": str(r)[:100]}
     return out
+
+
+# Agentes redundantes/dispensáveis em auditoria rural focada
+# (A-08 já cobre rural; A-26 biológicos é redundante; A-09 TI sem necessidade)
+AGENTES_DISPENSAVEIS_RURAL = {"A-09", "A-26"}
+
+
+def filtrar_pipeline(agentes: list[str], skip_redundantes: bool = True) -> list[str]:
+    """Remove agentes redundantes para auditoria rural — economia adicional."""
+    if not skip_redundantes:
+        return list(agentes)
+    return [a for a in agentes if a not in AGENTES_DISPENSAVEIS_RURAL]
 
 
 PIPELINE_AUDITOR = ["A-07", "A-08", "A-23", "A-27", "A-00"]
@@ -135,9 +195,9 @@ async def rodar_squad(
     set_num_notas(len(notas))
 
     reset_stats()
-    # Reseta cache de system entre PDFs (cada PDF é um job)
-    from scripts.simulacao.instrumentacao import reset_cache as _reset_cache
-    _reset_cache()
+    # NÃO reseta cache de system entre PDFs — em produção, agentes
+    # têm system fixo e cache Anthropic dura por toda a sessão.
+    # O reset acontece só no início da execução completa (no entry).
     with instrumentar(modo=modo):
         # Wrapper: cada agente roda dentro de agente_ativo()
         # mas o Orchestrator não tem hook para isso — vamos fazer
@@ -163,12 +223,14 @@ async def rodar_squad(
             from horizon_blue_one.core.token_router import rotear, TipoTarefa
             d = rotear(tipo_tarefa=TipoTarefa.AUDITORIA,
                        score_risco=score, num_notas=len(notas), agent_id=aid)
-            notas_capadas = cap_notas_para_modelo(notas, d.modelo.value)
+            notas_capadas = cap_notas_para_modelo(notas, d.modelo.value, agent_id=aid)
+            # Compactar JSON: abrevia keys + remove zeros/nulos -> -30% chars
+            notas_compactas = compactar_notas(notas_capadas)
 
-            # Payload deste agente: notas capadas + resultados COMPRIMIDOS
+            # Payload deste agente: notas compactas + resultados COMPRIMIDOS
             payload_agente = dict(payload_full)
-            payload_agente["notas"] = notas_capadas
-            payload_agente["notas_classificadas"] = notas_capadas
+            payload_agente["notas"] = notas_compactas
+            payload_agente["notas_classificadas"] = notas_compactas
             payload_agente["resultados_agentes"] = comprimir_resultados(_raw_results)
 
             # Snapshot ANTES de rodar este agente
@@ -231,35 +293,34 @@ def _find_agent_class(mod):
 
 
 def _build_payload(notas: list[dict], score: float, contrib: dict) -> dict:
-    """Payload contendo tudo que os 28 agentes podem precisar."""
-    # F1-F6 para ter os números do contexto
+    """Payload mínimo (rev v3) — apenas chaves consumidas pelos agentes.
+    Campos zerados/não-usados foram removidos para reduzir tokens IN."""
     fiscal = apurar_resumo(notas, eh_pj=False, eh_segurado_especial=True,
                            data_referencia=date(2026, 6, 1))
+    # Estruturas vazias só quando o agente exige (ITR/eSocial são só keys '?')
     return {
         "notas":                  notas,
         "notas_classificadas":    notas,
         "contribuinte":           contrib,
         "is_pj":                  False,
         "score_risco":            score,
-        "score_origem":           "extractor+RE1",
         "valor_total":            fiscal.f1_receita_imediata,
         "tipologias_criticas":    0,
         "probabilidade_autuacao": 0.15,
         "regime_atual":           "PF Rural",
         "receita_bruta":          fiscal.f1_receita_imediata,
-        "periodo":                "2025",
         "score_info":             {"score": score, "shap_values": {}},
         "shap_values":            {},
-        "esocial_data":           {"folha": [], "eventos": []},
-        "itr_data":               {"area_total": 0, "vtn": 0, "valor_imposto": 0},
-        "lcdpr_data":             {"livro_caixa": []},
-        "dados_erp":              {"contas": [], "movimentos": []},
-        "sistema_erp":            "generico",
+        "esocial_data":           {},
+        "itr_data":               {},
+        "lcdpr_data":             {},
+        "dados_erp":              {},
+        "sistema_erp":            "g",
         "formato":                "nfa-e",
-        "texto_nfa":              "amostra",
+        "texto_nfa":              "",
         "tipo_analise":           "auditoria",
-        "contexto":               f"Auditoria carteira {contrib.get('nome', 'Consolidado')}",
-        "requisicao_id":          f"sim-{int(time.time())}",
+        "contexto":               contrib.get("nome", "audit"),
+        "requisicao_id":          f"s{int(time.time())%100000}",
         "entidades":              [],
         "detectores_pre":         {},
     }

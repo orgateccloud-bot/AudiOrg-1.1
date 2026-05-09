@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from scripts.simulacao.pipeline import (
-    PIPELINE_AUDITOR, PIPELINE_FULL,
+    PIPELINE_AUDITOR, PIPELINE_FULL, filtrar_pipeline,
     extrair_e_classificar, posicao_e_produtor, rodar_squad,
 )
 from scripts.simulacao.ground_truth import comparar as gt_comparar
@@ -161,6 +161,8 @@ async def simular_consolidado(
 async def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pipeline", choices=["auditor", "full"], default="auditor")
+    parser.add_argument("--no-skip-redundantes", action="store_true",
+                        help="Não pular agentes redundantes (A-09, A-26) — debug")
     parser.add_argument("--ground-truth", type=Path, default=GT_DEFAULT)
     parser.add_argument("--limit", type=int, default=0,
                         help="0 = todos. >0 = limita a N PDFs.")
@@ -169,7 +171,8 @@ async def main() -> int:
     parser.add_argument("--pasta", type=Path, default=PASTA_DEFAULT)
     args = parser.parse_args()
 
-    pipeline = PIPELINE_AUDITOR if args.pipeline == "auditor" else PIPELINE_FULL
+    pipeline_base = PIPELINE_AUDITOR if args.pipeline == "auditor" else PIPELINE_FULL
+    pipeline = filtrar_pipeline(pipeline_base, skip_redundantes=not args.no_skip_redundantes)
     pasta = args.pasta
     if not pasta.exists():
         print(f"ERRO: pasta {pasta} não existe.")
@@ -188,6 +191,10 @@ async def main() -> int:
     print(f"  SIMULAÇÃO NFE-Gado 2026 — pipeline={args.pipeline} ({len(pipeline)} agentes)")
     print(f"  Modo: {args.modo} | PDFs: {len(pdfs)} | Out: {out_dir}")
     print(f"{'='*78}\n")
+
+    # Reset do cache de system prompts — uma única vez no início
+    from scripts.simulacao.instrumentacao import reset_cache
+    reset_cache()
 
     # ── Etapa A: 32 individual ──────────────────────────────────────────────
     print(f"[A/3] Análise individual ({len(pdfs)} PDFs)...")
