@@ -54,6 +54,7 @@ config.env
 
 # Outputs gerados (relatórios, laudos, extrações)
 relatorios/
+reports_nfa/
 data/laudos/
 *.xlsx
 !src/**/*.xlsx
