@@ -71,6 +71,45 @@ class BaseAgent(ABC):
             return fallback, False
 
     @staticmethod
+    async def call_com_retry(
+        prompt: str,
+        system: str,
+        campos_esperados: tuple[str, ...],
+        agent_id: str,
+        max_tokens: int = 1024,
+        max_tentativas: int = 2,
+        **kwargs,
+    ) -> tuple[dict, bool, str]:
+        """F20: chama LLM com retry curto se JSON sair malformado ou faltar campos.
+
+        Retorna (data_parseado, parseou_ok, resposta_bruta_final).
+        Não levanta — devolve fallback {} em último caso para o agente decidir.
+        """
+        from horizon_blue_one.agents.a_token import call_otimizado
+
+        ultima_resp = ""
+        tentativa_prompt = prompt
+        for tentativa in range(max_tentativas):
+            ultima_resp, _ = await call_otimizado(
+                tentativa_prompt, system,
+                agent_id=agent_id,
+                max_tokens=max_tokens,
+                **kwargs,
+            )
+            try:
+                data = json.loads(ultima_resp)
+            except (json.JSONDecodeError, TypeError):
+                data = None
+            if isinstance(data, dict) and all(k in data for k in campos_esperados):
+                return data, True, ultima_resp
+            faltantes = [k for k in campos_esperados if not isinstance(data, dict) or k not in data]
+            tentativa_prompt = (
+                f"{prompt}\n\nResposta anterior inválida (JSON malformado ou faltando "
+                f"campos: {faltantes}). Retorne APENAS o JSON solicitado, sem texto."
+            )
+        return ({} if not isinstance(data, dict) else data), False, ultima_resp
+
+    @staticmethod
     def derivar_confidence(
         parseou_ok: bool,
         data: dict,

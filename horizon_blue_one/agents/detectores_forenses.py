@@ -55,16 +55,21 @@ def detectar_fornecedor_fantasma(notas: list) -> list[str]:
 
 
 def detectar_devolucao_posterior(notas: list) -> bool:
+    """F13: tolerância 10% via faixa, não multiplicação. Antes era impossível casar."""
     vendas: dict = {}
     for n in notas:
         if "VENDA" in str(n.get("natureza", "")).upper():
-            chave = f"{n.get('remetente_cpf','')}-{round(float(n.get('valor_total', 0)), -2)}"
-            vendas[chave] = n
+            cpf = str(n.get("remetente_cpf", ""))
+            valor = float(n.get("valor_total", 0))
+            vendas.setdefault(cpf, []).append(valor)
     for n in notas:
         if "DEVOLUCAO" in str(n.get("natureza", "")).upper():
-            chave = f"{n.get('destinatario_cpf','')}-{round(float(n.get('valor_total', 0)) * 1.1, -2)}"
-            if chave in vendas:
-                return True
+            cpf = str(n.get("destinatario_cpf", ""))
+            valor_dev = float(n.get("valor_total", 0))
+            for v_venda in vendas.get(cpf, []):
+                # Devolução parcial entre 50% e 110% da venda original
+                if v_venda > 0 and 0.5 * v_venda <= valor_dev <= 1.1 * v_venda:
+                    return True
     return False
 
 

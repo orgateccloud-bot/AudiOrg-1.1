@@ -97,15 +97,25 @@ def extrair_features(notas: list) -> dict:
     }
 
 
-def extrair_features_completas(notas: list) -> dict:
+def extrair_features_completas(notas: list, detectores_cache: dict | None = None) -> dict:
+    """F2: aceita detectores cacheados para evitar 5x re-execução."""
     base = extrair_features(notas)
+    if detectores_cache is None:
+        detectores_cache = {
+            "carrossel":           detectar_carrossel(notas),
+            "smurfing":            detectar_smurfing(notas),
+            "fornecedor_fantasma": detectar_fornecedor_fantasma(notas),
+            "devolucao_posterior": detectar_devolucao_posterior(notas),
+            "anomalia_temporal":   detectar_anomalia_temporal(notas),
+        }
+    fantasma = detectores_cache.get("fornecedor_fantasma", [])
     return {
         **base,
-        "flag_carrossel": int(detectar_carrossel(notas)),
-        "flag_smurfing":  int(detectar_smurfing(notas)),
-        "flag_fantasma":  int(len(detectar_fornecedor_fantasma(notas)) > 0),
-        "flag_devolucao": int(detectar_devolucao_posterior(notas)),
-        "flag_anomalia":  int(detectar_anomalia_temporal(notas)),
+        "flag_carrossel": int(bool(detectores_cache.get("carrossel"))),
+        "flag_smurfing":  int(bool(detectores_cache.get("smurfing"))),
+        "flag_fantasma":  int(len(fantasma) > 0 if isinstance(fantasma, list) else bool(fantasma)),
+        "flag_devolucao": int(bool(detectores_cache.get("devolucao_posterior"))),
+        "flag_anomalia":  int(bool(detectores_cache.get("anomalia_temporal"))),
     }
 
 
@@ -165,3 +175,55 @@ def calcular_score(notas: list) -> dict:
 def _score_heuristico(features: dict) -> float:
     raw = sum(features[k] * FEATURE_WEIGHTS[k] for k in FEATURE_WEIGHTS) * 100
     return round(min(max(raw, 0), 100), 1)
+
+
+def calcular_score_com_cache(notas: list, detectores_cache: dict) -> dict:
+    """API consumida pelo `core/precalc.py` — recebe detectores já cacheados.
+
+    Evita chamar os 5 detectores novamente (corrige F2). Retorna o mesmo dict
+    que `calcular_score` mais campos extras úteis para o `S2 @Forense`:
+      - probabilidade_autuacao (0..1)
+      - tipologias_criticas    (count de flags ativos)
+      - score_risco            (alias de score, nome usado pelo precalc)
+    """
+    features_base = extrair_features(notas)
+    modo = "heuristico"
+    if _xgb_model is not None:
+        try:
+            import pandas as pd
+            features_full = extrair_features_completas(notas, detectores_cache)
+            X = pd.DataFrame([features_full])[FEATURE_COLS_TREINADO]
+            prob = float(_xgb_model.predict_proba(X)[0][1])
+            score = round(prob * 100, 1)
+            modo = "xgboost_treinado"
+        except Exception as exc:
+            logger.warning("xgboost_predict_falhou", error=str(exc))
+            score = _score_heuristico(features_base)
+    else:
+        score = _score_heuristico(features_base)
+
+    shap = {k: round(features_base[k] * FEATURE_WEIGHTS[k] * 100, 2) for k in FEATURE_WEIGHTS}
+    nivel = ("CRÍTICO" if score > 85 else "ALTO" if score > 65 else
+             "MÉDIO"   if score > 40 else "BAIXO")
+
+    fantasma = detectores_cache.get("fornecedor_fantasma", [])
+    flags_ativos = sum([
+        bool(detectores_cache.get("carrossel")),
+        bool(detectores_cache.get("smurfing")),
+        bool(detectores_cache.get("devolucao_posterior")),
+        bool(detectores_cache.get("anomalia_temporal")),
+        bool(fantasma) if not isinstance(fantasma, list) else (len(fantasma) > 0),
+    ])
+    return {
+        "score":                  score,
+        "score_risco":            score,
+        "nivel":                  nivel,
+        "features":               features_base,
+        "shap_values":            shap,
+        "shap":                   detectores_cache,
+        "shap_tipo":              "linear_aproximado" if modo == "heuristico" else "xgboost_shap",
+        "modo":                   modo,
+        "model_version":          _xgb_model_version,
+        "probabilidade_autuacao": round(score / 100.0, 3),
+        "tipologias_criticas":    flags_ativos,
+    }

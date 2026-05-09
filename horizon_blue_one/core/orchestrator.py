@@ -37,6 +37,7 @@ import structlog
 
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.ledger import async_log_event
+from horizon_blue_one.core.precalc import precalcular
 
 logger = structlog.get_logger()
 
@@ -91,21 +92,31 @@ class EventBus:
 # ── Registry de agentes ──────────────────────────────────────────────────────
 
 _AGENT_MODULES = {
-    "A-00": "a00_ceo",                          "A-01": "a01_junior",
-    "A-02": "a02_protetor",                     "A-03": "a03_zerotrust",
-    "A-04": "a04_vigilante",                    "A-05": "a05_engenheiro_erp",
-    "A-06": "a06_extrator",                     "A-07": "a07_auditoria_assurance",
-    "A-08": "a08_auditor_nfa",                  "A-09": "a09_auditor_ti",
-    "A-10": "a10_auditor_patrimonio",           "A-11": "a11_planejador_tributario",
-    "A-12": "a12_descobridor_deducoes",         "A-13": "a13_monitor_conformidade",
-    "A-14": "a14_avaliador_risco",              "A-15": "a15_juridico_ext",
-    "A-16": "a16_lgpd",                         "A-17": "a17_previsor_caixa",
-    "A-18": "a18_analista_csuite",              "A-19": "a19_contabilista_ia",
-    "A-20": "a20_esocial_ia",                   "A-21": "a21_auditor_icms",
-    "A-22": "a22_auditor_itr",                  "A-23": "a23_analista_anomalias",
-    "A-24": "a24_classificador_cfop",           "A-25": "a25_auditor_lcdpr",
-    "A-26": "a26_auditor_biologicos",           "A-27": "a27_epsilon_forensic",
+    # ─── 7 agentes consolidados (default a partir de 2026-05-08) ──────────────
+    "S1": "s1_sentinel",   "S2": "s2_forense",   "S3": "s3_fiscal",
+    "S4": "s4_contabil",   "S5": "s5_nfa",       "S6": "s6_rh",
+    "S7": "s7_ceo",
+    # ─── Alias compat: A-00 (CEO) → S7 ────────────────────────────────────────
+    "A-00": "s7_ceo",
+    # ─── Legacy (preservado em _legacy/ para rollback e regressão) ────────────
+    "A-01_LEGACY": "_legacy.a01_junior",   "A-02_LEGACY": "_legacy.a02_protetor",
+    "A-03_LEGACY": "_legacy.a03_zerotrust", "A-04_LEGACY": "_legacy.a04_vigilante",
+    "A-05_LEGACY": "_legacy.a05_engenheiro_erp", "A-06_LEGACY": "_legacy.a06_extrator",
+    "A-07_LEGACY": "_legacy.a07_auditoria_assurance", "A-08_LEGACY": "_legacy.a08_auditor_nfa",
+    "A-09_LEGACY": "_legacy.a09_auditor_ti", "A-10_LEGACY": "_legacy.a10_auditor_patrimonio",
+    "A-11_LEGACY": "_legacy.a11_planejador_tributario", "A-12_LEGACY": "_legacy.a12_descobridor_deducoes",
+    "A-13_LEGACY": "_legacy.a13_monitor_conformidade", "A-14_LEGACY": "_legacy.a14_avaliador_risco",
+    "A-15_LEGACY": "_legacy.a15_juridico_ext", "A-16_LEGACY": "_legacy.a16_lgpd",
+    "A-17_LEGACY": "_legacy.a17_previsor_caixa", "A-18_LEGACY": "_legacy.a18_analista_csuite",
+    "A-19_LEGACY": "_legacy.a19_contabilista_ia", "A-20_LEGACY": "_legacy.a20_esocial_ia",
+    "A-21_LEGACY": "_legacy.a21_auditor_icms", "A-22_LEGACY": "_legacy.a22_auditor_itr",
+    "A-23_LEGACY": "_legacy.a23_analista_anomalias", "A-24_LEGACY": "_legacy.a24_classificador_cfop",
+    "A-25_LEGACY": "_legacy.a25_auditor_lcdpr", "A-26_LEGACY": "_legacy.a26_auditor_biologicos",
+    "A-27_LEGACY": "_legacy.a27_epsilon_forensic",
 }
+
+# Pipeline default consolidado: S1..S7 (CEO chamado por último automaticamente)
+PIPELINE_DEFAULT = ["S1", "S2", "S3", "S4", "S5", "S6", "S7"]
 
 
 def _instanciar(agent_id: str) -> BaseAgent:
@@ -155,53 +166,71 @@ class Orchestrator:
         payload: dict,
         agentes: list[str],
         chamar_ceo_no_fim: bool = True,
+        paralelo: bool = True,
+        early_exit: bool = True,
+        max_tokens_orcamento: int = 100_000,
     ) -> dict[str, AgentResult]:
-        """Roda os agentes na ordem fornecida, acumulando resultados.
+        """Roda os agentes acumulando resultados.
 
-        Cada agente subsequente recebe payload + 'resultados_agentes'={agent_id: result}.
-        Eventos são publicados no bus. A-00 é chamado por último com tudo agregado.
+        F7: paralelização via asyncio.gather (default).
+        Early-exit: se score < 30 e zero anomalias, pula LLMs caros.
+        Token budget: corta o pipeline se exceder `max_tokens_orcamento` tokens
+                      (custo + latência sob controle em audits patológicos).
+        Pré-cálculo determinístico (precalc) é injetado no payload uma única vez.
         """
+        from horizon_blue_one.core.token_router import snapshot_stats
+        snap_inicial = snapshot_stats()
+        tokens_inicio = int(snap_inicial.get("total_tokens", 0))
         await self.bus.start()
         try:
             resultados: dict[str, AgentResult] = {}
             payload = {**payload, "resultados_agentes": {}}
 
-            for aid in agentes:
-                if aid == "A-00" and chamar_ceo_no_fim:
-                    continue  # CEO roda no final
-                t0 = time.time()
-                try:
-                    ag = _instanciar(aid)
-                    result = await ag.process(payload)
-                    resultados[aid] = result
-                    payload["resultados_agentes"][aid] = (
-                        result.output if isinstance(result.output, dict) else {"raw": str(result.output)}
-                    )
-                    await self.bus.publish(EventoBus(
-                        tipo=result.status,
-                        agent_id=aid,
-                        payload={
-                            "confidence": result.confidence,
-                            "ms": round((time.time() - t0) * 1000, 1),
-                            "motivo": (result.output.get("motivo") if isinstance(result.output, dict) else ""),
-                            "requisicao_id": payload.get("requisicao_id"),
-                        },
-                    ))
-                except Exception as exc:
-                    logger.error("orchestrator.agente_erro", agent_id=aid, erro=str(exc))
-                    await self.bus.publish(EventoBus(
-                        tipo="ERRO", agent_id=aid,
-                        payload={"erro": str(exc)[:200]},
-                    ))
+            # ── Pré-cálculo determinístico (UMA vez) ─────────────────────────
+            payload = await precalcular(payload)
+            pre = payload.get("__precalc__", {})
 
-            # CEO recebe TUDO agregado (resolve gap A-13/A-18 órfãos também)
-            if chamar_ceo_no_fim and "A-00" in agentes:
+            # ── Early exit: audit limpa não precisa de LLM ───────────────────
+            if early_exit and self._audit_limpa(pre):
+                logger.info("orchestrator.early_exit", score=pre.get("xgboost", {}).get("score", 0))
+                resultados["__EARLY_EXIT__"] = AgentResult(
+                    agent_id="__SYSTEM__",
+                    status="APROVADO",
+                    output={
+                        "motivo": "Audit determinística limpa — sem LLM",
+                        "precalc": pre,
+                    },
+                    confidence=0.95,
+                )
+                return resultados
+
+            agentes_executar = [a for a in agentes if not (a in ("A-00", "S7") and chamar_ceo_no_fim)]
+            payload["__orcamento_tokens__"] = max_tokens_orcamento
+            payload["__tokens_inicio__"]    = tokens_inicio
+
+            if paralelo:
+                resultados = await self._executar_paralelo(agentes_executar, payload)
+                # Atualiza payload acumulado para CEO
+                for aid, r in resultados.items():
+                    payload["resultados_agentes"][aid] = (
+                        r.output if isinstance(r.output, dict) else {"raw": str(r.output)}
+                    )
+            else:
+                resultados = await self._executar_sequencial(agentes_executar, payload)
+
+            # CEO recebe TUDO agregado (S7 substitui A-00; alias preservado)
+            ceo_id = "S7" if "S7" in agentes else ("A-00" if "A-00" in agentes else None)
+            if chamar_ceo_no_fim and ceo_id:
                 try:
-                    ceo = _instanciar("A-00")
-                    payload_ceo = {**payload, "score_origem": "orchestrator", "score_risco": _score_consolidado(resultados)}
-                    resultados["A-00"] = await ceo.process(payload_ceo)
+                    ceo = _instanciar(ceo_id)
+                    payload_ceo = {
+                        **payload,
+                        "score_origem": "orchestrator",
+                        "score_risco": _score_consolidado(resultados, pre),
+                    }
+                    resultados[ceo_id] = await ceo.process(payload_ceo)
                     await self.bus.publish(EventoBus(
-                        tipo="CONCLUIDO", agent_id="A-00",
+                        tipo="CONCLUIDO", agent_id=ceo_id,
                         payload={"total_agentes": len(resultados)},
                     ))
                 except Exception as exc:
@@ -211,14 +240,95 @@ class Orchestrator:
         finally:
             await self.bus.stop()
 
+    @staticmethod
+    def _audit_limpa(pre: dict) -> bool:
+        """Heurística early-exit: zero detecções, score baixo, sem divergência fiscal."""
+        if not pre:
+            return False
+        det = pre.get("detectores", {})
+        xgb = pre.get("xgboost", {})
+        cfop = pre.get("cfop", {})
+        lcdpr = pre.get("lcdpr", {})
+        sem_deteccoes = (
+            not det.get("carrossel")
+            and not det.get("smurfing")
+            and not det.get("devolucao_posterior")
+            and not det.get("anomalia_temporal")
+            and not (det.get("fornecedor_fantasma") or [])
+        )
+        score_ok = float(xgb.get("score", 0)) < 30
+        cfop_ok  = int(cfop.get("total_divergencias", 0)) == 0
+        lcdpr_ok = abs(float(lcdpr.get("divergencia", 0))) < 100
+        return sem_deteccoes and score_ok and cfop_ok and lcdpr_ok
 
-def _score_consolidado(resultados: dict[str, AgentResult]) -> float:
-    """Heurística simples: maior score reportado por A-07/A-23."""
-    scores = []
-    for aid in ("A-07", "A-23"):
+    async def _executar_um(self, aid: str, payload: dict) -> tuple[str, AgentResult | None]:
+        t0 = time.time()
+        try:
+            ag = _instanciar(aid)
+            result = await ag.process(payload)
+            await self.bus.publish(EventoBus(
+                tipo=result.status,
+                agent_id=aid,
+                payload={
+                    "confidence": result.confidence,
+                    "ms": round((time.time() - t0) * 1000, 1),
+                    "motivo": (result.output.get("motivo") if isinstance(result.output, dict) else ""),
+                    "requisicao_id": payload.get("requisicao_id"),
+                },
+            ))
+            return aid, result
+        except Exception as exc:
+            logger.error("orchestrator.agente_erro", agent_id=aid, erro=str(exc))
+            await self.bus.publish(EventoBus(
+                tipo="ERRO", agent_id=aid, payload={"erro": str(exc)[:200]},
+            ))
+            return aid, None
+
+    async def _executar_paralelo(self, agentes: list[str], payload: dict) -> dict[str, AgentResult]:
+        """F7: roda agentes independentes em paralelo. Cada um recebe o MESMO payload pré-calculado."""
+        coros = [self._executar_um(aid, payload) for aid in agentes]
+        outs = await asyncio.gather(*coros)
+        return {aid: r for aid, r in outs if r is not None}
+
+    async def _executar_sequencial(self, agentes: list[str], payload: dict) -> dict[str, AgentResult]:
+        """Modo legado: cada agente vê resultados dos anteriores."""
+        from horizon_blue_one.core.token_router import snapshot_stats
+        resultados: dict[str, AgentResult] = {}
+        orcamento = int(payload.get("__orcamento_tokens__", 0))
+        tokens_inicio = int(payload.get("__tokens_inicio__", 0))
+        for aid in agentes:
+            if orcamento > 0:
+                consumido = int(snapshot_stats().get("total_tokens", 0)) - tokens_inicio
+                if consumido > orcamento:
+                    logger.warning("orchestrator.budget_exceeded", consumido=consumido,
+                                   orcamento=orcamento, restantes=len(agentes) - len(resultados))
+                    break
+            _, r = await self._executar_um(aid, payload)
+            if r is not None:
+                resultados[aid] = r
+                payload["resultados_agentes"][aid] = (
+                    r.output if isinstance(r.output, dict) else {"raw": str(r.output)}
+                )
+        return resultados
+
+
+def _score_consolidado(resultados: dict[str, AgentResult], pre: dict | None = None) -> float:
+    """F10: lê score_risco/score/score_global E precalc.xgboost.score."""
+    scores: list[float] = []
+    # 1) Score do precalc (fonte canônica determinística)
+    if pre:
+        s = pre.get("xgboost", {}).get("score", 0) or pre.get("xgboost", {}).get("score_risco", 0)
+        try: scores.append(float(s))
+        except (TypeError, ValueError): pass
+    # 2) Scores reportados pelos agentes (A-07/A-23 legacy + S2 forense)
+    for aid in ("A-07", "A-23", "S2", "S7"):
         r = resultados.get(aid)
         if r and isinstance(r.output, dict):
-            s = r.output.get("score") or r.output.get("score_global") or 0
-            try: scores.append(float(s))
-            except (TypeError, ValueError): pass
+            for chave in ("score_risco", "score", "score_global"):
+                if chave in r.output:
+                    try:
+                        scores.append(float(r.output[chave]))
+                        break
+                    except (TypeError, ValueError):
+                        continue
     return max(scores) if scores else 0.0
