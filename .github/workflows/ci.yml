@@ -30,12 +30,18 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
-      - name: Rodar testes
+      - name: Rodar testes (api + tests/)
         env:
           DATABASE_URL: sqlite:///./test.db
           JWT_SECRET_KEY: test-secret-key-not-for-production
           ANTHROPIC_API_KEY: sk-ant-test-key
         run: pytest tests/ -v --cov=. --cov-report=xml
+
+      - name: Smoke tests horizon_blue_one (determinísticos, sem LLM)
+        env:
+          DATABASE_URL: sqlite:///./test.db
+          ANTHROPIC_API_KEY: sk-ant-test-key
+        run: pytest horizon_blue_one/tests/test_sprint_smoke.py -v
 
       - name: Upload coverage
         if: matrix.python-version == '3.12'
