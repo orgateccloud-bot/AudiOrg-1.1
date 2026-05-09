@@ -37,6 +37,11 @@ import structlog
 
 from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
 from horizon_blue_one.core.ledger import async_log_event
+from horizon_blue_one.core.limiares import (
+    PF_GATE_AMPLO,
+    PF_GATE_ARQUIVA,
+    PF_GATE_REDUZIDO,
+)
 from horizon_blue_one.core.precalc import precalcular
 
 logger = structlog.get_logger()
@@ -204,6 +209,25 @@ class Orchestrator:
                 )
                 return resultados
 
+            # ── pf-gate: arquiva sem LLM se prob. autuação muito baixa ───────
+            pf = float(pre.get("xgboost", {}).get("probabilidade_autuacao", 0) or 0)
+            if pf < PF_GATE_ARQUIVA:
+                logger.info("orchestrator.pf_gate_arquiva", pf=pf, limite=PF_GATE_ARQUIVA)
+                resultados["__PF_GATE__"] = AgentResult(
+                    agent_id="__SYSTEM__",
+                    status="APROVADO",
+                    output={
+                        "motivo": f"pf={pf:.0%} < {PF_GATE_ARQUIVA:.0%} — arquivado sem LLM",
+                        "precalc": pre,
+                    },
+                    confidence=0.90,
+                )
+                return resultados
+
+            # ── pf-gate: filtra agentes para pipelines reduzido/amplo ────────
+            agentes, motivo_gate = self._aplicar_gate(list(agentes), pf)
+            logger.info("orchestrator.pf_gate", pf=pf, motivo=motivo_gate, agentes=agentes)
+
             agentes_executar = [a for a in agentes if not (a in ("A-00", "S7") and chamar_ceo_no_fim)]
             payload["__orcamento_tokens__"] = max_tokens_orcamento
             payload["__tokens_inicio__"]    = tokens_inicio
@@ -239,6 +263,26 @@ class Orchestrator:
             return resultados
         finally:
             await self.bus.stop()
+
+    @staticmethod
+    def _aplicar_gate(agentes: list[str], pf: float) -> tuple[list[str], str]:
+        """Filtra pipeline pela probabilidade de autuação determinística (precalc).
+
+        S7 (CEO) sempre permanece — é o consolidador final.
+        Faixas (limiares.py):
+          pf <  PF_GATE_REDUZIDO (0.65) → S3 + S5 + S7
+          pf <  PF_GATE_AMPLO    (0.85) → S1 + S2 + S3 + S5 + S7 (sem S4/S6)
+          pf >= PF_GATE_AMPLO          → mantém lista completa
+        """
+        if pf < PF_GATE_REDUZIDO:
+            permitidos = {"S3", "S5", "S7", "A-00"}
+            motivo = f"reduzido (pf={pf:.0%} < {PF_GATE_REDUZIDO:.0%}): S3+S5+S7"
+        elif pf < PF_GATE_AMPLO:
+            permitidos = {"S1", "S2", "S3", "S5", "S7", "A-00"}
+            motivo = f"amplo (pf={pf:.0%} < {PF_GATE_AMPLO:.0%}): S1+S2+S3+S5+S7"
+        else:
+            return agentes, f"full (pf={pf:.0%} >= {PF_GATE_AMPLO:.0%}): pipeline completo"
+        return [a for a in agentes if a in permitidos], motivo
 
     @staticmethod
     def _audit_limpa(pre: dict) -> bool:
