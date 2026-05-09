@@ -16,6 +16,11 @@ import json
 
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
+from horizon_blue_one.core.limiares import (
+    SCORE_ALTO,
+    SCORE_CRITICO,
+    TIPOLOGIAS_LIMITE_OPUS,
+)
 from horizon_blue_one.core.precalc import get_precalc
 from horizon_blue_one.core.prompt_compactor import kv
 from horizon_blue_one.core.token_router import TipoTarefa
@@ -77,8 +82,8 @@ class CEOAgent(BaseAgent):
         data, ok = self.parse_json_response(
             resp,
             fallback={
-                "decisao":          "ESCALAR_JURIDICO" if score >= 85 or criticas >= 3 else
-                                    "REVISAR" if score >= 65 else "APROVAR",
+                "decisao":          "ESCALAR_JURIDICO" if score >= SCORE_CRITICO or criticas >= TIPOLOGIAS_LIMITE_OPUS else
+                                    "REVISAR" if score >= SCORE_ALTO else "APROVAR",
                 "score_final":      score,
                 "parecer_juridico": "Parecer indisponível (parse falhou).",
                 "mda_executivo":    "MD&A indisponível.",
