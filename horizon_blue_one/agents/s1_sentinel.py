@@ -16,7 +16,9 @@ import json
 
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
+from horizon_blue_one.core.limiares import PENDENCIAS_DOCUMENTAIS_CRITICAS
 from horizon_blue_one.core.precalc import get_precalc
+from horizon_blue_one.core.prompt_compactor import kv
 from horizon_blue_one.core.token_router import TipoTarefa
 
 SYSTEM = (
@@ -59,8 +61,8 @@ class SentinelAgent(BaseAgent):
             )
 
         prompt = (
-            f"PII detectado: {pii}\n"
-            f"Pendências documentais: {docs}\n"
+            f"PII: {kv(pii)}\n"
+            f"Docs: {kv(docs)}\n"
             "Avalie conformidade LGPD, ZeroTrust documental e indique top-3 ações."
         )
         resp, _ = await call_otimizado(
@@ -73,7 +75,7 @@ class SentinelAgent(BaseAgent):
             resp,
             fallback={
                 "lgpd_status": "ALERTA" if total_pii > 0 else "CONFORME",
-                "documentos_status": "CRITICO" if pendencias > 10 else "PENDENCIA" if pendencias else "OK",
+                "documentos_status": "CRITICO" if pendencias > PENDENCIAS_DOCUMENTAIS_CRITICAS else "PENDENCIA" if pendencias else "OK",
                 "recomendacoes": ["revisar pendencias documentais"] if pendencias else [],
             },
             campos_esperados=_CAMPOS,

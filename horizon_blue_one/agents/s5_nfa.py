@@ -14,6 +14,7 @@ import json
 
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
+from horizon_blue_one.core.limiares import CFOP_DIV_LIMITE_NFA
 from horizon_blue_one.core.precalc import get_precalc
 from horizon_blue_one.core.prompt_compactor import resumo_detectores, resumo_notas
 from horizon_blue_one.core.token_router import TipoTarefa
@@ -91,7 +92,7 @@ class NFAAgent(BaseAgent):
         data["total_notas"] = len(notas_re1)
         data["total_valor"] = round(total_valor, 2)
 
-        critico = data.get("conformidade_sefaz_go") == "CRITICO" or cfop.get("total_divergencias", 0) > 10
+        critico = data.get("conformidade_sefaz_go") == "CRITICO" or cfop.get("total_divergencias", 0) > CFOP_DIV_LIMITE_NFA
         return AgentResult(
             agent_id=self.agent_id,
             status="ESCALADO" if critico else "APROVADO",

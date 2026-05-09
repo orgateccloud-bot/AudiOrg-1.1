@@ -16,6 +16,12 @@ import json
 
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
+from horizon_blue_one.core.limiares import (
+    SCORE_ALTO,
+    SCORE_BAIXO,
+    SCORE_CRITICO,
+    TIPOLOGIAS_LIMITE_ESCALA,
+)
 from horizon_blue_one.core.precalc import get_precalc
 from horizon_blue_one.core.prompt_compactor import kv, resumo_detectores
 from horizon_blue_one.core.token_router import TipoTarefa
@@ -31,9 +37,9 @@ _CAMPOS = ("score_risco", "nivel", "tipologias", "narrativa")
 
 
 def _nivel(score: float) -> str:
-    if score >= 85: return "CRITICO"
-    if score >= 65: return "ALTO"
-    if score >= 40: return "MEDIO"
+    if score >= SCORE_CRITICO: return "CRITICO"
+    if score >= SCORE_ALTO:    return "ALTO"
+    if score >= SCORE_BAIXO:   return "MEDIO"
     return "BAIXO"
 
 
@@ -59,7 +65,7 @@ class ForenseAgent(BaseAgent):
             and not det.get("anomalia_temporal")
             and not (det.get("fornecedor_fantasma") or [])
         )
-        if sem_deteccoes and score < 40:
+        if sem_deteccoes and score < SCORE_BAIXO:
             return AgentResult(
                 agent_id=self.agent_id,
                 status="APROVADO",
@@ -110,7 +116,7 @@ class ForenseAgent(BaseAgent):
             score_final = float(data.get("score_risco", score))
         except (TypeError, ValueError):
             score_final = score
-        status = "ESCALADO" if score_final >= 65 or criticas >= 2 else "APROVADO"
+        status = "ESCALADO" if score_final >= SCORE_ALTO or criticas >= TIPOLOGIAS_LIMITE_ESCALA else "APROVADO"
         return AgentResult(
             agent_id=self.agent_id,
             status=status,

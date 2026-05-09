@@ -17,6 +17,11 @@ import json
 
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
+from horizon_blue_one.core.limiares import (
+    CFOP_DIV_LIMITE_FISCAL,
+    LCDPR_DIVERGENCIA_CRITICA,
+    LCDPR_TOLERANCIA,
+)
 from horizon_blue_one.core.precalc import get_precalc
 from horizon_blue_one.core.prompt_compactor import kv
 from horizon_blue_one.core.token_router import TipoTarefa
@@ -49,7 +54,7 @@ class FiscalAgent(BaseAgent):
         subutilizado = bool(itr.get("subutilizado", False))
 
         # Verde determinístico
-        if cfop_div == 0 and abs(lcdpr_div) < 100 and not subutilizado:
+        if cfop_div == 0 and abs(lcdpr_div) < LCDPR_TOLERANCIA and not subutilizado:
             return AgentResult(
                 agent_id=self.agent_id,
                 status="APROVADO",
@@ -102,8 +107,8 @@ class FiscalAgent(BaseAgent):
 
         critico = (
             data.get("lcdpr_status") == "CRITICO"
-            or cfop_div > 5
-            or abs(lcdpr_div) > 50_000
+            or cfop_div > CFOP_DIV_LIMITE_FISCAL
+            or abs(lcdpr_div) > LCDPR_DIVERGENCIA_CRITICA
         )
         return AgentResult(
             agent_id=self.agent_id,

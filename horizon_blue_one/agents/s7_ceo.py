@@ -87,7 +87,7 @@ class CEOAgent(BaseAgent):
             },
             campos_esperados=_CAMPOS,
         )
-        data["resumo_agentes"] = resumo
+        data["resumo_agentes"] = resumo_txt
         data["precalc_score"] = score
 
         decisao = data.get("decisao", "APROVAR")

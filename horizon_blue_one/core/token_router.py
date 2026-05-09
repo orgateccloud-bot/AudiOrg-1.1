@@ -117,6 +117,14 @@ MAX_TOKENS_OTIMO: dict[str, int] = {
     # ── 1024 — auditoria completa ou decisão final (rev 2026-05-09 v2) ───────
     "A-08": 1024,                # NFAAuditSchema cabe em 1024 (era 2048)
     "A-00": 768,                 # decisão final compacta (era 1024)
+    # ── 7 agentes consolidados S1..S7 (rev 2026-05-09 v3) ────────────────────
+    "S1": 512,   # Sentinel: lgpd/zerotrust JSON simples
+    "S2": 2048,  # Forense: narrativa + tipologias AN-XX (pode crescer)
+    "S3": 2048,  # Fiscal: ICMS+ITR+LCDPR+CFOP agregado
+    "S4": 1536,  # Contabil: CPC 29 + previsao caixa
+    "S5": 1536,  # NFA: total + divergencias + amostra
+    "S6": 1024,  # RH: eSocial S-1000..S-2240
+    "S7": 2048,  # CEO: decisao + parecer juridico + MD&A
 }
 
 
@@ -160,6 +168,14 @@ _AGENTE_TAREFA: dict[str, TipoTarefa] = {
     # tipologias>=3 ou prob_aut>=75% (controlado pela regra Sonnet→Opus existente).
     "A-08": TipoTarefa.FORENSE,           # @Auditor-NFA  → Sonnet base (escala Opus)
     "A-00": TipoTarefa.JURIDICO,          # @CEO          → Sonnet base (escala Opus)
+    # ── 7 agentes consolidados S1..S7 (rev 2026-05-09 v3) ─────────────────────
+    "S1": TipoTarefa.LGPD,                # @Sentinel  → Haiku
+    "S2": TipoTarefa.FORENSE,             # @Forense   → Sonnet (Opus se score>=85)
+    "S3": TipoTarefa.AUDITORIA,           # @Fiscal    → Sonnet
+    "S4": TipoTarefa.AUDITORIA,           # @Contabil  → Sonnet
+    "S5": TipoTarefa.AUDITORIA,           # @NFA       → Sonnet
+    "S6": TipoTarefa.ESOCIAL,             # @RH        → Sonnet (Haiku via mix-alvo)
+    "S7": TipoTarefa.JURIDICO,            # @CEO       → Sonnet (Opus se score>=85)
 }
 
 
