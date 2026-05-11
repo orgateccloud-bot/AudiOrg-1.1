@@ -8,16 +8,22 @@ e os 7 agentes consolidados (S1..S7), respeitando:
 """
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import os
 import re
 import sys
 from pathlib import Path
 from typing import Any, Iterable
 
-# Garantir nfa-repo no sys.path (default D:\nfa-repo, override via NFA_REPO_PATH)
-_NFA_REPO = os.environ.get("NFA_REPO_PATH", r"D:\nfa-repo")
-if _NFA_REPO not in sys.path:
-    sys.path.insert(0, _NFA_REPO)
+# Importa nfa-repo dinamicamente sem manipular sys.path globalmente.
+# Usa NFA_REPO_PATH para localizar o pacote; falha silenciosamente se ausente.
+_NFA_REPO = Path(os.environ.get("NFA_REPO_PATH", r"D:\nfa-repo"))
+_nfa_repo_disponivel = _NFA_REPO.is_dir()
+
+if _nfa_repo_disponivel and str(_NFA_REPO) not in sys.path:
+    # Inserção controlada: apenas quando o diretório existe no ambiente atual
+    sys.path.insert(0, str(_NFA_REPO))
 
 
 # ── Heurística CFOP ────────────────────────────────────────────────────────────

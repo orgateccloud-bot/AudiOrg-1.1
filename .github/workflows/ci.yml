@@ -28,14 +28,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-asyncio
+          pip install pytest pytest-cov pytest-asyncio pytest-mock
 
-      - name: Rodar testes (api + tests/)
+      - name: Rodar testes unitários e de integração
         env:
           DATABASE_URL: sqlite:///./test.db
-          JWT_SECRET_KEY: test-secret-key-not-for-production
+          JWT_SECRET_KEY: test-secret-key-not-for-production-64-bytes-long-string
           ANTHROPIC_API_KEY: sk-ant-test-key
-        run: pytest tests/ -v --cov=. --cov-report=xml
+          PYTHONPATH: ${{ github.workspace }}
+        run: pytest tests/ -v --tb=short --cov=horizon_blue_one --cov=api --cov-report=xml
 
       - name: Smoke tests horizon_blue_one (determinísticos, sem LLM)
         env:
@@ -50,6 +51,61 @@ jobs:
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
+
+  api-smoke-test:
+    name: API Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verificar inicialização da API (sem erros de import)
+        env:
+          DATABASE_URL: sqlite:///./test.db
+          JWT_SECRET_KEY: test-secret-key-for-smoke-test-64-bytes-min
+          ANTHROPIC_API_KEY: sk-ant-test-key
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -c "
+          import os
+          os.environ['DATABASE_URL'] = 'sqlite:///./test.db'
+          from api.main import app
+          print('API importada com sucesso')
+          assert app.title == 'OrgAudi Sovereign API'
+          print('Smoke test OK')
+          "
+
+      - name: Verificar /ping via TestClient
+        env:
+          DATABASE_URL: sqlite:///./test.db
+          JWT_SECRET_KEY: test-secret-key-for-smoke-test-64-bytes-min
+          ANTHROPIC_API_KEY: sk-ant-test-key
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -c "
+          import os
+          os.environ['DATABASE_URL'] = 'sqlite:///./test.db'
+          os.environ['JWT_SECRET_KEY'] = 'test-secret-key-for-smoke-test'
+          from fastapi.testclient import TestClient
+          from api.main import app
+          client = TestClient(app)
+          resp = client.get('/ping')
+          assert resp.status_code == 200, f'Ping falhou: {resp.status_code}'
+          assert resp.json()['status'] == 'ok'
+          print('Ping OK:', resp.json())
+          "
 
   frontend-build:
     name: Frontend Build
@@ -91,7 +147,7 @@ jobs:
           path: ./
           base: ${{ github.event.pull_request.base.sha }}
           head: ${{ github.event.pull_request.head.sha }}
-          extra_args: --only-verified
+          extra_args: --only-verified --fail
 
       - name: TruffleHog (push)
         if: github.event_name == 'push'
@@ -100,4 +156,4 @@ jobs:
           path: ./
           base: ${{ github.event.before }}
           head: ${{ github.sha }}
-          extra_args: --only-verified
+          extra_args: --only-verified --fail

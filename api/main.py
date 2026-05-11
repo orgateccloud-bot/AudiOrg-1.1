@@ -73,8 +73,10 @@ try:
     app.include_router(metrics.router)
     app.include_router(finance.router)
     app.include_router(nfa_ai_parser.router)
-except Exception:
-    pass
+except ImportError as exc:
+    logger.warning("routers_opcionais_indisponiveis", modulo=str(exc))
+except Exception as exc:
+    logger.error("erro_carregando_routers_opcionais", error=str(exc))
 
 
 @app.get("/ping")
