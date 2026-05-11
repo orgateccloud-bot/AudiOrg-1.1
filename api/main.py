@@ -1,8 +1,8 @@
 """OrgAudi Sovereign API v8.0 — Motor unificado com 4 módulos."""
+import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-import logging
 
 
 def _carregar_env_local() -> None:
@@ -29,8 +29,10 @@ _carregar_env_local()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.middleware.body_size_limit import BodySizeLimitMiddleware
 from api.middleware.rate_limit import RateLimitMiddleware
-from api.routes import auditoria, auth, clientes, agente
+from api.middleware.security_headers import SecurityHeadersMiddleware
+from api.routes import agente, auditoria, auth, clientes
 from nfa_extractor.infrastructure.database_v2 import Base, engine
 
 logger = logging.getLogger("orgaudi")
@@ -51,16 +53,33 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Origens permitidas: dev local + lista de ALLOWED_ORIGINS (CSV) em produção
+_origens_dev = [
+    "http://localhost:5173", "http://localhost:5174", "http://localhost:5175",
+    "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175",
+]
+_origens_prod = [
+    o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()
+]
+_ambiente = os.environ.get("ENVIRONMENT", "development").lower()
+_em_producao = _ambiente == "production"
+
+app.add_middleware(
+    SecurityHeadersMiddleware,
+    enable_hsts=_em_producao,
+)
+app.add_middleware(
+    BodySizeLimitMiddleware,
+    max_body_size=int(os.environ.get("MAX_BODY_SIZE_MB", "10")) * 1024 * 1024,
+)
 app.add_middleware(RateLimitMiddleware, rate=60, window=60)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", "http://localhost:5174", "http://localhost:5175",
-        "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175",
-    ],
+    allow_origins=_origens_prod if _em_producao else _origens_dev,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    max_age=600,
 )
 
 app.include_router(auth.router)
@@ -69,7 +88,7 @@ app.include_router(clientes.router)
 app.include_router(agente.router)
 
 try:
-    from api.routes import metrics, finance, nfa_ai_parser
+    from api.routes import finance, metrics, nfa_ai_parser
     app.include_router(metrics.router)
     app.include_router(finance.router)
     app.include_router(nfa_ai_parser.router)
@@ -87,7 +106,7 @@ async def ping():
 @app.get("/stats")
 def get_stats():
     from api.services.auditoria_nfae import obter_stats_nfae
-    from nfa_extractor.infrastructure.database_v2 import SessionLocal, Cliente, Laudo
+    from nfa_extractor.infrastructure.database_v2 import Cliente, Laudo, SessionLocal
     db = SessionLocal()
     try:
         stats = obter_stats_nfae()
