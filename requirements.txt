@@ -30,7 +30,9 @@ anthropic>=0.49.0
 google-genai>=0.2.0
 httpx>=0.27.0
 
-# ── LangGraph (pipeline legado Squad Antigravity) ────────────────────────────
+# ── LangGraph ────────────────────────────────────────────────────────────────
+# Usado em nfa_extractor/application/agents_engine.py (auditoria_bigfour/nfae).
+# O pipeline S1-S7 (horizon_blue_one) usa orquestração própria (asyncio + EventBus).
 langgraph>=0.1.0
 
 # ── ML ───────────────────────────────────────────────────────────────────────

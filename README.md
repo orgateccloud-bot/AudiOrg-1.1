@@ -1,7 +1,7 @@
 # OrgAudi Sovereign — Plataforma de Auditoria Fiscal
 
 **Versão:** 8.0.0  
-**Stack:** FastAPI · React 19 · LangGraph · Claude/Gemini · XGBoost · SQLite · ReportLab  
+**Stack:** FastAPI · React 19 · Claude Opus/Sonnet/Haiku · XGBoost · LSTM · MCP · SQLite · ReportLab  
 **Responsável:** ORGATEC IA
 
 ---
@@ -30,44 +30,66 @@ OrgAudi/
 
 ## Módulo 1 — horizon_blue_one
 
-Pipeline sequencial de auditoria fiscal: **RE-1 → XGBoost → F1-F6 → A-07 → A-08**
+Squad consolidado de 7 agentes (S1–S7) coordenados por `Orchestrator` com EventBus, pré-cálculo determinístico, gate por probabilidade de autuação e roteamento de modelos Haiku/Sonnet/Opus (mix 90/8/2).
 
 ```
 horizon_blue_one/
 ├── agents/
-│   ├── base_agent.py            # AgentResult (Pydantic v2, SHA-256 audit_hash)
-│   ├── a07_auditoria_assurance.py  # Agente forense — 5 detectores determinísticos
-│   ├── a08_auditor_nfa.py       # Agente auditor NFA-e com Protocolo @Delta
-│   └── detectores_forenses.py   # CARROSSEL_FISCAL, SMURFING_RURAL, FORNECEDOR_FANTASMA,
-│                                #   DEVOLUCAO_POSTERIOR, ANOMALIA_TEMPORAL
+│   ├── base_agent.py        # AgentResult (Pydantic v2, SHA-256 audit_hash)
+│   ├── s1_sentinel.py       # @Sentinel — LGPD + ZeroTrust + integridade documental
+│   ├── s2_forense.py        # @Forense — detectores + XGBoost + LSTM + MCP tools
+│   ├── s3_fiscal.py         # @Fiscal — ICMS, ITR, LCDPR, CFOP
+│   ├── s4_contabil.py       # @Contábil — patrimônio, biológicos (CPC 29), caixa
+│   ├── s5_nfa.py            # @AuditorNFA — auditoria de notas RE-1 aplicada
+│   ├── s6_rh.py             # @RH — eSocial, FGTS, INSS
+│   ├── s7_ceo.py            # @CEO — governança, parecer jurídico, MD&A
+│   ├── detectores_forenses.py   # CARROSSEL, SMURFING, FORNECEDOR_FANTASMA,
+│   │                            #   DEVOLUCAO_POSTERIOR, ANOMALIA_TEMPORAL
+│   └── _legacy/             # 28 agentes A-00..A-27 preservados (rollback/regressão)
 ├── core/
-│   ├── config.py                # Env vars e constantes do sistema
-│   ├── model_adapter.py         # Claude Sonnet 4.6 / Haiku 4.5 / Opus 4.7
-│   │                            #   tenacity retry (3x, 1–8s backoff), prompt caching
-│   └── privacy.py               # Protocolo @Delta — anonimização CPF/CNPJ/nomes
+│   ├── orchestrator.py      # EventBus + paralelo asyncio + pf-gate + early-exit
+│   ├── precalc.py           # Pré-cálculo determinístico injetado no payload
+│   ├── token_router.py      # Roteamento 90/8/2 com upgrade/downgrade por critério
+│   ├── model_adapter.py     # Claude Haiku/Sonnet/Opus + tool_use (MCP)
+│   ├── privacy.py           # Protocolo @Delta — anonimização CPF/CNPJ/nomes
+│   ├── limiares.py          # Thresholds centralizados (calibração CRC-GO)
+│   └── ledger.py            # Audit log assíncrono
 ├── ml/
-│   └── xgboost_scorer.py        # 8 features × pesos SEFAZ-GO → score 0–100
-│                                #   Modo heurístico quando modelo .pkl não está presente
+│   ├── xgboost_scorer.py    # 8 features × pesos SEFAZ-GO → score 0–100
+│   └── lstm_scorer.py       # Anomalia temporal (heurístico + PyTorch opcional)
+├── tools/
+│   └── mcp_bridge.py        # Model Context Protocol — histórico produtor + fetch HTTP
+├── nfa_bridge/              # Bridge nfa-repo → precalc (CFOP heurístico + RE-1)
 └── orgaudi/
-    ├── regra_especial_1.py      # RE-1: VENDA → COMPRA rural (aprovada CRC-GO)
-    └── resumo_fiscal.py         # F1-F6: FUNRURAL 2026 (PJ=2.23%, PF=1.63%, SE=1.50%)
+    ├── regra_especial_1.py  # RE-1: VENDA → COMPRA rural (aprovada CRC-GO)
+    └── resumo_fiscal.py     # F1-F6: FUNRURAL 2026 (PJ=2.23%, PF=1.63%, SE=1.50%)
 ```
 
-### Pipeline de Auditoria
+### Pipeline S1–S7
 
-| Etapa | Componente | Descrição |
-|-------|-----------|-----------|
-| RE-1 | `regra_especial_1.py` | Reclassifica VENDA em COMPRA rural para destinatário PF |
-| Score | `xgboost_scorer.py` | Score de risco 0–100 com 8 features calibradas |
-| Fiscal | `resumo_fiscal.py` | Apuração F1–F6: FUNRURAL, IRPF, resultado rural |
-| A-07 | `a07_auditoria_assurance.py` | Detectores forenses — 5 tipologias determinísticas |
-| A-08 | `a08_auditor_nfa.py` | Análise qualitativa via LLM (fallback determinístico) |
+| Etapa | Agente | Tarefa | Modelo padrão |
+|-------|--------|--------|---------------|
+| S1 | @Sentinel | LGPD + integridade documental | Haiku |
+| S2 | @Forense | XGBoost + LSTM + 5 detectores + MCP | Sonnet |
+| S3 | @Fiscal | ICMS, ITR, LCDPR, CFOP | Haiku |
+| S4 | @Contábil | Patrimônio, CPC 29, caixa | Haiku |
+| S5 | @AuditorNFA | Auditoria das notas (RE-1 aplicada) | Sonnet (↓Haiku se score<50) |
+| S6 | @RH | eSocial, FGTS, INSS | Haiku |
+| S7 | @CEO | Consolidação, parecer jurídico, MD&A | Sonnet (↑Opus se crítico) |
 
-### Agentes — Resiliência
+### Orchestrator — controle de custo
 
-Ambos os agentes (A-07 e A-08) possuem `try/except` que retornam `AgentResult(status="ERRO")` caso a API Claude esteja indisponível. O pipeline nunca quebra por falha de LLM.
+- **Pré-cálculo determinístico**: `precalc.py` roda uma vez em paralelo (XGBoost + LSTM + CFOP + LCDPR + ITR + detectores), injetado no payload de todos os agentes.
+- **Early-exit**: caso limpo (score<30, zero detecções, CFOP/LCDPR conformes) retorna sem chamar LLM.
+- **pf-gate**: probabilidade de autuação determinística filtra o pipeline:
+  - `pf < 0.40` → arquivado sem LLM
+  - `pf < 0.65` → só S3 + S5 + S7
+  - `pf < 0.85` → S1 + S2 + S3 + S5 + S7 (sem S4/S6)
+  - `pf >= 0.85` → pipeline completo
+- **Paralelismo**: agentes independentes rodam via `asyncio.gather`.
+- **Budget de tokens**: corta o pipeline se exceder o orçamento configurado.
 
-### Detectores Forenses (A-07)
+### Detectores Forenses (S2 @Forense)
 
 Todos são **determinísticos** — sem dependência de LLM:
 
@@ -278,39 +300,53 @@ DATABASE_URL=sqlite:///./orgatec_sovereign.db
 
 ---
 
-## Fluxo de Dados — Pipeline NFA-e
+## Fluxo de Dados — Pipeline S1–S7
 
 ```
-POST /nfae
+POST /auditoria
     │
-    ├── RE-1 (regra_especial_1.py)
-    │     └── Reclassifica VENDA → COMPRA para destinatário PF rural
+    ├── precalc.py (paralelo asyncio.gather, UMA vez)
+    │     ├── RE-1 — reclassifica VENDA → COMPRA destinatário rural
+    │     ├── XGBoost — 8 features → score 0–100 + nível
+    │     ├── LSTM — anomalia temporal por produtor (σ=2.5)
+    │     ├── CFOP — divergências e total
+    │     ├── LCDPR — receita_notas vs receita_lcdpr
+    │     ├── ITR — área total/utilizada → GU%
+    │     ├── Detectores forenses (5 tipologias)
+    │     └── PII — total_pii + redação @Delta
     │
-    ├── XGBoost (xgboost_scorer.py)
-    │     └── 8 features → score 0–100 + nível BAIXO/MÉDIO/ALTO/CRÍTICO
+    ├── Orchestrator
+    │     ├── early-exit → arquiva sem LLM se audit limpa
+    │     ├── pf-gate → reduz pipeline conforme prob. de autuação
+    │     └── asyncio.gather S1..S6 em paralelo
     │
-    ├── F1-F6 (resumo_fiscal.py)
-    │     └── FUNRURAL + IRPF + resultado rural
-    │
-    ├── A-07 (a07_auditoria_assurance.py)
-    │     └── 5 detectores forenses determinísticos
-    │
-    └── A-08 (a08_auditor_nfa.py)
-          └── Análise qualitativa LLM (fallback determinístico se API indisponível)
-                └── Protocolo @Delta — CPF/CNPJ/nomes anonimizados antes do envio
+    └── S7 @CEO (sempre executa por último)
+          └── consolida outputs + parecer jurídico + MD&A
+                └── Protocolo @Delta aplicado em todos os prompts
 ```
 
 ---
 
 ## Privacidade — Protocolo @Delta
 
-Antes de enviar qualquer dado ao LLM (Claude/Gemini), o `privacy.py` substitui:
+Antes de enviar qualquer dado ao LLM (Claude), `core/privacy.py` substitui:
 
-- CPF/CNPJ reais → `@DELTA-001`, `@DELTA-002`, ...
-- Nomes de pessoas → `@PESSOA-001`, `@PESSOA-002`, ...
-- Razões sociais → `@EMPRESA-001`, `@EMPRESA-002`, ...
+- CPF/CNPJ reais → `[CPF_PROTEGIDO]` / `[CNPJ_PROTEGIDO]`
+- Campos `nome`, `razao_social`, `proprietario`, `remetente_nome`, `destinatario_nome` → `[NOME_REDACTED_<tamanho>]`
+- Estruturas aninhadas (dict/lista) processadas recursivamente
 
-O mapa de reversão é mantido em memória e aplicado na resposta antes de retornar ao cliente.
+Aplicado em `anonymize_payload()` antes de qualquer `call_otimizado()`.
+
+---
+
+## MCP — Model Context Protocol
+
+Quando S2 @Forense detecta anomalia temporal (LSTM score ≥ 0.70), o agente recebe acesso a duas ferramentas via tool_use:
+
+- **`consultar_historico_produtor(cnpj_cpf, ano)`** — query SQLite read-only ao histórico interno
+- **`buscar_dados_externos(url)`** — GET HTTP com allowlist estrita (sefazgo.gov.br, nfe.fazenda.gov.br, receita.fazenda.gov.br, cadin.fazenda.gov.br, cidades.ibge.gov.br)
+
+Tudo registrado em `audit_events` com hash + timestamp.
 
 ---
 
@@ -318,20 +354,24 @@ O mapa de reversão é mantido em memória e aplicado na resposta antes de retor
 
 Quando a API Claude está indisponível (créditos zerados, timeout, etc.):
 
-- A-07 retorna `AgentResult(status="ERRO", confidence=0.0)` com detalhe do erro
-- A-08 idem — pipeline continua com score XGBoost + fiscal F1-F6 íntegros
+- Todos os agentes possuem fallback determinístico — pipeline nunca quebra
+- `precalc` produz score + detectores + classificações sem nenhuma chamada LLM
+- Apenas o parecer qualitativo de S7 fica vazio; demais outputs íntegros
 - Frontend exibe badge "IA DEGRADADO" no módulo de auditoria
-- Score e resumo fiscal são sempre produzidos (sem dependência de LLM)
 
 ---
 
 ## Segurança
 
-- JWT obrigatório em todas as rotas (exceto `/ping`, `/`, `/auth/login`)
+- JWT obrigatório (HS256, 30 min access + 7 d refresh)
 - Rate limiting: 60 req/min por IP
+- Body size limit: 10 MB (configurável `MAX_BODY_SIZE_MB`)
+- Security headers: HSTS (prod), CSP, X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy bloqueia câmera/mic/geo
+- CORS estrito: métodos e headers específicos; origens controladas por `ALLOWED_ORIGINS`
 - CPF/CNPJ nunca trafegam em logs ou para LLMs externos (Protocolo @Delta)
 - `.env` nunca versionado — secrets via variáveis de ambiente do OS
 - `audit_hash` SHA-256 em cada `AgentResult` para rastreabilidade
+- CI: TruffleHog (`--only-verified --fail`), ruff, mypy, pip-audit
 
 ---
 
