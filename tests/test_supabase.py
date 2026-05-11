@@ -3,10 +3,10 @@ Testes para a camada Supabase — todos com mocks (sem conexão real).
 Testa schemas, lógica de serviço e tratamento de erros.
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -15,25 +15,32 @@ os.environ["JWT_SECRET_KEY"] = "a" * 64
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from nfa_extractor.infrastructure.supabase.categories import (
-    CategoryCreate, CategoryUpdate,
-    list_categories, create_category, update_category, delete_category,
-    seed_default_categories, DEFAULT_CATEGORIES,
+    DEFAULT_CATEGORIES,
+    CategoryCreate,
+    create_category,
+    delete_category,
+    list_categories,
+    seed_default_categories,
 )
-from nfa_extractor.infrastructure.supabase.transactions import (
-    TransactionCreate, TransactionUpdate, TransactionSummary,
-    list_transactions, create_transaction, update_transaction,
-    delete_transaction, get_summary,
-)
+from nfa_extractor.infrastructure.supabase.client import is_supabase_enabled
 from nfa_extractor.infrastructure.supabase.predictions import (
     PredictionCreate,
-    list_predictions, create_prediction, get_latest_prediction, delete_prediction,
+    create_prediction,
+    get_latest_prediction,
+    list_predictions,
 )
 from nfa_extractor.infrastructure.supabase.profiles import (
     ProfileUpdate,
-    get_profile, update_profile,
+    get_profile,
+    update_profile,
 )
-from nfa_extractor.infrastructure.supabase.client import is_supabase_enabled
-
+from nfa_extractor.infrastructure.supabase.transactions import (
+    TransactionCreate,
+    TransactionSummary,
+    create_transaction,
+    delete_transaction,
+    get_summary,
+)
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 

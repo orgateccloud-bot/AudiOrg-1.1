@@ -18,7 +18,6 @@ import os
 import threading
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional
 
 import numpy as np
 import structlog
@@ -46,8 +45,8 @@ def _try_load_model() -> None:
         if not model_path or not os.path.exists(model_path):
             return
         try:
-            import torch  # noqa: PLC0415
-            from torch import nn  # noqa: PLC0415
+            import torch
+            from torch import nn
 
             class _LSTMAnomalias(nn.Module):
                 def __init__(self):
@@ -166,7 +165,7 @@ def _score_heuristico(notas_prod: list[dict], media_g: float, std_g: float) -> f
 
 def _score_treinado(notas_prod: list[dict], media_g: float, std_g: float) -> float:
     """Inferência LSTM; requer modelo carregado."""
-    import torch  # noqa: PLC0415
+    import torch
 
     features = [_feature_nota(n, media_g, std_g) for n in notas_prod]
 

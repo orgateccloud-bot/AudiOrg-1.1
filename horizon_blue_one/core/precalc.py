@@ -31,7 +31,6 @@ import hashlib
 import json
 import re
 import time
-from collections import Counter
 from typing import Any
 
 import structlog
@@ -43,8 +42,8 @@ from horizon_blue_one.agents.detectores_forenses import (
     detectar_fornecedor_fantasma,
     detectar_smurfing,
 )
-from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
 from horizon_blue_one.ml.lstm_scorer import calcular_lstm
+from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
 
 logger = structlog.get_logger()
 

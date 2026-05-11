@@ -282,7 +282,7 @@ def gerar_laudo_v250(
 
     # ── Converter NFA → NotaFiscal se necessário ────────────────────────────
     # O adapter do v240 já tem toda a lógica de conversão; reutilizamos.
-    from ..orgaudi.orgaudi_adapter import _converter_nota, _normalizar_doc, _fallback_cpf
+    from ..orgaudi_v4.orgaudi_adapter import _converter_nota, _normalizar_doc, _fallback_cpf
     import re
 
     cpf_limpo = re.sub(r"\D", "", str(cliente_cpf))
@@ -298,7 +298,20 @@ def gerar_laudo_v250(
                 logger.debug("Conversão NFA falhou: %s", e)
 
     if not notas_convertidas:
-        logger.warning("Nenhuma nota convertida para %s", cliente_nome)
+        logger.info(
+            "Nenhuma NFA-e para %s — delegando para gerar_laudo_sem_objeto_v250",
+            cliente_nome,
+        )
+        from .sem_objeto import gerar_laudo_sem_objeto_v250
+        gerar_laudo_sem_objeto_v250(
+            cliente_nome=cliente_nome,
+            cliente_cpf=cliente_cpf,
+            saida=saida,
+            municipio=municipio,
+            estado=estado,
+            periodo_inicio=periodo.inicio if periodo else None,
+            periodo_fim=periodo.fim if periodo else None,
+        )
         return
 
     # Resolve CPF definitivo

@@ -1,7 +1,8 @@
 """Testes de validação CPF/CNPJ na API de auditoria."""
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock
 
 
 @pytest.fixture

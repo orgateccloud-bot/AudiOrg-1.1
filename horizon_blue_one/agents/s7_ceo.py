@@ -12,8 +12,6 @@ Modelo: Sonnet 4.6 default; UPGRADE para Opus 4.7 se score≥85 OU valor>R$1M
 """
 from __future__ import annotations
 
-import json
-
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
 from horizon_blue_one.core.limiares import (
@@ -28,6 +26,8 @@ from horizon_blue_one.core.token_router import TipoTarefa
 SYSTEM = (
     "Você é o @CEO da ORGATEC: governança final, parecer jurídico e MD&A. "
     "Receba consolidação de todos os agentes (S1..S6) e o precalc determinístico. "
+    "RESPOSTA CONCISA: parecer_juridico até 4 linhas, mda_executivo até 6 linhas, "
+    "máx 5 acoes_imediatas e 5 riscos_residuais. Sem prefácio. "
     'Retorne JSON: {"decisao":"APROVAR|REVISAR|ESCALAR_JURIDICO|REJEITAR",'
     '"score_final":0.0,"parecer_juridico":"...","mda_executivo":"...",'
     '"acoes_imediatas":[],"riscos_residuais":[],"confianca":0.0}'
@@ -77,7 +77,7 @@ class CEOAgent(BaseAgent):
             tipologias_criticas=criticas,
             probabilidade_autuacao=prob,
             agent_id=self.agent_id,
-            max_tokens=2048,
+            max_tokens=1280,
         )
         data, ok = self.parse_json_response(
             resp,

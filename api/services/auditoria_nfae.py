@@ -2,13 +2,12 @@ import io
 import os
 import tempfile
 from datetime import datetime, timezone
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from fastapi import UploadFile
 
-from nfa_extractor.domain.extractor import extrair_notas
-from nfa_extractor.application.analytics_engine import processar_para_dataframe
 from nfa_extractor.application.agents_engine import rodar_auditoria_completa
+from nfa_extractor.domain.extractor import extrair_notas
 
 if TYPE_CHECKING:
     from api.routes.auditoria import AuditoriaCompletaRequest
@@ -76,12 +75,13 @@ async def processar_lote_auditoria(
 
 async def processar_nfae(request: "AuditoriaCompletaRequest") -> dict:
     """Pipeline completo de auditoria NFA-e integrado com HORIZON-BLUE ONE."""
-    from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
-    from horizon_blue_one.orgaudi.resumo_fiscal import apurar_resumo
-    from horizon_blue_one.ml.xgboost_scorer import calcular_score
     from horizon_blue_one.agents.a07_auditoria_assurance import AuditoriaAssuranceAgent
     from horizon_blue_one.agents.a08_auditor_nfa import AuditorNFAAgent
+
     from horizon_blue_one.agents.base_agent import AgentResult
+    from horizon_blue_one.ml.xgboost_scorer import calcular_score
+    from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
+    from horizon_blue_one.orgaudi.resumo_fiscal import apurar_resumo
 
     notas = [n.model_dump() for n in request.notas]
 
@@ -165,11 +165,11 @@ async def processar_nfae(request: "AuditoriaCompletaRequest") -> dict:
 
 def gerar_pdf_nfae(resultado: dict) -> bytes:
     """Gera PDF compacto do resultado da auditoria NFA-e."""
-    from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     buffer = io.BytesIO()
     doc    = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=2*cm, rightMargin=2*cm,

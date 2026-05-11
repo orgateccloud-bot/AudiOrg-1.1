@@ -1,9 +1,8 @@
 """Testes para api/auth/security.py — JWT, refresh token, validações."""
 
-import sys
 import os
+import sys
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -12,19 +11,19 @@ os.environ["JWT_SECRET_KEY"] = "a" * 64
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from fastapi import HTTPException
+from jose import jwt as jose_jwt
+
 from api.auth.security import (
-    hash_password,
-    verify_password,
+    TokenPair,
     create_access_token,
     create_refresh_token,
     create_token_pair,
-    verify_refresh_token,
     get_current_user,
-    TokenData,
-    TokenPair,
+    hash_password,
+    verify_password,
+    verify_refresh_token,
 )
-from jose import jwt as jose_jwt
-from fastapi import HTTPException
 
 
 class TestBcrypt:

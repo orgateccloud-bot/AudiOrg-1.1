@@ -28,7 +28,6 @@ from __future__ import annotations
 import threading
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 import structlog
 
@@ -72,12 +71,14 @@ class TipoTarefa(str, Enum):
     DECISAO_FINAL   = "decisao_final"
 
 
-# ── Mix-alvo 80/15/5 (rev 2026-05-09) ────────────────────────────────────────
-# 80% HAIKU — toda operação de baixa/média complexidade fica aqui.
-# 15% SONNET — só os agentes que cruzam evidências (assurance, anomalias, grafo).
-#  5% OPUS  — exclusivo para AUDITORIA (A-08) e DECISAO_FINAL (A-00).
+# ── Mix-alvo 90/8/2 (rev 2026-05-10) ─────────────────────────────────────────
+# 90% HAIKU  — toda operação de baixa/média complexidade fica aqui (com downgrade
+#              dinâmico de AUDITORIA para Haiku quando score<50 sem tipologias).
+#  8% SONNET — raciocínio cruzado: forense, jurídico, auditoria padrão.
+#  2% OPUS   — apenas escalada por critério (score≥85, ≥3 tipologias críticas
+#              ou prob_autuacao≥75%) e DECISAO_FINAL (legado A-00).
 _MODELO_BASE: dict[TipoTarefa, ModelType] = {
-    # ── HAIKU (80%) — tarefas operacionais ────────────────────────────────────
+    # ── HAIKU — tarefas operacionais ──────────────────────────────────────────
     TipoTarefa.ROTEAMENTO:      ModelType.HAIKU,
     TipoTarefa.CLASSIFICACAO:   ModelType.HAIKU,
     TipoTarefa.EXTRACAO:        ModelType.HAIKU,
@@ -89,13 +90,13 @@ _MODELO_BASE: dict[TipoTarefa, ModelType] = {
     TipoTarefa.PLANEJAMENTO:    ModelType.HAIKU,
     TipoTarefa.ESOCIAL:         ModelType.HAIKU,
     TipoTarefa.PATRIMONIO:      ModelType.HAIKU,
-    # ── SONNET (15%) — raciocínio cruzado, não-final ─────────────────────────
-    TipoTarefa.FORENSE:         ModelType.SONNET,   # A-07 / A-23 / A-27
-    TipoTarefa.JURIDICO:        ModelType.SONNET,   # A-15
-    # ── OPUS (5%) — auditoria + decisão final ────────────────────────────────
-    TipoTarefa.AUDITORIA:       ModelType.OPUS,     # A-08 @Auditor-NFA
-    TipoTarefa.FORENSE_CRITICO: ModelType.OPUS,     # escalada por critério
-    TipoTarefa.DECISAO_FINAL:   ModelType.OPUS,     # A-00 @CEO
+    # ── SONNET — raciocínio cruzado, não-final ───────────────────────────────
+    TipoTarefa.AUDITORIA:       ModelType.SONNET,  # rev 2026-05-10: era OPUS; escala p/ Opus se score≥85
+    TipoTarefa.FORENSE:         ModelType.SONNET,  # A-07 / A-23 / A-27
+    TipoTarefa.JURIDICO:        ModelType.SONNET,  # A-15 / S7 (escala p/ Opus se crítico)
+    # ── OPUS — só escalada por critério ──────────────────────────────────────
+    TipoTarefa.FORENSE_CRITICO: ModelType.OPUS,    # escalada por critério
+    TipoTarefa.DECISAO_FINAL:   ModelType.OPUS,    # A-00 @CEO (legado)
 }
 
 
@@ -198,7 +199,7 @@ def rotear(
     tipologias_criticas: int = 0,
     probabilidade_autuacao: float = 0.0,
     num_notas: int = 0,
-    agent_id: Optional[str] = None,
+    agent_id: str | None = None,
 ) -> RotingDecision:
     """Decide o modelo ideal para a tarefa.
 
@@ -244,7 +245,24 @@ def rotear(
                 upgrade_aplicado=True,
             )
 
-    # ── Downgrade para Haiku ──────────────────────────────────────────────────
+    # ── Downgrade para Haiku (rev 2026-05-10: mais agressivo p/ AUDITORIA) ────
+    # Política: tarefas operacionais (AUDITORIA p.ex. CFOP/LCDPR/NFA) podem cair
+    # para Haiku quando o caso é limpo (score<50 + sem tipologias críticas).
+    # FORENSE / JURIDICO / DECISAO_FINAL ficam fora — exigem raciocínio cruzado
+    # mesmo em casos limpos. Regra antiga (score<25 + ≤5 notas) preservada para
+    # outras tarefas Sonnet que ainda existirem.
+    _AUDITORIA_OPERACIONAL = (TipoTarefa.AUDITORIA, TipoTarefa.ICMS,
+                              TipoTarefa.ITR, TipoTarefa.LCDPR, TipoTarefa.ESOCIAL)
+    if (modelo_base == ModelType.SONNET
+            and tipologias_criticas == 0
+            and tipo_tarefa in _AUDITORIA_OPERACIONAL
+            and score_risco < 50):
+        return RotingDecision(
+            modelo=ModelType.HAIKU, tipo_tarefa=tipo_tarefa,
+            motivo=f"Auditoria operacional score {score_risco:.0f} < 50 -> Haiku (downgrade)",
+            score_risco=score_risco, tipologias_criticas=tipologias_criticas,
+            downgrade_aplicado=True,
+        )
     if (modelo_base == ModelType.SONNET
             and score_risco < 25
             and num_notas <= 5

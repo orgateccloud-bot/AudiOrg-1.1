@@ -14,13 +14,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from api.auth.security import (
+    TokenData,
     create_token_pair,
     get_current_user,
     hash_password,
     verify_password,
     verify_refresh_token,
-    TokenData,
-    TokenPair,
 )
 from api.dependencies import get_db
 from nfa_extractor.infrastructure.database_v2 import User

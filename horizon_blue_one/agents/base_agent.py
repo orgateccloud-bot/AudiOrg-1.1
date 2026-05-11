@@ -1,10 +1,11 @@
 """Classe base para todos os agentes ORGATEC IA — Pydantic V2 + audit_hash SHA-256."""
-import json
 import hashlib
-import structlog
+import json
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from typing import Any, Union
+
+import structlog
 from pydantic import BaseModel
 
 logger = structlog.get_logger()

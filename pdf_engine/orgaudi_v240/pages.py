@@ -41,19 +41,19 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from ..catalog import (
+from .catalog import (
     CATALOGO_ANOMALIAS,
     EixoAnomalia,
     Gravidade,
     buscar_por_eixo,
     buscar_por_gravidade,
 )
-from ..data_processing import (
+from .data_processing import (
     MESES_PT,
     PlanilhaMensal,
     ResumoFiscal,
 )
-from ..domain import (
+from .domain import (
     Achado,
     Contribuinte,
     Etapa,
@@ -61,7 +61,7 @@ from ..domain import (
     Periodo,
     Severidade,
 )
-from ..styles import (
+from .styles import (
     ALTO, ALTO_BG, ALTO_BORD,
     ATENCAO, ATENCAO_BG, ATENCAO_BORD,
     AZUL, AZUL_CL, AZUL_M, AZUL_DEEP,
@@ -90,7 +90,7 @@ from ..styles import (
     th,
     tsb,
 )
-from ..validators import (
+from .validators import (
     fmt_brl,
     fmt_brl_compact,
     fmt_data,

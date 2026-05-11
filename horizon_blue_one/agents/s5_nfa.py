@@ -10,8 +10,6 @@ Modelo: Sonnet 4.6 (auditoria padrão NFA).
 """
 from __future__ import annotations
 
-import json
-
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
 from horizon_blue_one.core.limiares import CFOP_DIV_LIMITE_NFA
@@ -22,6 +20,7 @@ from horizon_blue_one.core.token_router import TipoTarefa
 SYSTEM = (
     "Você é o @AuditorNFA da ORGATEC: audita Notas Fiscais Avulsas rurais (Goiás SEFAZ). "
     "Receba totais agregados e amostra de notas já classificadas pela Regra Especial 1. "
+    "RESPOSTA CONCISA: liste no máximo 5 divergências e 3 riscos, sem comentários extras. "
     'Retorne JSON: {"total_notas":0,"total_valor":0.0,"divergencias":[],"riscos":[],'
     '"conformidade_sefaz_go":"CONFORME|DIVERGENTE|CRITICO","confianca":0.0}'
 )
@@ -76,7 +75,7 @@ class NFAAgent(BaseAgent):
             score_risco=float(xgb.get("score", 0)),
             num_notas=len(notas_re1),
             agent_id=self.agent_id,
-            max_tokens=1536,
+            max_tokens=768,
         )
         data, ok = self.parse_json_response(
             resp,

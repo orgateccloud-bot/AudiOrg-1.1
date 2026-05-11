@@ -9,12 +9,10 @@ Valida:
 """
 from __future__ import annotations
 
-import asyncio
-
 import pytest
 
 from horizon_blue_one.agents.detectores_forenses import detectar_devolucao_posterior
-from horizon_blue_one.core.precalc import precalcular, _MEMO_CACHE
+from horizon_blue_one.core.precalc import _MEMO_CACHE, precalcular
 from horizon_blue_one.core.prompt_compactor import flags, kv, resumo_detectores, tsv
 
 

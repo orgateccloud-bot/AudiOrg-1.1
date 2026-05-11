@@ -28,7 +28,7 @@ from nfa_extractor.domain.extractor import extrair_notas
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["tasks_status", "processar_lote_auditoria"]
+__all__ = ["processar_lote_auditoria", "tasks_status"]
 
 
 # == Helpers basicos ===========================================================

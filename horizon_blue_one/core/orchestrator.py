@@ -35,7 +35,7 @@ from typing import Any
 
 import structlog
 
-from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
+from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
 from horizon_blue_one.core.ledger import async_log_event
 from horizon_blue_one.core.limiares import (
     PF_GATE_AMPLO,

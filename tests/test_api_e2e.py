@@ -3,19 +3,18 @@ Testes end-to-end da API — usa TestClient do FastAPI.
 Testa fluxo completo: health, auth, endpoints protegidos.
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 os.environ["JWT_SECRET_KEY"] = "a" * 64
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import pytest
 from fastapi.testclient import TestClient
 
+from api.auth.security import create_access_token
 from api.main import app
-from api.auth.security import create_access_token, create_token_pair
 from nfa_extractor.infrastructure.database_v2 import init_db
 
 # Garante que as tabelas existem antes dos testes

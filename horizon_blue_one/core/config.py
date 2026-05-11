@@ -13,7 +13,7 @@ from pathlib import Path
 def _ler_arquivo_env(caminho: Path) -> dict:
     resultado = {}
     if caminho.exists():
-        with open(caminho, "r", encoding="utf-8") as f:
+        with open(caminho, encoding="utf-8") as f:
             for linha in f:
                 linha = linha.strip()
                 if linha and "=" in linha and not linha.startswith("#"):

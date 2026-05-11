@@ -1,13 +1,15 @@
 """Testes do MCP Bridge — schemas, allowlist e dispatcher."""
 import json
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from horizon_blue_one.tools.mcp_bridge import (
+    _FETCH_ALLOWLIST,
     MCP_TOOLS,
-    executar_tool,
     _buscar_dados_externos,
     _consultar_historico_produtor,
-    _FETCH_ALLOWLIST,
+    executar_tool,
 )
 
 

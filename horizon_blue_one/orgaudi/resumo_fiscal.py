@@ -15,7 +15,7 @@ Fórmulas:
   FUNRURAL = F1 × alíquota
   IRPF     = max(F5 × 20%, 0)
 """
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import date
 from typing import List
 

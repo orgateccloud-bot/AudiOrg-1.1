@@ -13,8 +13,6 @@ Modelo: Sonnet 4.6 (auditoria padrão); upgrade Opus se score≥85 ou 3+ tipolog
 """
 from __future__ import annotations
 
-import json
-
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
 from horizon_blue_one.core.limiares import (
@@ -23,7 +21,7 @@ from horizon_blue_one.core.limiares import (
     SCORE_CRITICO,
     TIPOLOGIAS_LIMITE_ESCALA,
 )
-from horizon_blue_one.core.model_adapter import ModelType, call_model_with_tools
+from horizon_blue_one.core.model_adapter import call_model_with_tools
 from horizon_blue_one.core.precalc import get_precalc
 from horizon_blue_one.core.prompt_compactor import kv, resumo_detectores
 from horizon_blue_one.core.token_router import TipoTarefa

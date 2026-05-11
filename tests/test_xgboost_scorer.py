@@ -1,9 +1,8 @@
 """Testes unitários do XGBoost scorer — modo heurístico (sem modelo treinado)."""
-import pytest
 from horizon_blue_one.ml.xgboost_scorer import (
+    FEATURE_WEIGHTS,
     calcular_score,
     extrair_features,
-    FEATURE_WEIGHTS,
 )
 
 

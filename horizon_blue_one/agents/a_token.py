@@ -13,17 +13,13 @@ Política:
 """
 from __future__ import annotations
 
-import json
-import time
-from typing import Optional
-
 import structlog
 
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
-from horizon_blue_one.core.model_adapter import ModelType, call_model
+from horizon_blue_one.core.model_adapter import call_model
 from horizon_blue_one.core.token_router import (
-    TipoTarefa,
     RotingDecision,
+    TipoTarefa,
     estimar_tokens,
     get_stats,
     max_tokens_para,
@@ -95,13 +91,13 @@ class TokenAgent(BaseAgent):
 async def call_otimizado(
     prompt: str,
     system: str = "",
-    max_tokens: Optional[int] = None,
+    max_tokens: int | None = None,
     tipo_tarefa: TipoTarefa = TipoTarefa.AUDITORIA,
     score_risco: float = 0.0,
     tipologias_criticas: int = 0,
     probabilidade_autuacao: float = 0.0,
     num_notas: int = 0,
-    agent_id: Optional[str] = None,
+    agent_id: str | None = None,
 ) -> tuple[str, RotingDecision]:
     """Chama o modelo Claude mais econômico para a tarefa.
 

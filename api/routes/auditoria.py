@@ -1,17 +1,18 @@
 import logging
 import re
 import uuid
-from fastapi import APIRouter, UploadFile, File, BackgroundTasks, HTTPException
+from typing import List
+
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, Field, field_validator
-from typing import List, Optional
 
 from api.services.auditoria import (
+    gerar_pdf_nfae,
     processar_lote_auditoria,
     processar_nfae,
-    gerar_pdf_nfae,
-    tasks_status,
     resultados_store,
+    tasks_status,
 )
 
 router = APIRouter(prefix="/auditoria", tags=["Auditoria"])

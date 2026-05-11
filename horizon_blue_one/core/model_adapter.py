@@ -7,17 +7,20 @@ Recursos:
 - Motor único: Anthropic Claude (Sonnet 4.6 / Haiku 4.5 / Opus 4.7)
 - call_model_with_tools(): suporte a tool_use (MCP bridge) com loop agentico
 """
-import time
 import logging
-from collections.abc import Callable, Awaitable
-import structlog
+import time
+from collections.abc import Awaitable, Callable
 from enum import Enum
 from typing import Any
 
 import anthropic
+import structlog
 from tenacity import (
-    retry, stop_after_attempt, wait_exponential,
-    retry_if_exception_type, before_sleep_log,
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
 )
 
 from horizon_blue_one.core.config import settings

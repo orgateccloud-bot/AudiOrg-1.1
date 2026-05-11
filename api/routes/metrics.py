@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.auth.security import get_current_user, TokenData
+from api.auth.security import TokenData, get_current_user
 
 router = APIRouter(prefix="/metrics", tags=["Observabilidade"])
 

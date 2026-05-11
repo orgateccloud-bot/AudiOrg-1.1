@@ -26,8 +26,8 @@ def _ascii(s) -> str:
 
 async def auditar_produtor(nome: str, pdfs, orch) -> dict:
     """Executa pipeline LLM completo S1..S7 para um produtor."""
-    from horizon_blue_one.nfa_bridge import processar_produtor
     from horizon_blue_one.core.precalc import precalcular
+    from horizon_blue_one.nfa_bridge import processar_produtor
 
     t0 = time.time()
     payload = processar_produtor(nome, pdfs, atividade="bovino")

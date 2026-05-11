@@ -27,15 +27,15 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from ..orgaudi_v240 import (
+from ..orgaudi_v240.domain import (
     Achado,
     Contribuinte,
-    LaudoOrgAudi,
     NaturezaNota,
     NotaFiscal,
     Periodo,
     Severidade,
 )
+from ..orgaudi_v240.report_builder import LaudoOrgAudi
 
 logger = logging.getLogger(__name__)
 

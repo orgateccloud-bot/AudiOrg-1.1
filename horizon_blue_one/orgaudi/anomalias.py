@@ -1,6 +1,6 @@
 """Catálogo de Tipologias de Anomalias AN-01..AN-18"""
 from dataclasses import dataclass
-from typing import Optional
+
 
 @dataclass
 class TipologiaAnomalia:
@@ -68,7 +68,7 @@ CATALOGO: dict[str, TipologiaAnomalia] = {
         ["AGESGO","MAPA","GTA digital"]),
 }
 
-def buscar_por_codigo(codigo: str) -> Optional[TipologiaAnomalia]:
+def buscar_por_codigo(codigo: str) -> TipologiaAnomalia | None:
     return CATALOGO.get(codigo.upper())
 
 def listar_criticos() -> list:

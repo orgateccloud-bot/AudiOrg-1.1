@@ -37,7 +37,6 @@ from fastapi import (
     UploadFile,
     status,
 )
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 # Auth: reutiliza o mesmo utilitário das outras rotas
@@ -48,8 +47,8 @@ except ImportError:
     async def verificar_token():  # type: ignore
         return {"sub": "dev"}
 
-from nfa_extractor.domain.nfa_parser_ai import NFAParserAI
 from nfa_extractor.domain.nfa_ai_schemas import ResultadoExtracaoPDF
+from nfa_extractor.domain.nfa_parser_ai import NFAParserAI
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/nfa", tags=["NFA Parser IA"])

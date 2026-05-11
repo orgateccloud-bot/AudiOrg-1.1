@@ -30,12 +30,12 @@ def _ascii(s: str) -> str:
 
 
 async def main():
+    from horizon_blue_one.core.orchestrator import Orchestrator
+    from horizon_blue_one.core.precalc import precalcular
     from horizon_blue_one.nfa_bridge import (
         agrupar_pdfs_por_produtor,
         processar_produtor,
     )
-    from horizon_blue_one.core.precalc import precalcular
-    from horizon_blue_one.core.orchestrator import Orchestrator
 
     print(f"\n{'='*78}")
     print(f"AUDITORIA POR PRODUTOR -- Pasta: {PASTA_PDFS.name}")

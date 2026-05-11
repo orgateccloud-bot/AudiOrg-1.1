@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timedelta
-from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -45,9 +44,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=True)
 
 class TokenData(BaseModel):
     sub: str
-    email: Optional[str] = None
-    role: Optional[str] = None
-    type: Optional[str] = None
+    email: str | None = None
+    role: str | None = None
+    type: str | None = None
 
 
 class TokenPair(BaseModel):
@@ -85,13 +84,13 @@ def _encode(data: dict, expires_delta: timedelta, token_type: str) -> str:
     return jwt.encode(payload, _secret_key(), algorithm=ALGORITHM)
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Emite access token (type=access, exp curta)."""
     delta = expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return _encode(data, delta, "access")
 
 
-def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_refresh_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Emite refresh token (type=refresh, exp longa)."""
     delta = expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     return _encode(data, delta, "refresh")

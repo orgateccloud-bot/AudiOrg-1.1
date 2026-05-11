@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from api.auth.security import get_current_user, TokenData
+from api.auth.security import TokenData, get_current_user
 from api.dependencies import get_db
 from api.schemas import ClienteCreate, ClienteResponse
 from nfa_extractor.infrastructure.database_v2 import Cliente

@@ -1,12 +1,12 @@
 """Testes unitários do LSTM scorer — modo heurístico (sem modelo PyTorch)."""
-import pytest
 from datetime import date, timedelta
+
 from horizon_blue_one.ml.lstm_scorer import (
-    calcular_lstm,
+    JANELA_SEQUENCIA,
+    THRESHOLD_LSTM,
     _agrupar_por_produtor,
     _score_heuristico,
-    THRESHOLD_LSTM,
-    JANELA_SEQUENCIA,
+    calcular_lstm,
 )
 
 

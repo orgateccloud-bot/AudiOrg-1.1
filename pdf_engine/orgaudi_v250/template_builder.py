@@ -49,17 +49,21 @@ SEV = {
 }
 
 
-def _b64_font(nome: str) -> str:
-    """Retorna a fonte como base64 ou '' se não encontrada."""
+def _b64_font(nome: str) -> str | None:
+    """Retorna a fonte como base64 ou None se não encontrada."""
     p = _FONTS_DIR / nome
     if p.exists():
         return base64.b64encode(p.read_bytes()).decode()
-    logger.warning("Fonte não encontrada: %s", p)
-    return ""
+    return None
 
 
 def _css_fonts() -> str:
-    """Bloco @font-face com todas as variantes embutidas em base64."""
+    """Bloco @font-face com todas as variantes embutidas em base64.
+
+    Se a pasta de fontes não existir, retorna CSS vazio e loga UM aviso
+    agregado em nível DEBUG — Chrome usa fallback Segoe UI/Consolas
+    conforme o `font-family` de --font-main/--font-mono.
+    """
     pesos = {
         "Manrope": [("300", "manrope-300.ttf"), ("400", "manrope-400.ttf"),
                     ("500", "manrope-500.ttf"), ("600", "manrope-600.ttf"),
@@ -68,17 +72,25 @@ def _css_fonts() -> str:
                            ("700", "jetbrains-700.ttf")],
     }
     css = ""
+    faltantes: list[str] = []
     for family, variants in pesos.items():
         for weight, fname in variants:
             b64 = _b64_font(fname)
-            if b64:
-                css += f"""
+            if b64 is None:
+                faltantes.append(fname)
+                continue
+            css += f"""
 @font-face {{
   font-family: '{family}';
   font-weight: {weight};
   font-style: normal;
   src: url('data:font/truetype;base64,{b64}') format('truetype');
 }}"""
+    if faltantes:
+        logger.debug(
+            "Fontes ausentes em %s (%d arquivos); usando fallback Segoe UI/Consolas.",
+            _FONTS_DIR, len(faltantes),
+        )
     return css
 
 

@@ -12,8 +12,6 @@ Modelo: Haiku 4.5 (tarefa de classificação/conformidade simples).
 """
 from __future__ import annotations
 
-import json
-
 from horizon_blue_one.agents.a_token import call_otimizado
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
 from horizon_blue_one.core.limiares import PENDENCIAS_DOCUMENTAIS_CRITICAS

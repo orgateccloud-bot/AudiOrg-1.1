@@ -8,14 +8,13 @@ Todas protegidas por JWT. RLS do Supabase garante isolamento por usuário.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
 
-from api.auth.security import get_current_user, TokenData
-from nfa_extractor.infrastructure.supabase.client import is_supabase_enabled
+from api.auth.security import TokenData, get_current_user
 from nfa_extractor.infrastructure.supabase import categories as cat_svc
-from nfa_extractor.infrastructure.supabase import transactions as tx_svc
 from nfa_extractor.infrastructure.supabase import predictions as pred_svc
 from nfa_extractor.infrastructure.supabase import profiles as prof_svc
+from nfa_extractor.infrastructure.supabase import transactions as tx_svc
+from nfa_extractor.infrastructure.supabase.client import is_supabase_enabled
 
 router = APIRouter(prefix="/finance", tags=["Financeiro"])
 
@@ -106,10 +105,10 @@ def listar_transacoes(
     user: TokenData = Depends(get_current_user),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    type: Optional[str] = Query(None, pattern="^(income|expense)$"),
-    category_id: Optional[str] = None,
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
+    type: str | None = Query(None, pattern="^(income|expense)$"),
+    category_id: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
 ):
     _require_supabase()
     return tx_svc.list_transactions(
@@ -157,8 +156,8 @@ def remover_transacao(
 @router.get("/summary")
 def resumo_financeiro(
     user: TokenData = Depends(get_current_user),
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
 ):
     """Retorna resumo: receitas, despesas, saldo e total de transações."""
     _require_supabase()
@@ -170,7 +169,7 @@ def resumo_financeiro(
 @router.get("/predictions")
 def listar_previsoes(
     user: TokenData = Depends(get_current_user),
-    prediction_type: Optional[str] = Query(None, pattern="^(cashflow|expense_trend|income_trend|anomaly)$"),
+    prediction_type: str | None = Query(None, pattern="^(cashflow|expense_trend|income_trend|anomaly)$"),
     limit: int = Query(20, ge=1, le=100),
 ):
     _require_supabase()

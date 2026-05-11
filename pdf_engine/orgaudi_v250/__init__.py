@@ -17,6 +17,7 @@ Uso:
     gerar_laudo_v250(notas, "NOME", "CPF11", Path("saida.pdf"))
 """
 from .report_builder import gerar_laudo_v250
+from .sem_objeto import gerar_laudo_sem_objeto_v250
 
-__all__ = ["gerar_laudo_v250"]
+__all__ = ["gerar_laudo_v250", "gerar_laudo_sem_objeto_v250"]
 __version__ = "2.5.0"

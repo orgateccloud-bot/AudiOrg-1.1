@@ -4,10 +4,11 @@ Todos os agentes têm um caminho "verde" que retorna APROVADO sem LLM
 quando os dados não apresentam anomalias. Esses testes cobrem esse caminho
 e verificam a estrutura do AgentResult em cada agente.
 """
-import pytest
 from unittest.mock import AsyncMock, patch
-from horizon_blue_one.agents.base_agent import AgentResult
 
+import pytest
+
+from horizon_blue_one.agents.base_agent import AgentResult
 
 # ── Payload sem anomalias (estado limpo) ──────────────────────────────────────
 

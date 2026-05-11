@@ -19,9 +19,9 @@ from api.services.auditoria_nfae import (
 from api.services.auditoria_tasks import tasks_status
 
 __all__ = [
+    "gerar_pdf_nfae",
     "processar_lote_auditoria",
     "processar_nfae",
-    "gerar_pdf_nfae",
     "resultados_store",
     "tasks_status",
 ]
