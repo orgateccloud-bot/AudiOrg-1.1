@@ -1,3 +1,4 @@
+import os
 import uuid
 from fastapi import APIRouter, UploadFile, File, BackgroundTasks, HTTPException
 from fastapi.responses import Response
@@ -13,6 +14,56 @@ from api.services.auditoria import (
 )
 
 router = APIRouter(prefix="/auditoria", tags=["Auditoria"])
+
+
+# ── Limites de upload (configuráveis via env) ────────────────────────────────
+# Defaults dimensionados para NFA-e: 10 MB/arquivo, 50 MB/lote, 20 arquivos.
+# Override via UPLOAD_MAX_BYTES, UPLOAD_LOTE_MAX_BYTES, UPLOAD_MAX_FILES.
+UPLOAD_MAX_BYTES      = int(os.getenv("UPLOAD_MAX_BYTES",      str(10 * 1024 * 1024)))
+UPLOAD_LOTE_MAX_BYTES = int(os.getenv("UPLOAD_LOTE_MAX_BYTES", str(50 * 1024 * 1024)))
+UPLOAD_MAX_FILES      = int(os.getenv("UPLOAD_MAX_FILES",      "20"))
+
+_MIME_PDF_VALIDOS = {"application/pdf", "application/x-pdf", "application/acrobat"}
+_PDF_MAGIC = b"%PDF-"
+
+
+async def _validar_pdf(arquivo: UploadFile) -> bytes:
+    """Valida um único upload de PDF e retorna o conteúdo lido.
+
+    Regras:
+    - Nome não pode estar vazio nem conter separadores de path (path traversal).
+    - content-type precisa ser de PDF (ou ausente, validado por magic-bytes).
+    - Tamanho não pode exceder UPLOAD_MAX_BYTES.
+    - Magic-bytes precisa ser %PDF- (impede upload de imagem renomeada .pdf).
+    """
+    nome = (arquivo.filename or "").strip()
+    if not nome or "/" in nome or "\\" in nome or ".." in nome:
+        raise HTTPException(status_code=400, detail="Nome de arquivo inválido.")
+
+    if not nome.lower().endswith(".pdf"):
+        raise HTTPException(status_code=415, detail=f"Apenas arquivos .pdf são aceitos (recebido: {nome}).")
+
+    ctype = (arquivo.content_type or "").lower()
+    if ctype and ctype not in _MIME_PDF_VALIDOS:
+        raise HTTPException(status_code=415, detail=f"content-type não suportado: {ctype}.")
+
+    conteudo = await arquivo.read()
+    if len(conteudo) == 0:
+        raise HTTPException(status_code=400, detail=f"Arquivo vazio: {nome}.")
+    if len(conteudo) > UPLOAD_MAX_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Arquivo '{nome}' excede o limite de {UPLOAD_MAX_BYTES // (1024 * 1024)} MB.",
+        )
+    if not conteudo.startswith(_PDF_MAGIC):
+        raise HTTPException(
+            status_code=415,
+            detail=f"Conteúdo de '{nome}' não é um PDF válido (magic-bytes ausente).",
+        )
+
+    # Reposiciona o cursor para que handlers downstream possam reler.
+    await arquivo.seek(0)
+    return conteudo
 
 
 # ── Schemas para o endpoint /nfae (HORIZON-BLUE integration) ─────────────────
@@ -51,6 +102,24 @@ async def iniciar_auditoria(
     background_tasks: BackgroundTasks,
     files: List[UploadFile] = File(...),
 ):
+    if len(files) == 0:
+        raise HTTPException(status_code=400, detail="Nenhum arquivo enviado.")
+    if len(files) > UPLOAD_MAX_FILES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Lote excede o limite de {UPLOAD_MAX_FILES} arquivos.",
+        )
+
+    total_bytes = 0
+    for arquivo in files:
+        conteudo = await _validar_pdf(arquivo)
+        total_bytes += len(conteudo)
+        if total_bytes > UPLOAD_LOTE_MAX_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Lote excede o limite de {UPLOAD_LOTE_MAX_BYTES // (1024 * 1024)} MB.",
+            )
+
     task_id = str(uuid.uuid4())
     tasks_status[task_id] = {"status": "iniciado", "progress": 0}
 
