@@ -38,6 +38,7 @@ numpy>=1.24.0
 xgboost>=2.1.0
 scikit-learn>=1.3.0
 pandas>=2.0.0
+torch>=2.2.0           # LSTM temporal; opcional — só necessário se LSTM_MODEL_PATH definido
 
 # ── HORIZON-BLUE ONE (novas dependências) ────────────────────────────────────
 structlog>=24.0.0          # logging estruturado com sanitização de PII

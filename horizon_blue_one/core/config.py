@@ -59,6 +59,13 @@ class Settings:
     # ─── Auditoria ──────────────────────────────────────────────────────────
     AUDIT_HASH_LEN: int
 
+    # ─── LSTM (opcional) ────────────────────────────────────────────────────
+    LSTM_MODEL_PATH: str       # path para .pt treinado; vazio = modo heurístico
+
+    # ─── MCP (opcional) ─────────────────────────────────────────────────────
+    MCP_FETCH_ALLOWLIST: str   # domínios extras separados por vírgula
+    ORGAUDI_DB_PATH: str       # path customizado para orgatec_sovereign.db
+
     def __init__(self) -> None:
         self.ANTHROPIC_API_KEY = _obter("ANTHROPIC_API_KEY")
         self.CLAUDE_MODEL_ID   = _obter("CLAUDE_MODEL_ID", "claude-sonnet-4-6")
@@ -81,6 +88,10 @@ class Settings:
             self.AUDIT_HASH_LEN = int(_obter("AUDIT_HASH_LEN", "64"))
         except ValueError:
             self.AUDIT_HASH_LEN = 64
+
+        self.LSTM_MODEL_PATH     = _obter("LSTM_MODEL_PATH", "")
+        self.MCP_FETCH_ALLOWLIST = _obter("MCP_FETCH_ALLOWLIST", "")
+        self.ORGAUDI_DB_PATH     = _obter("ORGAUDI_DB_PATH", "")
 
     @property
     def dev_bypass_habilitado(self) -> bool:

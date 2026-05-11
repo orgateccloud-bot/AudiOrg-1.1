@@ -1,15 +1,18 @@
-"""ModelAdapter — Claude Sonnet/Haiku/Opus com retry e prompt caching.
+"""ModelAdapter — Claude Sonnet/Haiku/Opus com retry, prompt caching e tool_use (MCP).
 
 Recursos:
 - Retry com backoff exponencial via tenacity (3 tentativas, 1–8s)
 - Prompt caching ephemeral (~90% de economia em system prompts repetidos)
 - Cliente lazy (criado na primeira chamada, evita erro de import sem API key)
 - Motor único: Anthropic Claude (Sonnet 4.6 / Haiku 4.5 / Opus 4.7)
+- call_model_with_tools(): suporte a tool_use (MCP bridge) com loop agentico
 """
 import time
 import logging
+from collections.abc import Callable, Awaitable
 import structlog
 from enum import Enum
+from typing import Any
 
 import anthropic
 from tenacity import (
@@ -96,3 +99,103 @@ async def _call_claude(prompt: str, system: str, max_tokens: int, model_id: str)
         kwargs["system"] = sys_p
     resp = await _get_claude().messages.create(**kwargs)
     return resp.content[0].text
+
+
+# ─── Tool Use (MCP) ───────────────────────────────────────────────────────────
+
+_MAX_TOOL_ROUNDS = 5  # evita loop infinito em alucinações de tool_use
+
+
+async def call_model_with_tools(
+    model_type: ModelType,
+    prompt: str,
+    system: str = "",
+    max_tokens: int = 4096,
+    tools: list[dict] | None = None,
+    tool_handler: Callable[[str, dict], Awaitable[str]] | None = None,
+) -> tuple[str, dict[str, Any]]:
+    """Chama Claude com tool_use (MCP bridge) e executa o loop agentico.
+
+    Executa rounds de tool_use até stop_reason == 'end_turn' ou limite.
+
+    Args:
+        tools:        Lista de schemas de ferramentas (formato Anthropic).
+        tool_handler: Async callable(tool_name, tool_input) → str (JSON).
+
+    Returns:
+        (texto_final, uso) onde uso contém input_tokens, output_tokens, tool_calls.
+    """
+    if not tools or not tool_handler:
+        texto = await call_model(model_type, prompt, system, max_tokens)
+        return texto, {"input_tokens": 0, "output_tokens": 0, "tool_calls": 0}
+
+    if model_type in (ModelType.CLAUDE, ModelType.SONNET):
+        model_id = settings.CLAUDE_MODEL_ID
+    elif model_type == ModelType.HAIKU:
+        model_id = settings.HAIKU_MODEL_ID
+    elif model_type == ModelType.OPUS:
+        model_id = settings.OPUS_MODEL_ID
+    else:
+        raise ValueError(f"Modelo não suportado: {model_type}")
+
+    client    = _get_claude()
+    sys_p     = _build_system_param(system)
+    msgs: list[dict] = [{"role": "user", "content": prompt}]
+    kwargs: dict     = {"model": model_id, "max_tokens": max_tokens, "tools": tools, "messages": msgs}
+    if sys_p:
+        kwargs["system"] = sys_p
+
+    total_input  = 0
+    total_output = 0
+    tool_calls   = 0
+    texto_final  = ""
+    inicio       = time.monotonic()
+
+    for rodada in range(_MAX_TOOL_ROUNDS):
+        resp = await client.messages.create(**kwargs)
+        total_input  += resp.usage.input_tokens
+        total_output += resp.usage.output_tokens
+
+        # Coleta texto e tool_use do response
+        tool_uses  = [b for b in resp.content if b.type == "tool_use"]
+        texto_blks = [b for b in resp.content if b.type == "text"]
+        if texto_blks:
+            texto_final = texto_blks[-1].text
+
+        if resp.stop_reason != "tool_use" or not tool_uses:
+            break
+
+        # Executa ferramentas e monta próxima mensagem
+        tool_results = []
+        for tu in tool_uses:
+            tool_calls += 1
+            logger.info("mcp_tool_chamado", tool=tu.name, rodada=rodada + 1)
+            resultado = await tool_handler(tu.name, tu.input)
+            tool_results.append({
+                "type":        "tool_result",
+                "tool_use_id": tu.id,
+                "content":     resultado,
+            })
+
+        # Acrescenta resposta do assistente e resultados das ferramentas
+        msgs = list(kwargs["messages"])
+        msgs.append({"role": "assistant", "content": resp.content})
+        msgs.append({"role": "user",      "content": tool_results})
+        kwargs["messages"] = msgs
+    else:
+        logger.warning("mcp_max_rounds_atingido", rodadas=_MAX_TOOL_ROUNDS)
+
+    ms = round((time.monotonic() - inicio) * 1000, 2)
+    logger.info(
+        "call_model_with_tools_ok",
+        model=model_type.value,
+        ms=ms,
+        tool_calls=tool_calls,
+        input_tokens=total_input,
+        output_tokens=total_output,
+    )
+    return texto_final, {
+        "input_tokens":  total_input,
+        "output_tokens": total_output,
+        "tool_calls":    tool_calls,
+    }

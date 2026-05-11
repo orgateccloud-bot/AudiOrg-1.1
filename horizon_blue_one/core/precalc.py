@@ -16,6 +16,7 @@ Como funciona:
     #   - documentos (validação ZeroTrust)
     #   - detectores ({carrossel, smurfing, fantasma, devolucao, anomalia_temp})
     #   - xgboost ({score, prob_autuacao, tipologias_criticas, shap})
+    #   - lstm ({modo, score_medio, produtores_anomalos, detalhes})   ← NOVO
     #   - cfop ({total, divergentes, validos})
     #   - lcdpr ({receita_notas, receita_lcdpr, divergencia})
     #   - itr ({area_total_ha, area_utilizada, gu_pct})
@@ -43,6 +44,7 @@ from horizon_blue_one.agents.detectores_forenses import (
     detectar_smurfing,
 )
 from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
+from horizon_blue_one.ml.lstm_scorer import calcular_lstm
 
 logger = structlog.get_logger()
 
@@ -147,6 +149,16 @@ def _xgboost_score(notas: list[dict], detectores: dict) -> dict:
             "tipologias_criticas":    sum(1 for v in detectores.values() if v),
             "shap":                   detectores,
         }
+
+
+# ── 5b. Score LSTM (série temporal por produtor) ─────────────────────────────
+def _lstm_score(notas: list[dict]) -> dict:
+    """Análise temporal LSTM. Heurístico sem modelo; treinado via LSTM_MODEL_PATH."""
+    try:
+        return calcular_lstm(notas)
+    except Exception as exc:
+        logger.warning("lstm_score_erro", error=str(exc))
+        return {"modo": "erro", "score_medio": 0.0, "produtores_anomalos": [], "detalhes": {}}
 
 
 # ── 6. CFOP validator ───────────────────────────────────────────────────────
@@ -315,7 +327,11 @@ async def precalcular(payload: dict) -> dict:
     )
 
     # XGBoost depende dos detectores → roda depois (mas é determinístico/rápido)
-    xgb = await _run(_xgboost_score, notas_re1, det)
+    # LSTM roda em paralelo com XGBoost (independente dos detectores)
+    xgb, lstm = await asyncio.gather(
+        _run(_xgboost_score, notas_re1, det),
+        _run(_lstm_score, notas_re1),
+    )
 
     pre_resultado = {
         "notas_re1":    notas_re1,
@@ -323,6 +339,7 @@ async def precalcular(payload: dict) -> dict:
         "documentos":   docs,
         "detectores":   det,
         "xgboost":      xgb,
+        "lstm":         lstm,
         "cfop":         cfop,
         "lcdpr":        lcdpr_d,
         "itr":          itr_d,
