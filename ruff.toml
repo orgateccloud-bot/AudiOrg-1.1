@@ -1,0 +1,69 @@
+# Configuração do ruff — linter + formatter.
+# Foco: pegar erros reais sem barrar PRs com nitpick de estilo.
+
+target-version = "py310"
+line-length = 110
+
+exclude = [
+    "horizon_blue_one/agents/_legacy",
+    "alembic/versions",
+    "pdf_engine/orgaudi_v240",
+    "pdf_engine/orgaudi_v250",
+    "frontend",
+    ".venv",
+    "venv",
+    "out",
+    "reports_nfa",
+]
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes (undefined names, unused imports)
+    "I",   # isort
+    "B",   # bugbear (likely bugs)
+    "UP",  # pyupgrade
+    "S",   # flake8-bandit (security)
+    "RUF", # ruff-specific
+]
+ignore = [
+    "E501",  # line-too-long — formatter cuida
+    "E701",  # one-liner `if x: y` é idiomático em parsers compactos
+    "E702",  # idem
+    "S101",  # assert é OK em testes
+    "S105",  # "bearer" em token_type é JWT padrão, não senha
+    "S106",  # idem
+    "S603",  # subprocess sem shell — checked
+    "S607",  # subprocess parcial — checked
+    "B007",  # var de loop não usada é ok em range() de tentativas
+    "B008",  # FastAPI Depends() em default é idiomático
+    "B904",  # raise from None — útil mas custoso de adicionar em massa
+    "UP006", # `dict[str, ...]` vs `Dict[str, ...]` — convivem por compat 3.10
+    "UP007", # `X | Y` vs `Union[X, Y]` — convivem por compat 3.10
+    "UP035", # typing.X vs collections.abc.X — não-crítico
+    "RUF001", # ambiguous unicode (português usa acentos)
+    "RUF002",
+    "RUF003",
+    "RUF012", # mutable class default
+    "RUF034", # if-else condicional — falso positivo em fixtures de teste
+    "RUF005", # list + list é claro o suficiente
+    "RUF022", # __all__ ordenado por isort é estilo
+]
+
+[lint.per-file-ignores]
+"tests/**" = ["S", "B", "E701", "E402"]
+"horizon_blue_one/tests/**" = ["S", "B", "E701", "E402"]
+"scripts/**" = ["S", "E402"]
+"**/__init__.py" = ["F401"]  # re-exports
+"horizon_blue_one/ml/lstm_scorer.py" = ["S324"]   # md5 não-criptográfico (feature hashing)
+"horizon_blue_one/tools/mcp_bridge.py" = ["S608"] # tabela/colunas vêm de allowlist
+"horizon_blue_one/nfa_bridge/__init__.py" = ["S112"] # skip de PDF que não extrai é intencional
+"horizon_blue_one/agents/_legacy/**" = ["ALL"]
+"api/main.py" = ["E402"]  # _carregar_env_local() antes de imports de routers é proposital
+"api/schemas/__init__.py" = ["E402"]  # re-export híbrido (classes + imports)
+"horizon_blue_one/core/orchestrator.py" = ["E701"]  # one-liners em try/except compactos
+"horizon_blue_one/core/precalc.py" = ["E701"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
