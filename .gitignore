@@ -26,6 +26,7 @@ node_modules/
 dist/
 build/
 coverage/
+.coverage
 
 # Editor and local tooling
 .idea/
