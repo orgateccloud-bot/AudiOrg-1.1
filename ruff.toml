@@ -63,7 +63,6 @@ ignore = [
 "api/schemas/__init__.py" = ["E402"]  # re-export híbrido (classes + imports)
 "horizon_blue_one/core/orchestrator.py" = ["E701"]  # one-liners em try/except compactos
 "horizon_blue_one/core/precalc.py" = ["E701"]
-"pdf_engine/orgaudi_v4/orgaudi_v4.py" = ["E741"]  # `I` (flowable story) é convenção do report builder (140 usos)
 
 [format]
 quote-style = "double"

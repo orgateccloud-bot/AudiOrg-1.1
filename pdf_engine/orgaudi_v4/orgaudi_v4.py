@@ -1499,17 +1499,17 @@ def construir_pagina_1_capa(
       2) Síntese quantitativa cruzada (Planilha IR v5 × PDF GIEF)
       3) Mapa de achados por severidade (tabela compacta)
     """
-    I = []
+    story = []
     # Espaço para a logo grande desenhada pelo handler da primeira página
     # (a logo é renderizada diretamente no canvas, não no flowable story)
-    I.append(sp(28))
+    story.append(sp(28))
 
     # [Removido: AUDITORIA FORENSE]
-    I.append(sp(1))  # Reduzido de sp(4) para liberar espaço
-    I.append(Paragraph("Relatório de Análise Fiscal", ST["h1"]))
+    story.append(sp(1))  # Reduzido de sp(4) para liberar espaço
+    story.append(Paragraph("Relatório de Análise Fiscal", ST["h1"]))
     # [Removido: Bateria T-01 a T-08 × NFA-e × OrgAudi 1.0]
-    I.append(hr(AZUL, 1.5))
-    I.append(sp(1))  # Reduzido de sp(2)
+    story.append(hr(AZUL, 1.5))
+    story.append(sp(1))  # Reduzido de sp(2)
 
     # ──────────────────────────────────────────────────────────
     #  SEÇÃO 1 — TABELA DE IDENTIFICAÇÃO (2 colunas, 10 linhas)
@@ -1560,14 +1560,14 @@ def construir_pagina_1_capa(
         ("LEFTPADDING",   (0, 0), (-1, -1), 6),
         ("RIGHTPADDING",  (0, 0), (-1, -1), 6),
     ]))
-    I.append(t_ident)
-    I.append(sp(2))  # Reduzido de sp(5)
+    story.append(t_ident)
+    story.append(sp(2))  # Reduzido de sp(5)
 
     # ──────────────────────────────────────────────────────────
     #  SEÇÃO 2 — SÍNTESE QUANTITATIVA CRUZADA
     # ──────────────────────────────────────────────────────────
-    I.append(Paragraph("SÍNTESE QUANTITATIVA CRUZADA", ST["sec"]))
-    I.append(sp(1))
+    story.append(Paragraph("SÍNTESE QUANTITATIVA CRUZADA", ST["sec"]))
+    story.append(sp(1))
 
     # Cabeçalho
     sq_header = [
@@ -1654,8 +1654,8 @@ def construir_pagina_1_capa(
         ("LEFTPADDING",    (0, 0), (-1, -1), 5),
         ("RIGHTPADDING",   (0, 0), (-1, -1), 5),
     ]))
-    I.append(t_sq)
-    I.append(sp(1))
+    story.append(t_sq)
+    story.append(sp(1))
 
     # ──────────────────────────────────────────────────────────
     #  SEÇÃO 3 — MAPA DE ACHADOS POR SEVERIDADE (tabela compacta)
@@ -1744,11 +1744,11 @@ def construir_pagina_1_capa(
         row_idx += 1
 
     t_sev.setStyle(TableStyle(sev_style_cmds))
-    I.append(t_sev)
-    I.append(sp(2))
+    story.append(t_sev)
+    story.append(sp(2))
 
     # ── Bloco de KPIs financeiros derivados ──
-    I.append(Paragraph("INDICADORES FINANCEIROS DERIVADOS", ST["sec"]))
+    story.append(Paragraph("INDICADORES FINANCEIROS DERIVADOS", ST["sec"]))
     # kpi_row recebe tuplas (label, value, sub, color)
     kpis_data = [
         ("RECEITA BRUTA (F4)",
@@ -1769,14 +1769,14 @@ def construir_pagina_1_capa(
          CRITICO),
     ]
     accent = [AZUL, AZUL_M, ALTO, CRITICO]
-    I.append(kpi_row(kpis_data, accent_colors=accent))
+    story.append(kpi_row(kpis_data, accent_colors=accent))
 
-    return I
+    return story
 
 
 def construir_pagina_achados(achados: list[Achado]) -> list:
     """Páginas 2-4 — Achados detalhados, agrupados por severidade."""
-    I = []
+    story = []
 
     # Agrupar por severidade
     bucket: dict[Severidade, list[Achado]] = defaultdict(list)
@@ -1798,11 +1798,11 @@ def construir_pagina_achados(achados: list[Achado]) -> list:
             continue
 
         if primeira_secao:
-            I.append(PageBreak())
+            story.append(PageBreak())
             primeira_secao = False
-        I.append(Paragraph(titulo_secao, ST["sec"]))
-        I.append(hr(cor_hr, 1.2))
-        I.append(sp(2))
+        story.append(Paragraph(titulo_secao, ST["sec"]))
+        story.append(hr(cor_hr, 1.2))
+        story.append(sp(2))
 
         for a in lista:
             if sev == Severidade.CONFORME:
@@ -1827,16 +1827,16 @@ def construir_pagina_achados(achados: list[Achado]) -> list:
                     ("LEFTPADDING",   (0, 0), (-1, -1), 8),
                     ("RIGHTPADDING",  (0, 0), (-1, -1), 8),
                 ]))
-                I.append(row)
-                I.append(sp(2))
+                story.append(row)
+                story.append(sp(2))
                 continue
 
             # Achado regular: header + descricao + tabela opcional + cruzamentos
-            I.append(achado_header(a.codigo, a.titulo, sev))
-            I.append(sp(1))
+            story.append(achado_header(a.codigo, a.titulo, sev))
+            story.append(sp(1))
 
             if a.descricao:
-                I.append(Paragraph(a.descricao, ST["body"]))
+                story.append(Paragraph(a.descricao, ST["body"]))
 
             # Tabela de evidências
             if a.tabela_cabecalhos and a.tabela_linhas:
@@ -1861,8 +1861,8 @@ def construir_pagina_achados(achados: list[Achado]) -> list:
                     for s in tfoot():
                         style.add(*s)
                 t.setStyle(style)
-                I.append(sp(1))
-                I.append(t)
+                story.append(sp(1))
+                story.append(t)
 
             # Cruzamentos
             if a.cruzamentos:
@@ -1874,24 +1874,24 @@ def construir_pagina_achados(achados: list[Achado]) -> list:
                     label = "POR QUE É CRÍTICO" if sev == Severidade.CRITICO else "VERIFICAÇÃO NECESSÁRIA"
                 else:
                     label = "CRUZAMENTOS OBRIGATÓRIOS" if sev == Severidade.CRITICO else "VERIFICAÇÃO NECESSÁRIA"
-                I.append(sp(1))
-                I.append(info_box(texto, label=label, border_color=cor_sev, bg=bg_sev))
+                story.append(sp(1))
+                story.append(info_box(texto, label=label, border_color=cor_sev, bg=bg_sev))
 
-            I.append(sp(1))
+            story.append(sp(1))
 
-    return I
+    return story
 
 
 def construir_pagina_5_recomendacoes(etapas: list[Etapa]) -> list:
     """Página 5 — Timeline de recomendações."""
-    I = [PageBreak()]
-    I.append(Paragraph("RECOMENDAÇÕES E PRÓXIMAS ETAPAS", ST["sec"]))
-    I.append(hr(AZUL_M, 1.2))
-    I.append(sp(1))
+    story = [PageBreak()]
+    story.append(Paragraph("RECOMENDAÇÕES E PRÓXIMAS ETAPAS", ST["sec"]))
+    story.append(hr(AZUL_M, 1.2))
+    story.append(sp(1))
 
     for i, etapa in enumerate(etapas):
         accent = SEV_PALETA[etapa.accent][0]
-        I.append(etapa_card(
+        story.append(etapa_card(
             str(etapa.numero),
             etapa.titulo,
             etapa.prazo,
@@ -1899,24 +1899,24 @@ def construir_pagina_5_recomendacoes(etapas: list[Etapa]) -> list:
             accent=accent,
         ))
         if i < len(etapas) - 1:
-            I.append(sp(1))
-    return I
+            story.append(sp(1))
+    return story
 # ═══════════════════════════════════════════════════════════════════════════════
 #  BUILDER — Páginas 6 a 11
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def construir_pagina_6_formulas() -> list:
     """Página 6 — Regras 1, 2, 3 (classificação, apuração, tributos)."""
-    I = [PageBreak()]
-    I.append(Paragraph("FÓRMULAS E REGRAS DE CRUZAMENTO DE DADOS", ST["sec"]))
-    I.append(hr(AZUL_M, 1.2))
-    I.append(Paragraph(
+    story = [PageBreak()]
+    story.append(Paragraph("FÓRMULAS E REGRAS DE CRUZAMENTO DE DADOS", ST["sec"]))
+    story.append(hr(AZUL_M, 1.2))
+    story.append(Paragraph(
         "Esta página consolida as fórmulas matemáticas e as regras de cruzamento aplicadas pelo "
         "OrgAudi 1.0. Cada regra foi executada nesta auditoria e pode ser reproduzida em qualquer "
         "outro caso.", ST["small"]))
-    I.append(sp(1))
+    story.append(sp(1))
 
-    I.append(Paragraph("Regra 1 — Classificação contábil das NFA-e (fundamento)", ST["subsec"]))
+    story.append(Paragraph("Regra 1 — Classificação contábil das NFA-e (fundamento)", ST["subsec"]))
     r1 = [
         [th("Posição do contribuinte"), th("Natureza"), th("Categoria"), th("Efeito IRPF Rural")],
         [td("REMETENTE"),                            td("VENDA"),          td("RECEITA",          bold=True, color=CONFORME), td("Soma à base de cálculo")],
@@ -1926,11 +1926,11 @@ def construir_pagina_6_formulas() -> list:
     ]
     tr1 = Table(r1, colWidths=[48*mm, 30*mm, 36*mm, W-114*mm])
     tr1.setStyle(tsb())
-    I.append(tr1)
-    I.append(sp(1))
+    story.append(tr1)
+    story.append(sp(1))
 
-    I.append(Paragraph("Regra 2 — Fórmulas de apuração da receita rural", ST["subsec"]))
-    I.append(info_box(
+    story.append(Paragraph("Regra 2 — Fórmulas de apuração da receita rural", ST["subsec"]))
+    story.append(info_box(
         "<b>Receita imediata (F1):</b> Σ Valor | Remetente = Contribuinte AND Natureza = VENDA<br/>"
         "<b>Receita potencial em trânsito (F2):</b> Σ Valor | Remetente = Contribuinte AND Natureza = REMESSA/LEILÃO<br/>"
         "<b>Receita realizada de leilão (F3):</b> Σ Valor das NF-e modelo 55 emitidas pelo leiloeiro<br/>"
@@ -1941,9 +1941,9 @@ def construir_pagina_6_formulas() -> list:
         "F6 representa o custo de aquisição de gado (investimento agropecuário) e é deduzido da receita bruta "
         "para apuração do resultado rural. Inclui compras de gado para cria, recria, engorda e reprodução.</i>",
         border_color=AZUL_M))
-    I.append(sp(1))
+    story.append(sp(1))
 
-    I.append(Paragraph("Regra 3 — Fórmulas tributárias e contribuições acessórias", ST["subsec"]))
+    story.append(Paragraph("Regra 3 — Fórmulas tributárias e contribuições acessórias", ST["subsec"]))
     r3 = [
         [th("Tributo / Contribuição"), th("Fórmula"), th("Base legal")],
         # ── Funrural — todas as 3 categorias × 2 períodos ──
@@ -1982,14 +1982,14 @@ def construir_pagina_6_formulas() -> list:
     ]
     tr3 = Table(r3, colWidths=[48*mm, W-96*mm, 48*mm])
     tr3.setStyle(tsb())
-    I.append(tr3)
-    return I
+    story.append(tr3)
+    return story
 
 
 def construir_pagina_7_testes() -> list:
     """Página 7 — Regras 4, 5 + lista resumida de tipos de anomalia."""
-    I = [PageBreak()]
-    I.append(Paragraph("Regra 4 — Cruzamentos forenses de detecção de anomalias", ST["subsec"]))
+    story = [PageBreak()]
+    story.append(Paragraph("Regra 4 — Cruzamentos forenses de detecção de anomalias", ST["subsec"]))
     r4 = [
         [th("Teste"), th("Critério matemático"), th("Detecta")],
         [td("T-01 Concentração",     bold=True), td("Valor 1 nota / Receita anual ≥ 10%"),                    td("Operações extraordinárias")],
@@ -2003,10 +2003,10 @@ def construir_pagina_7_testes() -> list:
     ]
     tr4 = Table(r4, colWidths=[34*mm, W-82*mm, 48*mm])
     tr4.setStyle(tsb())
-    I.append(tr4)
-    I.append(sp(1))
+    story.append(tr4)
+    story.append(sp(1))
 
-    I.append(Paragraph("Regra 5 — Cruzamentos com bases externas", ST["subsec"]))
+    story.append(Paragraph("Regra 5 — Cruzamentos com bases externas", ST["subsec"]))
     r5 = [
         [th("Fonte externa"), th("O que confirmar"), th("Como cruzar")],
         [td("AGRODEFESA-GO",           bold=True), td("GTA correspondente a cada NFA-e"),  td("1 GTA para cada nota com gado em trânsito")],
@@ -2017,21 +2017,21 @@ def construir_pagina_7_testes() -> list:
     ]
     tr5 = Table(r5, colWidths=[42*mm, 55*mm, W-97*mm])
     tr5.setStyle(tsb())
-    I.append(tr5)
-    I.append(sp(1))
+    story.append(tr5)
+    story.append(sp(1))
 
-    I.append(Paragraph("TIPOS DE ANOMALIA CONSIDERADOS NA BATERIA DE TESTES", ST["subsec"]))
-    I.append(info_box(
+    story.append(Paragraph("TIPOS DE ANOMALIA CONSIDERADOS NA BATERIA DE TESTES", ST["subsec"]))
+    story.append(info_box(
         "Fragmentação fiscal (smurfing) · Subfaturamento · Uso de 'laranjas' · Lavagem de gado de "
         "origem irregular · Conluio com leiloeiro para subdeclaração · Transferência intrafamiliar "
         "disfarçada de venda · Emissão a destinatários inexistentes · Intermediação não declarada por "
         "PFs · Inconsistência cadastral · Concentração atípica de operações · Sazonalidade "
         "incompatível com perfil de produção rotineira.",
         border_color=AZUL_M))
-    I.append(sp(1))
+    story.append(sp(1))
 
     # ── Legenda de severidade dos achados ──
-    I.append(Paragraph("LEGENDA DE SEVERIDADE DOS ACHADOS", ST["subsec"]))
+    story.append(Paragraph("LEGENDA DE SEVERIDADE DOS ACHADOS", ST["subsec"]))
     leg = [
         [th("Nível"), th("Cód."), th("Critério de classificação"),
          th("Ação esperada", align=TA_RIGHT)],
@@ -2068,25 +2068,25 @@ def construir_pagina_7_testes() -> list:
     style_leg.add("BACKGROUND", (0, 4), (-1, 4), ATENCAO_BG)
     style_leg.add("BACKGROUND", (0, 5), (-1, 5), CONFORME_BG)
     t_leg.setStyle(style_leg)
-    I.append(t_leg)
-    I.append(sp(1))
+    story.append(t_leg)
+    story.append(sp(1))
 
-    I.append(Paragraph(
+    story.append(Paragraph(
         "<i>Catálogo completo de 18 tipologias estruturadas em 5 eixos na próxima página.</i>",
         S("nx", fontName="Helvetica-Oblique", fontSize=7.5,
           textColor=CTXT, alignment=TA_RIGHT, leading=10)))
-    return I
+    return story
 
 
 def construir_pagina_8_catalogo() -> list:
     """Página 8 — Catálogo de 18 tipologias × 5 eixos."""
-    I = [PageBreak()]
-    I.append(Paragraph("CATÁLOGO COMPLETO DE TIPOLOGIAS DE ANOMALIA", ST["sec"]))
-    I.append(hr(AZUL_M, 1.2))
+    story = [PageBreak()]
+    story.append(Paragraph("CATÁLOGO COMPLETO DE TIPOLOGIAS DE ANOMALIA", ST["sec"]))
+    story.append(hr(AZUL_M, 1.2))
 
     # Tipologias agora estão sempre disponíveis (integradas no código)
     if not CATALOGO_ANOMALIAS:
-        I.append(Paragraph(
+        story.append(Paragraph(
             "OrgAudi 1.0 — Catálogo de tipologias estruturado em 5 eixos: "
             "<b>Eixo I</b> Manipulação de Valores · "
             "<b>Eixo II</b> Irregularidade de Partes · "
@@ -2094,20 +2094,20 @@ def construir_pagina_8_catalogo() -> list:
             "<b>Eixo IV</b> Irregularidade Cadastral e Operacional · "
             "<b>Eixo V</b> Esquemas Estruturados.",
             ST["small"]))
-        I.append(sp(1))
-        I.append(info_box(
+        story.append(sp(1))
+        story.append(info_box(
             "<b>Catálogo não disponível.</b><br/>"
             "O catálogo de 18 tipologias deveria estar acessível. "
             "Verifique se o arquivo foi carregado corretamente.",
             label="AVISO",
             border_color=ALTO, bg=ALTO_BG))
-        return I
+        return story
 
-    I.append(Paragraph(
+    story.append(Paragraph(
         "OrgAudi 1.0 — 18 tipologias estruturadas em 5 eixos de classificação. "
         "Cada anomalia é referenciada por código (AN-XX), eixo, gravidade e tributos impactados.",
         ST["small"]))
-    I.append(sp(1))
+    story.append(sp(1))
 
     grav_color = {
         Gravidade.MUITO_ALTA: CRITICO,
@@ -2169,8 +2169,8 @@ def construir_pagina_8_catalogo() -> list:
             cor = BRANCO if (i - eixo_indices[0]) % 2 == 1 else CBG_LIGHT
             style.add("BACKGROUND", (0, i), (-1, i), cor)
     tcat.setStyle(style)
-    I.append(tcat)
-    I.append(sp(1))
+    story.append(tcat)
+    story.append(sp(1))
 
     leg = Table([[
         Paragraph(f"<b>● MUITO ALTA</b> ({len(buscar_por_gravidade(Gravidade.MUITO_ALTA))})",
@@ -2194,8 +2194,8 @@ def construir_pagina_8_catalogo() -> list:
         ("TOPPADDING",    (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
     ]))
-    I.append(leg)
-    return I
+    story.append(leg)
+    return story
 
 
 def _planilha_table(planilha: list[PlanilhaMensal], total_label: str = "TOTAL") -> Table:
@@ -2235,25 +2235,25 @@ def construir_pagina_9_planilhas(
     planilha_remessas: list[PlanilhaMensal],
 ) -> list:
     """Página de Planilhas de Vendas e Remessas + indicadores derivados."""
-    I = [PageBreak()]
-    I.append(Paragraph("PLANILHA DE GADO PARA IMPOSTO DE RENDA", ST["h2"]))
-    I.append(Paragraph("Lei 8.023/90 — IRPF Atividade Rural", ST["sub"]))
-    I.append(hr(AZUL, 1.2))
-    I.append(sp(2))
+    story = [PageBreak()]
+    story.append(Paragraph("PLANILHA DE GADO PARA IMPOSTO DE RENDA", ST["h2"]))
+    story.append(Paragraph("Lei 8.023/90 — IRPF Atividade Rural", ST["sub"]))
+    story.append(hr(AZUL, 1.2))
+    story.append(sp(2))
 
-    I.append(Paragraph("VENDAS — Cliente como REMETENTE → RECEITA", ST["sec"]))
-    I.append(_planilha_table(planilha_vendas))
-    I.append(sp(1))
+    story.append(Paragraph("VENDAS — Cliente como REMETENTE → RECEITA", ST["sec"]))
+    story.append(_planilha_table(planilha_vendas))
+    story.append(sp(1))
 
-    I.append(Paragraph(
+    story.append(Paragraph(
         "REMESSAS — Cliente como REMETENTE → TRÂNSITO (não soma à base IRPF)", ST["sec"]))
-    I.append(_planilha_table(planilha_remessas))
-    I.append(sp(2))
+    story.append(_planilha_table(planilha_remessas))
+    story.append(sp(2))
 
     # ── Bloco de indicadores derivados de distribuição mensal ──
-    I.append(Paragraph("INDICADORES DE DISTRIBUIÇÃO MENSAL", ST["sec"]))
-    I.append(hr(AZUL_M, 0.8))
-    I.append(sp(1))
+    story.append(Paragraph("INDICADORES DE DISTRIBUIÇÃO MENSAL", ST["sec"]))
+    story.append(hr(AZUL_M, 0.8))
+    story.append(sp(1))
 
     def _ind_vendas(planilha: list[PlanilhaMensal]) -> dict:
         """Calcula indicadores de distribuição (média, pico, concentração)."""
@@ -2327,18 +2327,18 @@ def construir_pagina_9_planilhas(
     ]
     t_ind = Table(rows_ind, colWidths=[W*0.40, W*0.30, W*0.30])
     t_ind.setStyle(tsb())
-    I.append(t_ind)
-    I.append(sp(2))
+    story.append(t_ind)
+    story.append(sp(2))
 
     # ── Nota interpretativa ──
-    I.append(info_box(
+    story.append(info_box(
         "<b>Como ler estes indicadores:</b> uma concentração trimestral acima de "
         "<b>45%</b> dispara o teste forense T-06 (sazonalidade incompatível com "
         "produção rotineira). Picos em um único mês ≥ 30% da receita anual também "
         "merecem cruzamento com GTAs e extratos bancários. Valores equilibrados "
         "ao longo do ano são o padrão esperado para pecuária de cria/recria/engorda.",
         border_color=AZUL_M, bg=CBG_LIGHT))
-    return I
+    return story
 
 
 def construir_pagina_10_compras_formula(
@@ -2346,7 +2346,7 @@ def construir_pagina_10_compras_formula(
     resumo: ResumoFiscal,
 ) -> list:
     """Página 10 — Total geral + Compras + Fórmula F1-F6."""
-    I = [PageBreak()]
+    story = [PageBreak()]
 
     # Total geral das saídas
     tg = [
@@ -2362,15 +2362,15 @@ def construir_pagina_10_compras_formula(
     ]
     ttg = Table(tg, colWidths=[W-79*mm, 22*mm, 22*mm, 35*mm])
     ttg.setStyle(tsb(stripe=False))
-    I.append(ttg)
-    I.append(sp(1))
+    story.append(ttg)
+    story.append(sp(1))
 
-    I.append(Paragraph(
+    story.append(Paragraph(
         "COMPRAS — Cliente como DESTINATÁRIO → DESPESA / INVESTIMENTO", ST["sec"]))
-    I.append(_planilha_table(planilha_compras))
-    I.append(sp(1))
+    story.append(_planilha_table(planilha_compras))
+    story.append(sp(1))
 
-    I.append(Paragraph("FÓRMULA APLICADA — REGRA 2 (APURAÇÃO DA RECEITA RURAL)", ST["sec"]))
+    story.append(Paragraph("FÓRMULA APLICADA — REGRA 2 (APURAÇÃO DA RECEITA RURAL)", ST["sec"]))
     fr = [
         [th("Cód."), th("Descrição"), th("Valor", align=TA_RIGHT)],
         [td("F1", bold=True, color=CONFORME),
@@ -2397,8 +2397,8 @@ def construir_pagina_10_compras_formula(
     for s in tfoot():
         style_tf.add(*s)
     tf.setStyle(style_tf)
-    I.append(tf)
-    return I
+    story.append(tf)
+    return story
 
 
 def construir_pagina_11_assinatura(
@@ -2407,44 +2407,44 @@ def construir_pagina_11_assinatura(
     hash_doc: str,
 ) -> list:
     """Página final — Declarações + assinatura + selo institucional + hash."""
-    I = [PageBreak()]
-    I.append(Paragraph("DECLARAÇÃO DE ALCANCE E LIMITAÇÕES", ST["sec"]))
-    I.append(hr(AZUL_M, 1.2))
-    I.append(sp(1))
+    story = [PageBreak()]
+    story.append(Paragraph("DECLARAÇÃO DE ALCANCE E LIMITAÇÕES", ST["sec"]))
+    story.append(hr(AZUL_M, 1.2))
+    story.append(sp(1))
 
-    I.append(info_box(
+    story.append(info_box(
         "Este relatório foi produzido pelo sistema OrgAudi 1.0 / NFA Extractor com base nos arquivos "
         "PDF de NFA-e fornecidos. Os achados constituem <b>indícios objetivos</b> derivados de "
         "cruzamentos lógicos internos, não confirmados com documentação primária externa "
         "(extratos bancários, GTAs, ACTs, contratos). A confirmação depende de etapa subsequente "
         "de coleta de evidências.",
         label="ALCANCE", border_color=AZUL_M, bg=CBG_LIGHT))
-    I.append(sp(1))
+    story.append(sp(1))
 
-    I.append(info_box(
+    story.append(info_box(
         "<b>O presente documento NÃO formula acusações, NÃO imputa dolo e NÃO substitui procedimento "
         "de fiscalização tributária formal.</b> Os elementos aqui mapeados constituem subsídios "
         "técnicos para tomada de decisão do contribuinte e de seus assessores, e para eventual "
         "regularização espontânea nos termos do art. 138 do CTN.",
         label="LIMITAÇÕES", border_color=ALTO, bg=ALTO_BG))
-    I.append(sp(3))
+    story.append(sp(3))
 
-    I.append(Paragraph("RESPONSÁVEL TÉCNICO PELA AUDITORIA", ST["sec"]))
-    I.append(hr(AZUL, 1.2))
-    I.append(sp(4))
+    story.append(Paragraph("RESPONSÁVEL TÉCNICO PELA AUDITORIA", ST["sec"]))
+    story.append(hr(AZUL, 1.2))
+    story.append(sp(4))
 
     # ── Bloco de assinatura ──
-    I.append(Paragraph("ROBSON ALAIN VELOSO", ST["an"]))
-    I.append(Paragraph("Ciências Contábeis", ST["as"]))
-    I.append(Paragraph("ORGATEC CONTABILIDADE E AUDITORIA", ST["ae"]))
-    I.append(Paragraph(
+    story.append(Paragraph("ROBSON ALAIN VELOSO", ST["an"]))
+    story.append(Paragraph("Ciências Contábeis", ST["as"]))
+    story.append(Paragraph("ORGATEC CONTABILIDADE E AUDITORIA", ST["ae"]))
+    story.append(Paragraph(
         f"Auditoria emitida em {fmt_data(periodo.data_auditoria)}", ST["as"]))
-    I.append(sp(1))
-    I.append(HRFlowable(width="55%", thickness=0.4, color=CBORD, spaceAfter=4))
-    I.append(Paragraph("Sistema de auditoria contábil-fiscal", ST["small"]))
-    I.append(Paragraph(
+    story.append(sp(1))
+    story.append(HRFlowable(width="55%", thickness=0.4, color=CBORD, spaceAfter=4))
+    story.append(Paragraph("Sistema de auditoria contábil-fiscal", ST["small"]))
+    story.append(Paragraph(
         "OrgAudi 1.0 / NFA Extractor — ORGATEC Contabilidade e Auditoria", ST["sys"]))
-    I.append(sp(3))
+    story.append(sp(3))
 
     # ── Logo institucional (se disponível) ──
     # Quando o arquivo logo_oficial_transp.png existir em /home/claude,
@@ -2456,8 +2456,8 @@ def construir_pagina_11_assinatura(
             logo_img = RLImage(logo_t, width=42*mm, height=38*mm,
                                kind="proportional", mask="auto")
             logo_img.hAlign = "CENTER"
-            I.append(logo_img)
-            I.append(sp(2))
+            story.append(logo_img)
+            story.append(sp(2))
         except Exception as e:
             logger.debug("Logo de assinatura não pôde ser desenhada: %s", e)
 
@@ -2504,8 +2504,8 @@ def construir_pagina_11_assinatura(
         ("RIGHTPADDING",  (0, 0), (-1, -1), 8),
         ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
     ]))
-    I.append(carimbo)
-    I.append(sp(2))
+    story.append(carimbo)
+    story.append(sp(2))
 
     # ── Disclaimer final em itálico ──
     cl = Table([[Paragraph(
@@ -2523,8 +2523,8 @@ def construir_pagina_11_assinatura(
         ("LEFTPADDING",   (0, 0), (-1, -1), 10),
         ("RIGHTPADDING",  (0, 0), (-1, -1), 10),
     ]))
-    I.append(cl)
-    return I
+    story.append(cl)
+    return story
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
