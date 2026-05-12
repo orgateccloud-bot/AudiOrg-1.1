@@ -234,3 +234,129 @@ class TestPrecalcular:
         out = await precalcular(payload)
         notas_re1 = out["__precalc__"]["notas_re1"]
         assert notas_re1[0]["regra_aplicada"] == "REGRA_ESPECIAL_1"
+
+
+# ── Fallback do _xgboost_score quando scorer não tem API com cache ───────────
+
+class TestXgboostScoreFallback:
+    def test_fallback_quando_calcular_score_com_cache_ausente(self, monkeypatch):
+        """Se calcular_score_com_cache falha import, usa heurística inline."""
+        import sys
+        import horizon_blue_one.ml.xgboost_scorer as xgb_mod
+
+        # Remove o atributo para forçar AttributeError no import explícito
+        original = xgb_mod.calcular_score_com_cache
+        try:
+            delattr(xgb_mod, "calcular_score_com_cache")
+            detectores = {
+                "carrossel": True, "smurfing": True,
+                "fornecedor_fantasma": ["X", "Y"], "devolucao_posterior": True,
+                "anomalia_temporal": True,
+            }
+            out = _xgboost_score([], detectores)
+            # Heurística inline soma 25+20+15+15+10 = 85 + 2*2 = 89
+            assert out["score"] >= 80
+            assert out["tipologias_criticas"] == 5
+        finally:
+            xgb_mod.calcular_score_com_cache = original
+
+
+# ── _lstm_score com erro capturado ───────────────────────────────────────────
+
+class TestLstmScoreErro:
+    def test_excecao_no_lstm_retorna_modo_erro(self, monkeypatch):
+        from horizon_blue_one.core import precalc as pre_mod
+
+        def boom(_notas):
+            raise RuntimeError("modelo lstm quebrou")
+
+        monkeypatch.setattr(pre_mod, "calcular_lstm", boom)
+        out = _lstm_score([{"valor_total": 100}])
+        assert out["modo"] == "erro"
+        assert out["score_medio"] == 0.0
+
+
+# ── _grafo_metrics sem networkx (ImportError) ────────────────────────────────
+
+class TestGrafoMetricsSemNetworkX:
+    def test_sem_networkx_retorna_estrutura_vazia(self, monkeypatch):
+        import builtins
+        original_import = builtins.__import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "networkx":
+                raise ImportError("networkx ausente")
+            return original_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", fake_import)
+        out = _grafo_metrics([{"remetente_cpf": "A", "destinatario_cpf": "B"}])
+        assert out["disponivel"] is False
+        assert out["densidade"] == 0
+
+
+class TestGrafoMetricsSimpleCyclesFalha:
+    def test_simple_cycles_excecao_zera_ciclos(self, monkeypatch):
+        try:
+            import networkx as nx
+        except ImportError:
+            pytest.skip("networkx não instalado")
+        from horizon_blue_one.core import precalc as pre_mod
+
+        def boom(g):
+            raise RuntimeError("simple_cycles falhou")
+
+        monkeypatch.setattr(nx, "simple_cycles", boom)
+        notas = [
+            {"remetente_cpf": "A", "destinatario_cpf": "B", "valor_total": 100},
+            {"remetente_cpf": "B", "destinatario_cpf": "A", "valor_total": 50},
+        ]
+        out = _grafo_metrics(notas)
+        assert out["ciclos"] == 0
+        assert out["disponivel"] is True
+
+
+# ── Memo cache hit + limpeza de entradas expiradas ───────────────────────────
+
+class TestMemoCache:
+    @pytest.mark.asyncio
+    async def test_memo_hit_reusa_resultado(self, monkeypatch):
+        from horizon_blue_one.core import precalc as pre_mod
+
+        # Reset cache
+        pre_mod._MEMO_CACHE.clear()
+
+        payload1 = {
+            "notas": [{"valor_total": 100, "cfop": "5102"}],
+            "contribuinte": {"cpf": "111"},
+            "lcdpr_data": {},
+        }
+        await precalcular(payload1)
+
+        # Segunda chamada com payload equivalente → memo hit
+        payload2 = {
+            "notas": [{"valor_total": 100, "cfop": "5102"}],
+            "contribuinte": {"cpf": "111"},
+            "lcdpr_data": {},
+        }
+        out = await precalcular(payload2)
+        # Deve preencher notas_classificadas via cache hit
+        assert "notas_classificadas" in out
+        assert "__precalc__" in out
+
+    @pytest.mark.asyncio
+    async def test_limpeza_de_entradas_expiradas(self, monkeypatch):
+        from horizon_blue_one.core import precalc as pre_mod
+
+        pre_mod._MEMO_CACHE.clear()
+        # Insere 257 entradas expiradas (acima do threshold de 256 + idade > TTL)
+        past = 0.0  # tempo Epoch zero, muito antigo
+        for i in range(257):
+            pre_mod._MEMO_CACHE[f"hash{i}"] = (past, {"notas_re1": []})
+
+        # Agora chama precalcular para disparar limpeza
+        payload = {
+            "notas": [], "contribuinte": {"unique": "cleanup-test"}, "lcdpr_data": {},
+        }
+        await precalcular(payload)
+        # Entradas expiradas devem ter sido removidas
+        assert all(not k.startswith("hash") for k in pre_mod._MEMO_CACHE.keys())

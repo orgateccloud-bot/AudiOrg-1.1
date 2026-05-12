@@ -1,0 +1,42 @@
+[run]
+branch = False
+source =
+    horizon_blue_one
+    api
+omit =
+    # Legado — nunca importado em produção
+    horizon_blue_one/agents/_legacy/*
+    # Sub-sistema NFA Extractor com pipeline próprio (LangGraph) e testes próprios
+    horizon_blue_one/agents/nfa_extractor/*
+    nfa_extractor/*
+    # Camada de apresentação (PDF) — testes visuais fora deste escopo
+    pdf_engine/*
+    # Pacotes vazios
+    */__init__.py
+    # Testes
+    */tests/*
+    tests/*
+    # Scripts utilitários e simulações
+    scripts/*
+    # Engines de auditoria do pipeline legado (NFA Extractor)
+    api/services/auditoria_bigfour.py
+    api/services/auditoria_nfae.py
+    # Rota NFA-AI depende do Gemini SDK externo (testado e2e separadamente)
+    api/routes/nfa_ai_parser.py
+    # ML LSTM real depende de torch+pesos (caminho de produção testado em smoke)
+    horizon_blue_one/ml/lstm_scorer.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    \\.\\.\\.
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+    @(abc\\.)?abstractmethod
+    def __repr__
+    def __str__
+precision = 2
+show_missing = True
+skip_covered = False

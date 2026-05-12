@@ -287,3 +287,224 @@ class TestOrchestratorSmoke:
         resultados = await orch.executar_pipeline(payload, agentes=["S1", "S2"])
         # Deve haver __EARLY_EXIT__ OU __PF_GATE__
         assert "__EARLY_EXIT__" in resultados or "__PF_GATE__" in resultados
+
+
+# ── Pipeline completo (não-early-exit) ───────────────────────────────────────
+
+import importlib
+
+from horizon_blue_one.agents.base_agent import BaseAgent
+from horizon_blue_one.core import orchestrator as orch_mod
+
+
+class _AgenteFake(BaseAgent):
+    agent_id = "FAKE"
+    name = "Fake"
+
+    async def process(self, payload):
+        return AgentResult(
+            agent_id="FAKE",
+            status="APROVADO",
+            output={"motivo": "ok", "score": 50},
+            confidence=0.8,
+        )
+
+
+class _AgenteFalha(BaseAgent):
+    agent_id = "FALHA"
+    name = "Falha"
+
+    async def process(self, payload):
+        raise RuntimeError("agente explodiu")
+
+
+def _precalc_alto_risco():
+    """Pré-cálculo que NÃO dispara early-exit nem pf-gate de arquivamento."""
+    return {
+        "detectores": {
+            "carrossel": True, "smurfing": True,
+            "fornecedor_fantasma": ["X"], "devolucao_posterior": True,
+            "anomalia_temporal": True,
+        },
+        "xgboost": {"score": 90, "probabilidade_autuacao": 0.95},
+        "cfop": {"total_divergencias": 10},
+        "lcdpr": {"divergencia": 50_000},
+        "notas_re1": [],
+    }
+
+
+class TestPipelineCompleto:
+    @pytest.mark.asyncio
+    async def test_pipeline_paralelo_executa_agentes_e_ceo(self, monkeypatch):
+        # Força _instanciar a devolver um agente fake para qualquer aid
+        monkeypatch.setattr(orch_mod, "_instanciar", lambda aid: _AgenteFake())
+        orch = Orchestrator()
+        payload = {
+            "notas": [{"valor_total": 1000}],
+            "contribuinte": {},
+            "__precalc__": _precalc_alto_risco(),
+        }
+        resultados = await orch.executar_pipeline(
+            payload, agentes=["S1", "S2", "S7"],
+            paralelo=True, chamar_ceo_no_fim=True,
+        )
+        # S7 (CEO) é chamado ao final; S1+S2 rodam em paralelo
+        assert "S7" in resultados
+        assert resultados["S7"].status == "APROVADO"
+
+    @pytest.mark.asyncio
+    async def test_pipeline_sequencial(self, monkeypatch):
+        monkeypatch.setattr(orch_mod, "_instanciar", lambda aid: _AgenteFake())
+        orch = Orchestrator()
+        payload = {
+            "notas": [{"valor_total": 1000}],
+            "contribuinte": {},
+            "__precalc__": _precalc_alto_risco(),
+        }
+        resultados = await orch.executar_pipeline(
+            payload, agentes=["S1", "S2", "S7"],
+            paralelo=False, chamar_ceo_no_fim=False,
+        )
+        # Sem CEO no fim → só S1 e S2 + S7 já no pipeline
+        assert "S1" in resultados or "S2" in resultados or "S7" in resultados
+
+    @pytest.mark.asyncio
+    async def test_agente_que_explode_e_capturado(self, monkeypatch):
+        monkeypatch.setattr(orch_mod, "_instanciar",
+                            lambda aid: _AgenteFalha() if aid == "S2" else _AgenteFake())
+        orch = Orchestrator()
+        payload = {
+            "notas": [],
+            "contribuinte": {},
+            "__precalc__": _precalc_alto_risco(),
+        }
+        resultados = await orch.executar_pipeline(
+            payload, agentes=["S1", "S2"],
+            paralelo=True, chamar_ceo_no_fim=False,
+        )
+        # S1 deve estar; S2 falhou → omitido do dict
+        assert "S1" in resultados
+        assert "S2" not in resultados
+
+    @pytest.mark.asyncio
+    async def test_ceo_que_explode_nao_quebra_pipeline(self, monkeypatch):
+        # CEO (S7) levanta exceção → orchestrator captura e segue
+        def fake_instanciar(aid):
+            if aid == "S7":
+                return _AgenteFalha()
+            return _AgenteFake()
+
+        monkeypatch.setattr(orch_mod, "_instanciar", fake_instanciar)
+        orch = Orchestrator()
+        payload = {
+            "notas": [],
+            "contribuinte": {},
+            "__precalc__": _precalc_alto_risco(),
+        }
+        resultados = await orch.executar_pipeline(
+            payload, agentes=["S1", "S7"],
+            paralelo=True, chamar_ceo_no_fim=True,
+        )
+        # S1 está; S7 falhou no caminho CEO → ausente
+        assert "S1" in resultados
+
+    @pytest.mark.asyncio
+    async def test_pf_gate_arquiva_baixa_probabilidade(self):
+        """pf < PF_GATE_ARQUIVA dispara arquivamento sem LLM."""
+        orch = Orchestrator()
+        payload = {
+            "notas": [],
+            "contribuinte": {},
+            "__precalc__": {
+                "detectores": {
+                    "carrossel": False, "smurfing": False,
+                    "fornecedor_fantasma": [], "devolucao_posterior": False,
+                    "anomalia_temporal": False,
+                },
+                # Score alto bloqueia early-exit, mas pf baixíssimo dispara arquiva
+                "xgboost": {"score": 50, "probabilidade_autuacao": 0.05},
+                "cfop": {"total_divergencias": 5},
+                "lcdpr": {"divergencia": 100},
+            },
+        }
+        resultados = await orch.executar_pipeline(payload, agentes=["S1", "S2"])
+        assert "__PF_GATE__" in resultados
+
+    @pytest.mark.asyncio
+    async def test_budget_exceeded_em_sequencial_corta_pipeline(self, monkeypatch):
+        """Orçamento de tokens estourado interrompe o sequencial."""
+        monkeypatch.setattr(orch_mod, "_instanciar", lambda aid: _AgenteFake())
+
+        # Faz snapshot_stats devolver totais crescentes para simular consumo
+        chamadas = {"n": 0}
+
+        def fake_snapshot():
+            chamadas["n"] += 1
+            return {"total_tokens": chamadas["n"] * 100_000}
+
+        monkeypatch.setattr(
+            "horizon_blue_one.core.token_router.snapshot_stats",
+            fake_snapshot,
+        )
+        orch = Orchestrator()
+        payload = {
+            "notas": [],
+            "contribuinte": {},
+            "__precalc__": _precalc_alto_risco(),
+        }
+        resultados = await orch.executar_pipeline(
+            payload, agentes=["S1", "S2", "S3", "S4"],
+            paralelo=False, chamar_ceo_no_fim=False,
+            max_tokens_orcamento=1_000,  # vai estourar logo
+        )
+        # Pelo menos um agente roda; depois budget corta
+        assert len(resultados) < 4
+
+
+class TestInstanciarFalhaSubclass:
+    def test_modulo_sem_subclass_baseagent_levanta_runtimeerror(self, tmp_path, monkeypatch):
+        """Se o módulo do agente não tem subclass de BaseAgent, levanta RuntimeError."""
+        # Cria módulo fake sem BaseAgent
+        import sys
+        import types
+        mod_fake = types.ModuleType("horizon_blue_one.agents._fake_sem_baseagent")
+        mod_fake.algo = 42
+        sys.modules["horizon_blue_one.agents._fake_sem_baseagent"] = mod_fake
+
+        monkeypatch.setitem(
+            orch_mod._AGENT_MODULES, "S_FAKE", "_fake_sem_baseagent",
+        )
+        try:
+            with pytest.raises(RuntimeError, match="BaseAgent subclass"):
+                orch_mod._instanciar("S_FAKE")
+        finally:
+            sys.modules.pop("horizon_blue_one.agents._fake_sem_baseagent", None)
+
+
+# ── Subscribers default do Orchestrator ──────────────────────────────────────
+
+class TestSubscribersDefault:
+    @pytest.mark.asyncio
+    async def test_on_escalado_loga_no_ledger(self):
+        """Publica ESCALADO no bus do orchestrator e verifica que não quebra."""
+        orch = Orchestrator()
+        await orch.bus.start()
+        try:
+            await orch.bus.publish(EventoBus(
+                tipo="ESCALADO", agent_id="S2",
+                payload={"requisicao_id": "req-1", "motivo": "score_alto"},
+            ))
+            await asyncio.sleep(0.05)
+        finally:
+            await orch.bus.stop()
+        # Sem assert específica — apenas exercita o subscriber default _on_escalado
+
+    @pytest.mark.asyncio
+    async def test_on_qualquer_loga_telemetria(self):
+        orch = Orchestrator()
+        await orch.bus.start()
+        try:
+            await orch.bus.publish(EventoBus(tipo="APROVADO", agent_id="S1"))
+            await asyncio.sleep(0.05)
+        finally:
+            await orch.bus.stop()

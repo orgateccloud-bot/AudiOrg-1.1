@@ -1,5 +1,6 @@
 """Fixtures compartilhadas entre todas as suítes de testes do NFA Extractor."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -8,7 +9,28 @@ import pytest
 # Garante que o diretório raiz do projeto está no path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+# JWT secret precisa estar setado antes de importar api.*
+os.environ.setdefault("JWT_SECRET_KEY", "a" * 64)
+
 from nfa_extractor.domain.extractor import NFA, Parte, Produto
+
+
+@pytest.fixture(autouse=True)
+def _bypass_rate_limit(monkeypatch):
+    """Anula o rate limiter durante os testes.
+
+    O middleware acumula estado in-memory por IP e o TestClient sempre usa o
+    mesmo IP ('testclient'), o que causa 429 em suítes longas. Em testes,
+    forçamos `is_allowed` a sempre liberar.
+    """
+    try:
+        from api.middleware import rate_limit as rl
+    except Exception:
+        return
+    monkeypatch.setattr(
+        rl._TokenBucket, "is_allowed",
+        lambda self, key: (True, 999),
+    )
 
 
 @pytest.fixture
