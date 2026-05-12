@@ -111,47 +111,99 @@ class AuditTask(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
 
-# ── Conexão resiliente ───────────────────────────────────────────────────────
+# ── Conexão: seleção de engine por DATABASE_URL ──────────────────────────────
+#
+# Política (#23):
+#   - DATABASE_URL define a URL completa (SQLAlchemy URL string).
+#   - ENV=production + ausência/falha de Postgres -> RuntimeError no startup.
+#   - ENV != production: SQLite (orgatec_sovereign.db) é fallback aceitável
+#     quando DATABASE_URL ausente; log de warning estruturado.
+#   - SQLite recebe PRAGMA WAL/synchronous=NORMAL para suportar concorrência leve.
+#   - Postgres recebe pool_pre_ping=True para detectar conexões mortas.
+
+_SQLITE_FALLBACK_URL = "sqlite:///./orgatec_sovereign.db"
+
 
 def _carregar_database_url() -> str:
-    db_url = os.getenv("DATABASE_URL", "")
+    """Lê DATABASE_URL do ambiente ou do config.env (em ordem)."""
+    db_url = os.getenv("DATABASE_URL", "").strip()
     if db_url:
         return db_url
 
     env_path = Path(__file__).parent.parent.parent / "config.env"
     if env_path.exists():
         for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
             if line.startswith("DATABASE_URL=") and not line.startswith("#"):
                 return line.split("=", 1)[1].strip()
     return ""
 
 
-def get_engine():
-    db_url = _carregar_database_url()
+def _is_production() -> bool:
+    return os.getenv("ENV", "development").lower() == "production"
 
-    if db_url:
-        try:
-            if "postgresql" in db_url:
-                eng = create_engine(db_url, connect_args={"connect_timeout": 5})
-                with eng.connect():
-                    pass
-                logger.info("DB: PostgreSQL conectado.")
-                return eng
-        except Exception as exc:
-            logger.warning(f"Postgres indisponível ({exc}). Usando SQLite.")
 
-    sqlite_url = "sqlite:///./orgatec_sovereign.db"
-    eng = create_engine(sqlite_url, connect_args={"check_same_thread": False})
+def _build_postgres_engine(db_url: str):
+    eng = create_engine(
+        db_url,
+        pool_pre_ping=True,
+        pool_size=int(os.getenv("DB_POOL_SIZE", "5")),
+        max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "10")),
+        connect_args={"connect_timeout": 5},
+    )
+    with eng.connect():
+        pass
+    logger.info("DB: PostgreSQL conectado (%s).", db_url.split("@")[-1])
+    return eng
+
+
+def _build_sqlite_engine():
+    eng = create_engine(_SQLITE_FALLBACK_URL, connect_args={"check_same_thread": False})
 
     @event.listens_for(eng, "connect")
-    def set_sqlite_pragma(dbapi_conn, _):
+    def _set_sqlite_pragma(dbapi_conn, _):
         cur = dbapi_conn.cursor()
         cur.execute("PRAGMA journal_mode=WAL")
         cur.execute("PRAGMA synchronous=NORMAL")
         cur.close()
 
-    logger.info("DB: SQLite WAL conectado.")
+    logger.info("DB: SQLite WAL conectado (%s).", _SQLITE_FALLBACK_URL)
     return eng
+
+
+def get_engine():
+    """Constrói a engine conforme DATABASE_URL e ENV."""
+    db_url = _carregar_database_url()
+
+    if db_url.startswith(("postgresql://", "postgresql+psycopg2://")):
+        try:
+            return _build_postgres_engine(db_url)
+        except Exception as exc:
+            if _is_production():
+                raise RuntimeError(
+                    f"Postgres indisponível em produção ({exc}). "
+                    "Verifique DATABASE_URL e o cluster Postgres."
+                ) from exc
+            logger.warning(
+                "DB: Postgres falhou (%s) — caindo para SQLite (ENV=dev).", exc
+            )
+            return _build_sqlite_engine()
+
+    if _is_production():
+        raise RuntimeError(
+            "DATABASE_URL com Postgres é obrigatório em produção. "
+            "DATABASE_URL atual: %r" % (db_url or "(vazio)")
+        )
+
+    if db_url.startswith("sqlite:"):
+        eng = create_engine(db_url, connect_args={"check_same_thread": False})
+        logger.info("DB: SQLite custom (%s).", db_url)
+        return eng
+
+    if not db_url:
+        logger.warning("DB: DATABASE_URL ausente — usando SQLite fallback (dev only).")
+
+    return _build_sqlite_engine()
 
 
 engine = get_engine()

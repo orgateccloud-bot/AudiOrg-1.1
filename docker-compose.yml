@@ -1,0 +1,50 @@
+version: "3.9"
+
+# OrgAudi — Stack de desenvolvimento local (#23)
+#
+# Serviços:
+#   - postgres   : Postgres 16 com volume persistente, exposto em :5433
+#   - redis      : Redis 7 (rate-limit #16 + revogação refresh tokens #21), :6379
+#
+# Uso:
+#   docker compose up -d                  # sobe Postgres + Redis
+#   alembic upgrade head                   # aplica schema no Postgres
+#   docker compose down                    # mantém volume (dados persistem)
+#   docker compose down -v                 # apaga volume (banco vazio na próxima)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: orgaudi-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nfa_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nfa_dev_pwd}
+      POSTGRES_DB: ${POSTGRES_DB:-nfa_extractor}
+    ports:
+      - "5433:5432"
+    volumes:
+      - orgaudi_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nfa_user} -d ${POSTGRES_DB:-nfa_extractor}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: orgaudi-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - orgaudi_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  orgaudi_pg_data:
+  orgaudi_redis_data:
