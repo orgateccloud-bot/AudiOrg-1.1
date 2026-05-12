@@ -166,10 +166,10 @@ def resumo_geral(notas: List[NFA], nome_contribuinte: str = "") -> Dict[str, Any
     """Gera métricas consolidadas exigidas pelo dashboard e relatórios."""
     total_valor = sum(n.valor_total for n in notas)
     total_cabecas = sum(n.quantidade_total for n in notas)
-    
-    por_mes = {}
-    por_natureza = {}
-    destinatarios = {}
+
+    por_mes: Dict[str, Dict[str, Any]] = {}
+    por_natureza: Dict[str, int] = {}
+    destinatarios: Dict[str, Dict[str, Any]] = {}
     
     for n in notas:
         # Mes
@@ -198,10 +198,10 @@ def resumo_geral(notas: List[NFA], nome_contribuinte: str = "") -> Dict[str, Any
         if d_nome not in destinatarios:
             destinatarios[d_nome] = {'nome': d_nome, 'notas': 0, 'cabecas': 0.0, 'valor': 0.0}
         destinatarios[d_nome]['notas'] += 1
-        destinatarios[d_nome]['cabecas'] += n.quantidade_total
-        destinatarios[d_nome]['valor'] += n.valor_total
+        destinatarios[d_nome]['cabecas'] += float(n.quantidade_total)
+        destinatarios[d_nome]['valor'] += float(n.valor_total)
 
-    top_dest = sorted(destinatarios.values(), key=lambda x: x['valor'], reverse=True)
+    top_dest: List[Dict[str, Any]] = sorted(destinatarios.values(), key=lambda x: float(x['valor']), reverse=True)
 
     return {
         'total_notas': len(notas),

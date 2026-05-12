@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import os
 import secrets
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 import bcrypt
@@ -132,7 +132,7 @@ def needs_rehash(hashed: str) -> bool:
 def _encode(data: dict, expires_delta: timedelta, token_type: str) -> str:
     payload = data.copy()
     payload["type"] = token_type
-    payload["exp"] = datetime.utcnow() + expires_delta
+    payload["exp"] = datetime.now(UTC) + expires_delta
     return jwt.encode(payload, _secret_key(), algorithm=ALGORITHM)
 
 
@@ -231,7 +231,7 @@ def revoke_refresh_token(token: str) -> TokenData:
             detail="Token sem jti — emita um novo par via /auth/login.",
         )
     exp = int(payload.get("exp", 0))
-    ttl_seconds = max(exp - int(datetime.utcnow().timestamp()), 0)
+    ttl_seconds = max(exp - int(datetime.now(UTC).timestamp()), 0)
     _get_revocation_store().revoke(jti, ttl_seconds)
     return _to_token_data(payload)
 
