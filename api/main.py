@@ -29,6 +29,7 @@ _carregar_env_local()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.middleware import claude_metrics as _claude_metrics  # noqa: F401  — registra listener no import
 from api.middleware.body_size_limit import BodySizeLimitMiddleware
 from api.middleware.prometheus import PrometheusMiddleware
 from api.middleware.rate_limit import RateLimitMiddleware

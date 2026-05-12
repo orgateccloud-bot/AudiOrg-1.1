@@ -4,10 +4,12 @@ import pytest
 from horizon_blue_one.core.model_adapter import ModelType
 from horizon_blue_one.core.token_router import (
     TipoTarefa,
+    adicionar_listener,
     estimar_tokens,
     get_stats,
     max_tokens_para,
     registrar_uso,
+    remover_listeners,
     reset_stats,
     rotear,
     snapshot_stats,
@@ -158,3 +160,73 @@ class TestEstimarTokens:
     def test_4_chars_aprox_1_token(self):
         assert estimar_tokens("abcd") == 1
         assert estimar_tokens("a" * 100) == 25
+
+
+# ── Listeners de uso ─────────────────────────────────────────────────────────
+
+class TestListeners:
+    @pytest.fixture(autouse=True)
+    def _limpa_listeners(self):
+        # Isolamento explícito para os testes de listeners — outros testes
+        # dependem do listener auto-registrado de claude_metrics.
+        from api.middleware import claude_metrics
+        remover_listeners()
+        yield
+        remover_listeners()
+        # Restaura o listener de Prometheus (auto-registrado no import)
+        adicionar_listener(claude_metrics._publicar)
+
+    def test_listener_recebe_callback_completo(self):
+        capturado = []
+
+        def cb(modelo, t_in, t_out, dec, max_t, agent_id):
+            capturado.append((modelo, t_in, t_out, dec, max_t, agent_id))
+
+        adicionar_listener(cb)
+        d = rotear(TipoTarefa.LGPD)
+        registrar_uso(ModelType.HAIKU, 100, 50, d, max_tokens=512, agent_id="S1")
+
+        assert len(capturado) == 1
+        modelo, t_in, t_out, dec, max_t, agent_id = capturado[0]
+        assert modelo == ModelType.HAIKU
+        assert t_in == 100
+        assert t_out == 50
+        assert dec.tipo_tarefa == TipoTarefa.LGPD
+        assert max_t == 512
+        assert agent_id == "S1"
+
+    def test_listener_max_tokens_opcional(self):
+        capturado = []
+        adicionar_listener(lambda *args: capturado.append(args))
+        d = rotear(TipoTarefa.LGPD)
+        registrar_uso(ModelType.HAIKU, 1, 1, d)  # sem max_tokens nem agent_id
+        assert capturado[0][4] is None  # max_tokens
+        assert capturado[0][5] is None  # agent_id
+
+    def test_listener_excecao_nao_quebra_pipeline(self):
+        def cb_quebrado(*_args):
+            raise RuntimeError("listener bug")
+
+        adicionar_listener(cb_quebrado)
+        d = rotear(TipoTarefa.LGPD)
+        # Não pode lançar — listener falha é absorvida
+        registrar_uso(ModelType.HAIKU, 1, 1, d)
+        # Stats principais continuam funcionando
+        assert get_stats()["chamadas_por_modelo"]["haiku"] == 1
+
+    def test_multiplos_listeners_todos_invocados(self):
+        chamadas_a, chamadas_b = [], []
+        adicionar_listener(lambda *a: chamadas_a.append(a))
+        adicionar_listener(lambda *a: chamadas_b.append(a))
+        d = rotear(TipoTarefa.LGPD)
+        registrar_uso(ModelType.HAIKU, 1, 1, d)
+        assert len(chamadas_a) == 1
+        assert len(chamadas_b) == 1
+
+    def test_remover_listeners_limpa_lista(self):
+        capturado = []
+        adicionar_listener(lambda *a: capturado.append(a))
+        remover_listeners()
+        d = rotear(TipoTarefa.LGPD)
+        registrar_uso(ModelType.HAIKU, 1, 1, d)
+        assert capturado == []

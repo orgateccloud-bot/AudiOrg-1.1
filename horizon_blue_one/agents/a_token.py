@@ -147,7 +147,8 @@ async def call_otimizado(
     # Auto-registro de tokens estimados
     tokens_in  = estimar_tokens(prompt + system)
     tokens_out = estimar_tokens(resp)
-    registrar_uso(decision.modelo, tokens_in, tokens_out, decision)
+    registrar_uso(decision.modelo, tokens_in, tokens_out, decision,
+                  max_tokens=max_tokens, agent_id=agent_id)
 
     return resp, decision
 

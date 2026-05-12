@@ -26,6 +26,7 @@ e o volume mínimo (<=5 notas) e tarefa não-forense.
 from __future__ import annotations
 
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -353,13 +354,49 @@ class _TokenStats:
 _stats = _TokenStats()
 
 
+# Tipo do callback de listener — recebe o uso completo após cada chamada.
+# Usado por camadas externas (api/middleware/claude_metrics.py) para Prometheus.
+ListenerUso = Callable[
+    [ModelType, int, int, "RotingDecision", "int | None", "str | None"],
+    None,
+]
+_LISTENERS: list[ListenerUso] = []
+_LISTENERS_LOCK = threading.Lock()
+
+
+def adicionar_listener(callback: ListenerUso) -> None:
+    """Registra um listener chamado a cada `registrar_uso`.
+
+    Args:
+        callback: invocado com (modelo, tokens_in, tokens_out, decision,
+            max_tokens, agent_id). Exceções no callback são logadas mas
+            não propagam — observabilidade nunca derruba o pipeline.
+    """
+    with _LISTENERS_LOCK:
+        _LISTENERS.append(callback)
+
+
+def remover_listeners() -> None:
+    """Limpa todos os listeners — usado em testes para isolar."""
+    with _LISTENERS_LOCK:
+        _LISTENERS.clear()
+
+
 def registrar_uso(
     modelo: ModelType,
     tokens_in: int,
     tokens_out: int,
     decision: RotingDecision,
+    max_tokens: int | None = None,
+    agent_id: str | None = None,
 ) -> None:
-    """Registra uso real após a chamada ao modelo."""
+    """Registra uso real após a chamada ao modelo.
+
+    Args:
+        max_tokens: orçamento de tokens passado na chamada — usado por
+            listeners para detectar saturação (output_tokens / max_tokens).
+        agent_id: identificador do agente — útil em métricas por agente.
+    """
     _stats.registrar(modelo, tokens_in, tokens_out, decision)
     logger.info(
         "token_router.uso",
@@ -370,6 +407,28 @@ def registrar_uso(
         upgrade=decision.upgrade_aplicado,
         downgrade=decision.downgrade_aplicado,
     )
+    # Despacho para listeners externos (Prometheus, traços, etc.).
+    with _LISTENERS_LOCK:
+        listeners = list(_LISTENERS)
+    for cb in listeners:
+        _despachar_listener(cb, modelo, tokens_in, tokens_out, decision,
+                            max_tokens, agent_id)
+
+
+def _despachar_listener(
+    cb: ListenerUso,
+    modelo: ModelType,
+    tokens_in: int,
+    tokens_out: int,
+    decision: RotingDecision,
+    max_tokens: int | None,
+    agent_id: str | None,
+) -> None:
+    """Invoca um listener isolando exceções (observabilidade não derruba pipeline)."""
+    try:
+        cb(modelo, tokens_in, tokens_out, decision, max_tokens, agent_id)
+    except Exception:
+        logger.exception("token_router.listener_falhou", modelo=modelo.value)
 
 
 def get_stats() -> dict:
