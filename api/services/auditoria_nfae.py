@@ -1,11 +1,10 @@
 import io
-import os
 import tempfile
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import TYPE_CHECKING, List
 
 from fastapi import UploadFile
-
 from nfa_extractor.application.agents_engine import rodar_auditoria_completa
 from nfa_extractor.domain.extractor import extrair_notas
 
@@ -50,11 +49,12 @@ async def processar_lote_auditoria(
         temp_dir  = tempfile.gettempdir()
 
         for file in files:
-            file_path = os.path.join(temp_dir, file.filename)
-            with open(file_path, "wb") as buffer:
+            file_path = Path(temp_dir) / (file.filename or "")
+            # I/O síncrono dentro de async — aceitável para upload pontual.
+            with file_path.open("wb") as buffer:
                 content = await file.read()
                 buffer.write(content)
-            notas, _, _ = extrair_notas(file_path)
+            notas, _, _ = extrair_notas(str(file_path))
             all_notas.extend(notas)
 
         tasks_status[task_id] = {"status": "analisando_ia", "progress": 50}
@@ -77,7 +77,6 @@ async def processar_nfae(request: "AuditoriaCompletaRequest") -> dict:
     """Pipeline completo de auditoria NFA-e integrado com HORIZON-BLUE ONE."""
     from horizon_blue_one.agents.a07_auditoria_assurance import AuditoriaAssuranceAgent
     from horizon_blue_one.agents.a08_auditor_nfa import AuditorNFAAgent
-
     from horizon_blue_one.agents.base_agent import AgentResult
     from horizon_blue_one.ml.xgboost_scorer import calcular_score
     from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1

@@ -13,18 +13,18 @@ Metodologia Big Four aplicada:
 from __future__ import annotations
 
 import logging
-import os
 import re
 import secrets
 import tempfile
 from collections import Counter, defaultdict
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from fastapi import UploadFile
+from nfa_extractor.domain.extractor import extrair_notas
 
 from api.services.auditoria_tasks import tasks_status  # re-export para callers
-from nfa_extractor.domain.extractor import extrair_notas
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ def _parse_emissao(emissao: Any) -> datetime | None:
     for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
         try:
             return datetime.strptime(s, fmt)
-        except ValueError:
+        except ValueError:  # noqa: PERF203 — tentativa por formato é idiomática
             pass
     return None
 
@@ -144,6 +144,75 @@ def _calcular_score_triangulacao(
 
 # == Deteccao de triangulacoes ================================================
 
+def _indexar_por_contraparte(
+    notas: list, client_cpf_norm: str,
+) -> tuple[dict[str, list], dict[str, list]]:
+    """Particiona notas em saídas (cliente=remetente) e entradas (cliente=destinatário)
+    indexadas pelo CPF/CNPJ da contraparte."""
+    saidas: dict[str, list] = defaultdict(list)
+    entradas: dict[str, list] = defaultdict(list)
+    for n in notas:
+        rem_cpf = _norm_cpf(getattr(getattr(n, "remetente", None), "cpf_cnpj", None))
+        dest_cpf = _norm_cpf(getattr(getattr(n, "destinatario", None), "cpf_cnpj", None))
+        if rem_cpf == client_cpf_norm:
+            saidas[dest_cpf].append(n)
+        elif dest_cpf == client_cpf_norm:
+            entradas[rem_cpf].append(n)
+    return saidas, entradas
+
+
+def _menor_gap_dias(s_list: list, e_list: list) -> int | None:
+    """Menor diferença em dias entre qualquer saída e qualquer entrada do par."""
+    datas_s = [d for d in (_parse_emissao(getattr(n, "emissao", "")) for n in s_list) if d]
+    datas_e = [d for d in (_parse_emissao(getattr(n, "emissao", "")) for n in e_list) if d]
+    if not (datas_s and datas_e):
+        return None
+    return min(abs((ds - de).days) for ds in datas_s for de in datas_e)
+
+
+def _severidade_de_score(score: float) -> str:
+    if score >= 70:
+        return "CRITICO"
+    if score >= 40:
+        return "MEDIO"
+    return "BAIXO"
+
+
+def _nome_contraparte(s_list: list, e_list: list) -> str:
+    """Tenta extrair nome da contraparte da primeira nota disponível."""
+    if s_list:
+        nome = getattr(getattr(s_list[0], "destinatario", None), "nome", "") or ""
+        if nome:
+            return nome
+    if e_list:
+        return getattr(getattr(e_list[0], "remetente", None), "nome", "") or ""
+    return ""
+
+
+def _montar_registro_triangulacao(
+    cp_cpf: str, s_list: list, e_list: list,
+    total_saida: float, total_entrada: float, menor_gap: int | None, score: float,
+) -> dict:
+    cab_s = sum(_cabecas_nota(n) for n in s_list)
+    cab_e = sum(_cabecas_nota(n) for n in e_list)
+    return {
+        "cp_cpf": cp_cpf,
+        "cp_nome": _nome_contraparte(s_list, e_list),
+        "total_saida": total_saida,
+        "total_entrada": total_entrada,
+        "saldo": total_saida - total_entrada,
+        "n_saidas": len(s_list),
+        "n_entradas": len(e_list),
+        "cab_saida": cab_s,
+        "cab_entrada": cab_e,
+        "preco_med_saida": round(total_saida / cab_s, 2) if cab_s > 0 else None,
+        "preco_med_entrada": round(total_entrada / cab_e, 2) if cab_e > 0 else None,
+        "menor_gap_dias": menor_gap,
+        "score": score,
+        "severidade": _severidade_de_score(score),
+    }
+
+
 def _detectar_triangulacoes(notas: list, client_cpf_norm: str) -> list[dict]:
     """
     Detecta operacoes circulares com score de suspeicao 0-100.
@@ -153,76 +222,24 @@ def _detectar_triangulacoes(notas: list, client_cpf_norm: str) -> list[dict]:
       - MEDIO   >= 40: relacao bilateral suspeita
       - BAIXO    < 40: relacao bilateral comum (menos relevante)
     """
-    saidas_por_cp: dict[str, list] = defaultdict(list)
-    entradas_por_cp: dict[str, list] = defaultdict(list)
-
-    for n in notas:
-        rem = getattr(n, "remetente", None)
-        dest = getattr(n, "destinatario", None)
-        rem_cpf = _norm_cpf(getattr(rem, "cpf_cnpj", None))
-        dest_cpf = _norm_cpf(getattr(dest, "cpf_cnpj", None))
-
-        if rem_cpf == client_cpf_norm:
-            saidas_por_cp[dest_cpf].append(n)
-        elif dest_cpf == client_cpf_norm:
-            entradas_por_cp[rem_cpf].append(n)
-
+    saidas_por_cp, entradas_por_cp = _indexar_por_contraparte(notas, client_cpf_norm)
     triangulacoes: list[dict] = []
 
     for cp_cpf in set(saidas_por_cp) & set(entradas_por_cp):
         if not cp_cpf or len(cp_cpf) not in (11, 14):
             continue
-
         s_list = saidas_por_cp[cp_cpf]
         e_list = entradas_por_cp[cp_cpf]
-
         total_saida = sum(getattr(n, "valor_total", 0) or 0 for n in s_list)
         total_entrada = sum(getattr(n, "valor_total", 0) or 0 for n in e_list)
-
-        datas_s = [d for d in (_parse_emissao(getattr(n, "emissao", "")) for n in s_list) if d]
-        datas_e = [d for d in (_parse_emissao(getattr(n, "emissao", "")) for n in e_list) if d]
-        menor_gap: int | None = None
-        if datas_s and datas_e:
-            menor_gap = min(abs((ds - de).days) for ds in datas_s for de in datas_e)
-
+        menor_gap = _menor_gap_dias(s_list, e_list)
         score = _calcular_score_triangulacao(
-            s_list, e_list, total_saida, total_entrada, menor_gap
+            s_list, e_list, total_saida, total_entrada, menor_gap,
         )
+        triangulacoes.append(_montar_registro_triangulacao(
+            cp_cpf, s_list, e_list, total_saida, total_entrada, menor_gap, score,
+        ))
 
-        if score >= 70:
-            severidade = "CRITICO"
-        elif score >= 40:
-            severidade = "MEDIO"
-        else:
-            severidade = "BAIXO"
-
-        cp_nome = ""
-        if s_list:
-            cp_nome = getattr(getattr(s_list[0], "destinatario", None), "nome", "") or ""
-        if not cp_nome and e_list:
-            cp_nome = getattr(getattr(e_list[0], "remetente", None), "nome", "") or ""
-
-        cab_s = sum(_cabecas_nota(n) for n in s_list)
-        cab_e = sum(_cabecas_nota(n) for n in e_list)
-
-        triangulacoes.append({
-            "cp_cpf": cp_cpf,
-            "cp_nome": cp_nome,
-            "total_saida": total_saida,
-            "total_entrada": total_entrada,
-            "saldo": total_saida - total_entrada,
-            "n_saidas": len(s_list),
-            "n_entradas": len(e_list),
-            "cab_saida": cab_s,
-            "cab_entrada": cab_e,
-            "preco_med_saida": round(total_saida / cab_s, 2) if cab_s > 0 else None,
-            "preco_med_entrada": round(total_entrada / cab_e, 2) if cab_e > 0 else None,
-            "menor_gap_dias": menor_gap,
-            "score": score,
-            "severidade": severidade,
-        })
-
-    # Ordena do mais suspeito para o menos suspeito
     triangulacoes.sort(key=lambda x: -x["score"])
     return triangulacoes
 
@@ -406,28 +423,30 @@ async def processar_lote_auditoria(
 
         # -- Extracao ----------------------------------------------------------
         all_notas: list = []
-        temp_dir = tempfile.gettempdir()
+        temp_dir = Path(tempfile.gettempdir())
 
         for file in files:
-            ext = os.path.splitext(file.filename or "")[1].lower()
+            ext = Path(file.filename or "").suffix.lower()
             if ext not in {".pdf", ".xml"}:
                 logger.warning("Extensao rejeitada: %s", ext)
                 continue
 
             safe_name = f"{secrets.token_hex(8)}{ext}"
-            file_path = os.path.join(temp_dir, safe_name)
+            file_path = temp_dir / safe_name
             try:
-                with open(file_path, "wb") as buf:
+                # I/O síncrono dentro de async — aceitável para upload pontual.
+                # Migração futura: aiofiles ou asyncio.to_thread se ficar gargalo.
+                with file_path.open("wb") as buf:
                     content = await file.read()
                     buf.write(content)
-                notas, _, _ = extrair_notas(file_path)
+                notas, _, _ = extrair_notas(str(file_path))
                 all_notas.extend(notas)
                 logger.info("Arquivo '%s': %d notas extraidas", file.filename, len(notas))
             except Exception as exc:
                 logger.error("Erro ao extrair '%s': %s", file.filename, exc)
             finally:
                 try:
-                    os.remove(file_path)
+                    file_path.unlink()
                 except OSError:
                     pass
 
@@ -499,10 +518,11 @@ async def processar_lote_auditoria(
         # -- Geracao do laudo OrgAudi -----------------------------------------
         tasks_status[task_id] = {"status": "gerando_pdf", "progress": 80}
 
-        os.makedirs(os.path.join("data", "laudos"), exist_ok=True)
+        pasta_laudos = Path("data") / "laudos"
+        pasta_laudos.mkdir(parents=True, exist_ok=True)
         nome_safe = re.sub(r"[^A-Za-z0-9]", "_", client_name.upper())[:50].strip("_")
         pdf_filename = f"Laudo_{nome_safe}_{client_cpf_norm}.pdf"
-        pdf_path = os.path.join("data", "laudos", pdf_filename)
+        pdf_path = str(pasta_laudos / pdf_filename)
 
         try:
             from pdf_engine.orgaudi_v4.orgaudi_adapter import gerar_laudo_orgaudi

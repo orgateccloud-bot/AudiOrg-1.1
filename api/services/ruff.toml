@@ -1,0 +1,30 @@
+# Gate moderadamente estrito para api/services/ — segunda camada crítica
+# (extração, motor forense, lote de auditoria, upload de arquivos).
+#
+# Mais leve que core/ — não pede mypy strict. Foco: anti-bug + segurança +
+# evitar I/O síncrono em handlers async + pathlib em vez de os.path.
+extend = "../../ruff.toml"
+
+[lint]
+extend-select = [
+    "ASYNC",  # blocking call em função async
+    "TRY",    # exception handling
+    "RET",    # return statements
+    "SIM",    # simplificações
+    "PIE",    # idiomas Python úteis
+    "PERF",   # perf-loops
+    "PTH",    # pathlib vs os.path
+    "PLE",    # erros de lógica
+    "T20",    # print() esquecido (logger é a regra)
+]
+extend-ignore = [
+    "TRY003",  # mensagens longas em raise — tema separado
+    "TRY300",  # else-after-return — convivem
+    "TRY400",  # logger.error vs exception — convivem
+    "PERF401", # list-comprehension não vale a pena em todos
+    "SIM105",  # contextlib.suppress vs try/except: pass — claro
+    "ARG002",  # arg de método não usado é comum em handler/protocol
+    "ARG001",  # idem
+    "RET504",  # var antes de return — clareza
+    "TRY301",  # raise dentro de try — comum em validadores
+]
