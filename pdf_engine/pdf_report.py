@@ -1,28 +1,36 @@
 """Geração de relatório PDF profissional com ReportLab."""
 
+import io
+import logging
 from datetime import datetime
 from pathlib import Path
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    HRFlowable, PageBreak, KeepTogether, Image as RLImage
-)
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate
 
-import io
 import matplotlib
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm
+from reportlab.platypus import (
+    HRFlowable,
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
+from reportlab.platypus import Image as RLImage
+
 matplotlib.use('Agg')  # Força backend sem GUI para estabilidade em threads
 import matplotlib.pyplot as plt
 
+from nfa_extractor.domain.constants import hex_cor
 from nfa_extractor.domain.extractor import NFA, resumo_geral
 
-LOGO_PATH = str(Path(__file__).parent / 'assets' / 'logo.png')
+logger = logging.getLogger(__name__)
 
-from nfa_extractor.domain.constants import hex_cor
+LOGO_PATH = str(Path(__file__).parent / 'assets' / 'logo.png')
 
 # ── Paleta de cores (Sincronizada com Design System) ──────────────────────────
 AZUL_ESC  = colors.HexColor(hex_cor('BG2'))
@@ -76,8 +84,8 @@ def _header_footer(canvas, doc):
     canvas.restoreState()
 
 
-def gerar_pdf(notas: list[NFA], saida: str, analise_ia: str = '', nome_contribuinte: str = '', 
-              cpf_contribuinte: str = '', anomalias: list = None) -> None:
+def gerar_pdf(notas: list[NFA], saida: str, analise_ia: str = '', nome_contribuinte: str = '',
+              cpf_contribuinte: str = '', anomalias: list | None = None) -> None:
     """Gera um Laudo Técnico de Auditoria Forense profissional."""
     doc = SimpleDocTemplate(saida, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, 
                             topMargin=2.5*cm, bottomMargin=2*cm)
@@ -86,8 +94,7 @@ def gerar_pdf(notas: list[NFA], saida: str, analise_ia: str = '', nome_contribui
     style_tit = ParagraphStyle('Tit', parent=styles['Heading1'], alignment=TA_CENTER, fontSize=18, textColor=AZUL_ESC, spaceAfter=20)
     style_sec = ParagraphStyle('Sec', parent=styles['Heading2'], fontSize=12, textColor=AZUL_MED, spaceBefore=15, spaceAfter=10, borderPadding=5)
     style_txt = ParagraphStyle('Txt', parent=styles['Normal'], fontSize=10, leading=14, alignment=TA_LEFT)
-    small     = ParagraphStyle('Small', parent=styles['Normal'], fontSize=8, leading=10)
-    
+
     elements = []
     res = resumo_geral(notas, nome_contribuinte=nome_contribuinte)
     
@@ -266,7 +273,7 @@ def _gerar_graficos(res: dict) -> list:
             buf.seek(0)
             graficos.append(RLImage(buf, width=15*cm, height=7.5*cm))
         except Exception:
-            pass
+            logger.exception("Falha ao renderizar gráfico de barras")
         finally:
             if fig_bar:
                 plt.close(fig_bar)
@@ -288,7 +295,7 @@ def _gerar_graficos(res: dict) -> list:
             cores = [hex_cor('PRIMARY'), hex_cor('CYAN'), hex_cor('ORANGE'), hex_cor('GREEN'), hex_cor('GRAY'), hex_cor('BORDER')]
             
             # Gráfico de Rosca (Donut)
-            wedges, texts, autotexts = ax.pie(valores, labels=labels, autopct='%1.1f%%', 
+            _wedges, _texts, _autotexts = ax.pie(valores, labels=labels, autopct='%1.1f%%',
                                             colors=cores, startangle=140, 
                                             pctdistance=0.75,
                                             textprops={'fontsize': 7, 'fontweight': 'bold'})
@@ -305,7 +312,7 @@ def _gerar_graficos(res: dict) -> list:
             buf.seek(0)
             graficos.append(RLImage(buf, width=10*cm, height=10*cm))
         except Exception:
-            pass
+            logger.exception("Falha ao renderizar gráfico donut")
         finally:
             if fig_pie:
                 plt.close(fig_pie)

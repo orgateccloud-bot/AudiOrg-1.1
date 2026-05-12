@@ -1,6 +1,7 @@
 import re
 from typing import Any
 
+
 def clean_document(doc: str) -> str:
     """Remove caracteres não numéricos de CPF/CNPJ."""
     return re.sub(r"\D", "", str(doc))

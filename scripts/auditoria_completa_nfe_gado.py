@@ -21,9 +21,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from nfa_extractor.domain.extractor import extrair_notas
 from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
 from horizon_blue_one.orgaudi.resumo_fiscal import apurar_resumo
+from nfa_extractor.domain.extractor import extrair_notas
 
 
 def posicao_e_produtor(arquivo: str) -> tuple[str, str]:
@@ -95,21 +95,21 @@ def main(pasta: Path) -> None:
     )
 
     # ── Detalhe das formulas ────────────────────────────────────────────────────
-    print(f"\n=== APURAÇÃO FISCAL CONSOLIDADA (PF, ref 06/2026) ===")
+    print("\n=== APURAÇÃO FISCAL CONSOLIDADA (PF, ref 06/2026) ===")
     print(f"  F1 — Receita Imediata (VENDA)         {fmt(consolidado.f1_receita_imediata)}")
     print(f"  F2 — Gado em Trânsito                 {fmt(consolidado.f2_transito)}")
     print(f"  F3 — Receita de Leilão                {fmt(consolidado.f3_receita_leilao)}")
     print(f"  F4 — Receita Bruta (F1+F3)            {fmt(consolidado.f4_receita_bruta)}")
     print(f"  F6 — Despesa Dedutível (COMPRA)       {fmt(consolidado.f6_despesa)}")
     print(f"  F5 — Resultado Rural (F4-F6)          {fmt(consolidado.f5_resultado_rural)}")
-    print(f"  ── Tributos estimados ──")
+    print("  ── Tributos estimados ──")
     print(f"  Alíquota FUNRURAL aplicada            {consolidado.aliquota_funrural*100:.2f}%  (PF >= 01/04/2026)")
     print(f"  FUNRURAL devido (F1 × alíquota)       {fmt(consolidado.funrural)}")
     print(f"  IRPF estimado (F5 × 20%, mínimo 0)    {fmt(consolidado.irpf_estimado)}")
     print(f"  ── Carga tributária total ──          {fmt(consolidado.funrural + consolidado.irpf_estimado)}")
 
     # ── Categorizacao final por nota ────────────────────────────────────────────
-    print(f"\n=== DISTRIBUIÇÃO POR CATEGORIA (após RE-1) ===")
+    print("\n=== DISTRIBUIÇÃO POR CATEGORIA (após RE-1) ===")
     cats: dict[str, dict] = defaultdict(lambda: {"notas": 0, "valor": 0.0, "cabecas": 0.0})
     for n in consolidado_notas:
         cat = n.get("natureza_exibicao", "OUTRAS")
@@ -147,7 +147,7 @@ def main(pasta: Path) -> None:
         print(f"\n  >> {alertas_500k} compras > R$500k exigem revisão manual obrigatória")
 
     # ── Diagnostico ─────────────────────────────────────────────────────────────
-    print(f"\n=== DIAGNÓSTICO ===")
+    print("\n=== DIAGNÓSTICO ===")
     print(f"  Tempo total:           {elapsed:.1f}s")
     print(f"  PDFs processados:      {len(pdfs)}")
     print(f"  PDFs vazios:           {len(pdfs) - len({p for p in pdfs if notas_rel.get(posicao_e_produtor(p.name)[1])})}")

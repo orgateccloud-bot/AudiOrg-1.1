@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 os.environ["JWT_SECRET_KEY"] = "a" * 64
 
-import pytest
 from fastapi.testclient import TestClient
 
 from api.auth.security import create_access_token

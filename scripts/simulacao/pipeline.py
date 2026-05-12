@@ -12,19 +12,21 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from nfa_extractor.domain.extractor import extrair_notas
+from horizon_blue_one.core.token_router import (
+    _CUSTO_INPUT,
+    _CUSTO_OUTPUT,
+    ModelType,
+    reset_stats,
+    snapshot_stats,
+)
 from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
 from horizon_blue_one.orgaudi.resumo_fiscal import apurar_resumo
-from horizon_blue_one.core.token_router import (
-    _CUSTO_INPUT, _CUSTO_OUTPUT, ModelType,
-    reset_stats, snapshot_stats,
-)
-from horizon_blue_one.core.orchestrator import Orchestrator
-
+from nfa_extractor.domain.extractor import extrair_notas
 from scripts.simulacao.instrumentacao import (
-    agente_ativo, instrumentar, set_num_notas,
+    agente_ativo,
+    instrumentar,
+    set_num_notas,
 )
-
 
 # ── Caps de notas por modelo (rev v3) ─────────────────────────────────────
 NOTAS_CAP_POR_MODELO = {
@@ -203,7 +205,6 @@ async def rodar_squad(
         # mas o Orchestrator não tem hook para isso — vamos fazer
         # o tracking via post-snapshot global por enquanto.
         # Para tracking por agente, executamos os agentes manualmente.
-        from horizon_blue_one.agents.base_agent import BaseAgent
         import importlib
 
         chamadas: list[dict] = []
@@ -220,7 +221,7 @@ async def rodar_squad(
             agente = Cls()
 
             # Decide modelo deste agente para aplicar cap correto de notas
-            from horizon_blue_one.core.token_router import rotear, TipoTarefa
+            from horizon_blue_one.core.token_router import TipoTarefa, rotear
             d = rotear(tipo_tarefa=TipoTarefa.AUDITORIA,
                        score_risco=score, num_notas=len(notas), agent_id=aid)
             notas_capadas = cap_notas_para_modelo(notas, d.modelo.value, agent_id=aid)

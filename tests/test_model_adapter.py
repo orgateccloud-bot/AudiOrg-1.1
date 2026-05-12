@@ -10,7 +10,6 @@ from horizon_blue_one.core.model_adapter import (
     call_model_with_tools,
 )
 
-
 # ── _build_system_param ──────────────────────────────────────────────────────
 
 class TestBuildSystemParam:
@@ -220,7 +219,7 @@ class TestCallModelWithTools:
 
         with patch("horizon_blue_one.core.model_adapter._get_claude",
                    return_value=client_mock):
-            texto, uso = await ma.call_model_with_tools(
+            _texto, uso = await ma.call_model_with_tools(
                 ModelType.SONNET, "x",
                 tools=[{"name": "loop"}],
                 tool_handler=AsyncMock(return_value="loop"),
@@ -247,6 +246,7 @@ class TestCallModelBranches:
     async def test_recoverable_exception_propaga(self, monkeypatch):
         """RateLimitError sobe após retries."""
         import anthropic
+
         from horizon_blue_one.core import model_adapter as ma
 
         # Patch tenacity para não atrasar

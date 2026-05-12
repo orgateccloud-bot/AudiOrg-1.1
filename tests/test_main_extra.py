@@ -40,6 +40,7 @@ class TestCarregarEnvLocal:
 
         # Patch do Path para apontar para tmp_path
         from pathlib import Path as RealPath
+
         from api import main as main_mod
 
         class _FakePath:

@@ -12,8 +12,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from sqlalchemy import (
-    Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text,
-    UniqueConstraint, create_engine, event,
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    create_engine,
+    event,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 
@@ -174,7 +182,7 @@ def _get_or_create_cliente(session, nome: str, cpf_cnpj: str) -> Cliente:
     return novo
 
 
-def salvar_notas_bd(notas, laudo_texto: str = None) -> tuple[int, int]:
+def salvar_notas_bd(notas, laudo_texto: str | None = None) -> tuple[int, int]:
     salvas, ignoradas = 0, 0
     with SessionLocal() as db:
         for nfa in notas:

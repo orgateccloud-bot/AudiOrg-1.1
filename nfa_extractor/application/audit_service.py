@@ -1,15 +1,16 @@
-from sqlalchemy.orm import Session
 import logging
+
+from sqlalchemy.orm import Session
 
 try:
     # Tentativa de import relativo/absoluto dependendo do path de execução
-    from nfa_extractor.infrastructure.database_v2 import ContribuinteAuditoriaMacro
-    from nfa_extractor.domain.schemas import AuditoriaMacroSchema
     from nfa_extractor.application.sovereign_engine import AntiGravityQuantEngine
+    from nfa_extractor.domain.schemas import AuditoriaMacroSchema
+    from nfa_extractor.infrastructure.database_v2 import ContribuinteAuditoriaMacro
 except ImportError:
-    from nfa_extractor.infrastructure.database_v2 import ContribuinteAuditoriaMacro
-    from nfa_extractor.domain.schemas import AuditoriaMacroSchema
     from nfa_extractor.application.sovereign_engine import AntiGravityQuantEngine
+    from nfa_extractor.domain.schemas import AuditoriaMacroSchema
+    from nfa_extractor.infrastructure.database_v2 import ContribuinteAuditoriaMacro
 
 logger = logging.getLogger("AuditController")
 
@@ -49,5 +50,5 @@ def perform_fiscal_consolidation(db: Session, fiscal_data: dict) -> AuditoriaMac
         
     except Exception as sqle:
         db.rollback() # Previne vazamentos no cache transacional (Antigravity Clean Method)
-        logger.critical(f"FATAL DOMAIN EXCEPTION -> Transaction Volatile {str(sqle)}")
+        logger.critical(f"FATAL DOMAIN EXCEPTION -> Transaction Volatile {sqle!s}")
         raise

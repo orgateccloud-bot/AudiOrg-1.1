@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import sys
 import time
 from collections import defaultdict
@@ -24,14 +23,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.simulacao.pipeline import (
-    PIPELINE_AUDITOR, PIPELINE_FULL, filtrar_pipeline,
-    extrair_e_classificar, posicao_e_produtor, rodar_squad,
-)
 from scripts.simulacao.ground_truth import comparar as gt_comparar
+from scripts.simulacao.pipeline import (
+    PIPELINE_AUDITOR,
+    PIPELINE_FULL,
+    extrair_e_classificar,
+    filtrar_pipeline,
+    posicao_e_produtor,
+    rodar_squad,
+)
 from scripts.simulacao.relatorio import (
-    agregar_por_agente, comparativo_economia,
-    gerar_markdown, salvar_json,
+    agregar_por_agente,
+    comparativo_economia,
+    gerar_markdown,
+    salvar_json,
 )
 
 
@@ -209,7 +214,7 @@ async def main() -> int:
               f"({r['duracao_s']:.1f}s)")
 
     # ── Etapa B: 16 consolidado por produtor ────────────────────────────────
-    print(f"\n[B/3] Análise consolidada por produtor...")
+    print("\n[B/3] Análise consolidada por produtor...")
     por_produtor: dict[str, list[Path]] = defaultdict(list)
     for pdf in pdfs:
         _, produtor = posicao_e_produtor(pdf.name)
@@ -225,7 +230,7 @@ async def main() -> int:
               f"({r['duracao_s']:.1f}s)")
 
     # ── Etapa C: ground-truth ───────────────────────────────────────────────
-    print(f"\n[C/3] Ground-truth (RESULTADOS_AUDITORIA.zip)...")
+    print("\n[C/3] Ground-truth (RESULTADOS_AUDITORIA.zip)...")
     gt_match: dict = {}
     if args.ground_truth.exists():
         try:

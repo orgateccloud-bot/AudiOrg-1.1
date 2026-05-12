@@ -8,8 +8,6 @@ Armazena resultados de modelos preditivos atrelados a tendências futuras.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Any
 
 from pydantic import BaseModel, Field
 

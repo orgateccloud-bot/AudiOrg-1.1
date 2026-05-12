@@ -30,10 +30,10 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from nfa_extractor.domain.extractor import extrair_notas
+from horizon_blue_one.orgaudi.anomalias import CATALOGO
 from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
 from horizon_blue_one.orgaudi.resumo_fiscal import apurar_resumo
-from horizon_blue_one.orgaudi.anomalias import CATALOGO
+from nfa_extractor.domain.extractor import extrair_notas
 
 
 # ── Mock determinístico do Claude — devolve JSON parseável ────────────────────
@@ -198,7 +198,7 @@ async def main(pasta: Path) -> None:
     for pdf in pdfs:
         posicao, produtor = posicao_e_produtor(pdf.name)
         try:
-            notas, contribuinte, _ = extrair_notas(str(pdf))
+            notas, _contribuinte, _ = extrair_notas(str(pdf))
             for n in notas:
                 d = n.model_dump()
                 d.update(posicao=posicao, atividade="bovino", tipo_doc="nfa-e",
@@ -211,7 +211,7 @@ async def main(pasta: Path) -> None:
     print(f"      OK -> {len(notas_dict)} notas em {t_ext:.1f}s\n")
 
     # ─── 2. Apuracao fiscal F1-F6 ──────────────────────────────────────────
-    print(f"[2/5] Apurando F1-F6 + FUNRURAL + IRPF (PF, ref 06/2026)...")
+    print("[2/5] Apurando F1-F6 + FUNRURAL + IRPF (PF, ref 06/2026)...")
     fiscal = apurar_resumo(notas_dict, eh_pj=False, data_referencia=date(2026, 6, 1))
     print(f"      F1={fmt(fiscal.f1_receita_imediata)} F6={fmt(fiscal.f6_despesa)}")
     print(f"      F5={fmt(fiscal.f5_resultado_rural)} FUNRURAL={fmt(fiscal.funrural)} IRPF={fmt(fiscal.irpf_estimado)}\n")
@@ -225,10 +225,13 @@ async def main(pasta: Path) -> None:
         cats[c]["cabecas"] += float(n.get("quantidade_total", 0))
 
     # ─── 4. Detectores forenses determinísticos ────────────────────────────
-    print(f"[3/5] Detectores forenses heuristicos (deterministicos)...")
+    print("[3/5] Detectores forenses heuristicos (deterministicos)...")
     from horizon_blue_one.agents.detectores_forenses import (
-        detectar_carrossel, detectar_smurfing, detectar_fornecedor_fantasma,
-        detectar_devolucao_posterior, detectar_anomalia_temporal,
+        detectar_anomalia_temporal,
+        detectar_carrossel,
+        detectar_devolucao_posterior,
+        detectar_fornecedor_fantasma,
+        detectar_smurfing,
     )
     det = {
         "carrossel":            detectar_carrossel(notas_dict),
@@ -243,7 +246,7 @@ async def main(pasta: Path) -> None:
     print()
 
     # ─── 5. Rodar 28 agentes com mock do Claude ────────────────────────────
-    print(f"[4/5] Executando 28 agentes Horizon-Blue (Claude MOCKED)...")
+    print("[4/5] Executando 28 agentes Horizon-Blue (Claude MOCKED)...")
     contribuinte_dict = {
         "nome":     "Consolidado NFE-Gado 2026",
         "cpf_cnpj": "00000000000",
@@ -296,7 +299,7 @@ async def main(pasta: Path) -> None:
     print(f"\n      {ok}/{len(AGENTES)} agentes contractuais OK\n")
 
     # ─── 6. Relatorio Markdown ─────────────────────────────────────────────
-    print(f"[5/5] Gerando relatorio markdown + JSON...")
+    print("[5/5] Gerando relatorio markdown + JSON...")
     out_dir = ROOT / "out"
     out_dir.mkdir(exist_ok=True)
     ts = int(time.time())

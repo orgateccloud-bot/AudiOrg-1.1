@@ -16,8 +16,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
-import requests
-
 from nfa_extractor.domain.extractor import NFA, resumo_geral
 
 logger = logging.getLogger(__name__)
@@ -409,9 +407,7 @@ def perguntar(
     pergunta: str = "",
 ) -> str:
     """Endpoint de chat genérico para o agente conversacional."""
-    prompt = pergunta
-    if context_ia:
-        prompt = f"CONTEXTO: {context_ia}\nPERGUNTA: {pergunta}"
+    # NOTA: pergunta/context_ia ainda não são repassados a analisar (TODO histórico).
     return analisar(notas, system_override=None)
 
 

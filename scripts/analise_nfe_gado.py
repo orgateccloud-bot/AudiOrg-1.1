@@ -120,7 +120,7 @@ def main(pasta: Path) -> None:
     # === Saldo fiscal rural ===
     receita = consolidado["VENDA"]["valor"]
     despesa = consolidado["COMPRA"]["valor"]
-    print(f"\n=== SALDO FISCAL RURAL (perspectiva produtor) ===")
+    print("\n=== SALDO FISCAL RURAL (perspectiva produtor) ===")
     print(f"  Receita (VENDA)              {fmt_brl(receita)}")
     print(f"  Despesa (COMPRA, via RE-1)   {fmt_brl(despesa)}")
     print(f"  Resultado bruto              {fmt_brl(receita - despesa)}")
@@ -128,7 +128,7 @@ def main(pasta: Path) -> None:
     print(f"  TRANSFERENCIA (sem efeito)   {fmt_brl(consolidado['TRANSFERENCIA']['valor'])}")
 
     # === Diagnostico de qualidade ===
-    print(f"\n=== DIAGNOSTICO DE QUALIDADE ===")
+    print("\n=== DIAGNOSTICO DE QUALIDADE ===")
     print(f"  PDFs processados:        {len(pdfs)}")
     print(f"  PDFs com extracao OK:    {len(pdfs) - len(pdfs_vazios) - len(erros)}")
     print(f"  PDFs vazios (0 notas):   {len(pdfs_vazios)}")

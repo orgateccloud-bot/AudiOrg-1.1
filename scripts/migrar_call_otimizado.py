@@ -121,7 +121,7 @@ def main(apply: bool = False) -> int:
     print(f"  {'TOTAL':<35} {total_chamadas:>8} arquivos: {arquivos_alterados}")
 
     if not apply:
-        print(f"\n  >> Dry-run apenas. Rode com --apply para gravar.\n")
+        print("\n  >> Dry-run apenas. Rode com --apply para gravar.\n")
     else:
         print(f"\n  >> {arquivos_alterados} arquivos gravados.\n")
     return 0

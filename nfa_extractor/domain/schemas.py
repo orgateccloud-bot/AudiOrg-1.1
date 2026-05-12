@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class AuditoriaMacroSchema(BaseModel):
     model_config = ConfigDict(strict=True, frozen=True)

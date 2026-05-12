@@ -79,7 +79,7 @@ def processar_pasta(pasta: Path) -> dict:
     # Resumo agregado
     if todas_notas:
         resumo = resumo_geral(todas_notas, "Consolidado NFE-Gado 2026")
-        print(f"\n=== AGREGADO ===")
+        print("\n=== AGREGADO ===")
         for k, v in resumo.items():
             if isinstance(v, (int, float)):
                 if "valor" in k.lower() or "icms" in k.lower():

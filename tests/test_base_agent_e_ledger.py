@@ -1,6 +1,5 @@
 """Testes do BaseAgent (parse_json_response, retry, confidence) e do ledger."""
 import json
-import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -9,7 +8,6 @@ import pytest
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
 from horizon_blue_one.core import ledger as ledger_mod
 from horizon_blue_one.core.ledger import async_log_event, log_event_sync
-
 
 # ── AgentResult ──────────────────────────────────────────────────────────────
 
@@ -126,7 +124,7 @@ class TestCallComRetry:
             "horizon_blue_one.agents.a_token.call_otimizado",
             side_effect=mock_call_otim,
         ):
-            data, ok, resp = await BaseAgent.call_com_retry(
+            data, ok, _resp = await BaseAgent.call_com_retry(
                 "prompt", "system", ("a", "b"), "A-X",
             )
         assert ok is True
@@ -146,7 +144,7 @@ class TestCallComRetry:
             "horizon_blue_one.agents.a_token.call_otimizado",
             side_effect=mock_call_otim,
         ):
-            data, ok, resp = await BaseAgent.call_com_retry(
+            data, ok, _resp = await BaseAgent.call_com_retry(
                 "p", "s", ("a",), "A-X",
             )
         assert ok is True
@@ -162,7 +160,7 @@ class TestCallComRetry:
             "horizon_blue_one.agents.a_token.call_otimizado",
             side_effect=mock_call_otim,
         ):
-            data, ok, resp = await BaseAgent.call_com_retry(
+            data, ok, _resp = await BaseAgent.call_com_retry(
                 "p", "s", ("a",), "A-X", max_tentativas=2,
             )
         assert ok is False

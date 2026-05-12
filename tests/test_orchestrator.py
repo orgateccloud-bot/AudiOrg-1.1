@@ -291,7 +291,6 @@ class TestOrchestratorSmoke:
 
 # ── Pipeline completo (não-early-exit) ───────────────────────────────────────
 
-import importlib
 
 from horizon_blue_one.agents.base_agent import BaseAgent
 from horizon_blue_one.core import orchestrator as orch_mod

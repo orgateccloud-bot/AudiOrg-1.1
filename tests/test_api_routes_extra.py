@@ -9,9 +9,7 @@ from fastapi.testclient import TestClient
 
 from api.auth.security import create_access_token, hash_password
 from api.main import app
-from api.dependencies import get_db
-from nfa_extractor.infrastructure.database_v2 import Cliente, User, init_db, SessionLocal
-
+from nfa_extractor.infrastructure.database_v2 import Cliente, SessionLocal, User, init_db
 
 init_db()
 client = TestClient(app)
@@ -147,7 +145,7 @@ class TestAuthFluxoFeliz:
         assert res.status_code == 403
 
     def test_refresh_com_token_valido_renova(self):
-        uid = self._criar_user(email="refresh@test.com")
+        self._criar_user(email="refresh@test.com")
         # 1) Login para obter refresh token
         login = client.post(
             "/auth/login",

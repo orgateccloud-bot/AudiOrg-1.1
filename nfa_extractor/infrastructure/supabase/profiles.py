@@ -8,9 +8,8 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from nfa_extractor.infrastructure.supabase.client import get_supabase_client
 

@@ -9,7 +9,6 @@ from horizon_blue_one.orgaudi.anomalias import (
 )
 from horizon_blue_one.orgaudi.resumo_fiscal import ResumoFiscal, apurar_resumo
 
-
 # ── Catálogo de Anomalias ────────────────────────────────────────────────────
 
 class TestCatalogoAnomalias:

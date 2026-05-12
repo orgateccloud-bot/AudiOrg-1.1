@@ -83,7 +83,7 @@ class TestCallOtimizado:
             "horizon_blue_one.agents.a_token.call_model",
             new=AsyncMock(return_value="resp"),
         ):
-            resp, dec = await call_otimizado(
+            _resp, dec = await call_otimizado(
                 "p", "s",
                 tipo_tarefa=TipoTarefa.FORENSE,
                 score_risco=95,

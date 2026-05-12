@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ── MCP allowlist YAML ──────────────────────────────────────────────────────
 
 class TestMcpAllowlistYaml:
@@ -23,10 +22,7 @@ class TestMcpAllowlistYaml:
             encoding="utf-8",
         )
 
-        # Aponta _ler_yaml_allowlist para nosso arquivo
-        from pathlib import Path
-        original = Path.__truediv__
-        # Mais simples: faz patch do Path retornado
+        # Aponta _ler_yaml_allowlist para nosso arquivo via monkeypatch
         import horizon_blue_one.tools.mcp_bridge as mb_mod
 
         def _ler_fake() -> frozenset[str]:
@@ -59,8 +55,8 @@ class TestMcpAllowlistYaml:
 
     def test_yaml_invalido_nao_falha(self, tmp_path, monkeypatch):
         """YAML mal-formado → warning + fallback."""
+
         from horizon_blue_one.tools import mcp_bridge as mb
-        from pathlib import Path
         yaml_file = tmp_path / "mcp_allowlist.yaml"
         yaml_file.write_text("isto: nao: eh: yaml: valido:", encoding="utf-8")
         # Patch da Path para apontar para tmp
@@ -91,7 +87,6 @@ class TestBudgetParalelo:
     async def test_executa_em_ondas_baratos_e_caros(self):
         """Onda 1 = S1/S3/S5/S6, Onda 2 = S2/S4."""
         from horizon_blue_one.agents.base_agent import AgentResult
-        from horizon_blue_one.core import orchestrator as orch_mod
         from horizon_blue_one.core.orchestrator import Orchestrator
 
         ordem = []
@@ -184,8 +179,9 @@ class TestS6SkipLLM:
 
     @pytest.mark.asyncio
     async def test_trabalhadores_acima_do_limite_chama_llm(self):
-        from horizon_blue_one.agents.s6_rh import RHAgent
         import json
+
+        from horizon_blue_one.agents.s6_rh import RHAgent
         resp = json.dumps({
             "eventos_pendentes": [], "divergencias_inss": 0.0,
             "fgts_a_recolher": 0.0, "alertas": [], "conformidade": "CONFORME",
@@ -202,8 +198,9 @@ class TestS6SkipLLM:
 
     @pytest.mark.asyncio
     async def test_inss_divergencia_quebra_trivial(self):
-        from horizon_blue_one.agents.s6_rh import RHAgent
         import json
+
+        from horizon_blue_one.agents.s6_rh import RHAgent
         resp = json.dumps({
             "eventos_pendentes": [], "divergencias_inss": 500.0,
             "fgts_a_recolher": 0.0, "alertas": [], "conformidade": "DIVERGENTE",

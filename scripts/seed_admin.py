@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT))
 
 # Carrega config.env antes de importar o resto
 import os
+
 for nome in ("config.env", ".env"):
     p = ROOT / nome
     if not p.exists():
@@ -35,9 +36,12 @@ for nome in ("config.env", ".env"):
             os.environ[k] = v
     break
 
-from api.auth.security import hash_password  # noqa: E402
-from nfa_extractor.infrastructure.database_v2 import (  # noqa: E402
-    Base, SessionLocal, User, engine,
+from api.auth.security import hash_password
+from nfa_extractor.infrastructure.database_v2 import (
+    Base,
+    SessionLocal,
+    User,
+    engine,
 )
 
 

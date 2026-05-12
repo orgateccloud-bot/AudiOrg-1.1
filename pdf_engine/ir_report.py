@@ -19,8 +19,14 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.platypus import (
-    BaseDocTemplate, Frame, PageTemplate,
-    Paragraph, Spacer, Table, TableStyle, KeepTogether,
+    BaseDocTemplate,
+    Frame,
+    KeepTogether,
+    PageTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
 )
 
 if TYPE_CHECKING:
@@ -347,7 +353,7 @@ def gerar_pdf_ir(notas: list[NFA], saida: str) -> None:
         notas: Lista de NFAs extraídas do PDF.
         saida: Caminho do arquivo PDF de destino.
     """
-    from nfa_extractor.domain.extractor import resumo_geral, classificar_natureza
+    from nfa_extractor.domain.extractor import resumo_geral
 
     if not notas:
         raise ValueError('Nenhuma nota fiscal para gerar a Planilha IR.')

@@ -1,5 +1,7 @@
 import pandas as pd
+
 from nfa_extractor.domain.extractor import NFA, resumo_geral
+
 
 def processar_para_dataframe(notas: list[NFA]) -> pd.DataFrame:
     """Converte lista de NFAs em um DataFrame limpo."""

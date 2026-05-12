@@ -28,7 +28,6 @@ from api.schemas.usuarios import (
     UsuarioResponse,
 )
 
-
 # ── CPF/CNPJ helpers ─────────────────────────────────────────────────────────
 
 class TestValidadoresCpfCnpj:

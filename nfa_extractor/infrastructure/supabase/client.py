@@ -7,11 +7,11 @@ Gerencia autenticação e fornece acesso tipado às tabelas financeiras.
 
 from __future__ import annotations
 
-import os
 import logging
+import os
 from functools import lru_cache
 
-from supabase import create_client, Client
+from supabase import Client, create_client
 
 logger = logging.getLogger(__name__)
 

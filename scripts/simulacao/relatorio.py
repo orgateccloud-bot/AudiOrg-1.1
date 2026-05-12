@@ -99,15 +99,15 @@ def gerar_markdown(
     n_total_pdfs: int,
 ) -> Path:
     L: list[str] = []
-    L.append(f"# Simulação NFE-Gado 2026 — Consumo de Tokens\n\n")
+    L.append("# Simulação NFE-Gado 2026 — Consumo de Tokens\n\n")
     L.append(f"**Pipeline:** `{pipeline_label}` ")
     L.append(f"· **PDFs:** {n_total_pdfs} ")
     L.append(f"· **Análises individuais:** {len(individual)} ")
     L.append(f"· **Análises consolidadas:** {len(consolidado)}\n\n")
 
     # Resumo Executivo
-    L.append(f"## Resumo Executivo\n\n")
-    L.append(f"| Métrica | Valor |\n|---|--:|\n")
+    L.append("## Resumo Executivo\n\n")
+    L.append("| Métrica | Valor |\n|---|--:|\n")
     L.append(f"| Custo total (mock) | {fmt_usd(economia['atual_usd'])} |\n")
     L.append(f"| Baseline tudo-Sonnet | {fmt_usd(economia['baseline_sonnet_usd'])} |\n")
     L.append(f"| **Economia absoluta** | {fmt_usd(economia['economia_usd'])} |\n")
@@ -121,8 +121,8 @@ def gerar_markdown(
 
     # Tabela 1 — Por PDF individual
     L.append(f"## Tabela 1 — Consumo por PDF Individual ({len(individual)})\n\n")
-    L.append(f"| PDF | Notas | Valor (R$) | Tok IN | Tok OUT | Custo (USD) | Economia % |\n")
-    L.append(f"|---|--:|--:|--:|--:|--:|--:|\n")
+    L.append("| PDF | Notas | Valor (R$) | Tok IN | Tok OUT | Custo (USD) | Economia % |\n")
+    L.append("|---|--:|--:|--:|--:|--:|--:|\n")
     for s in sorted(individual, key=lambda x: -(x.get("totais") or {}).get("custo_usd", 0)):
         if s["status"] != "OK":
             L.append(f"| {s['pdf']} | — | — | — | — | — | _{s['status']}_ |\n")
@@ -135,8 +135,8 @@ def gerar_markdown(
 
     # Tabela 2 — Por Produtor consolidado
     L.append(f"## Tabela 2 — Consumo Consolidado por Produtor ({len(consolidado)})\n\n")
-    L.append(f"| Produtor | PDFs | Notas | Valor (R$) | Tok IN | Tok OUT | Custo (USD) | Eco % |\n")
-    L.append(f"|---|--:|--:|--:|--:|--:|--:|--:|\n")
+    L.append("| Produtor | PDFs | Notas | Valor (R$) | Tok IN | Tok OUT | Custo (USD) | Eco % |\n")
+    L.append("|---|--:|--:|--:|--:|--:|--:|--:|\n")
     for s in sorted(consolidado, key=lambda x: -(x.get("totais") or {}).get("custo_usd", 0)):
         if s["status"] != "OK":
             L.append(f"| {s['produtor']} | — | — | — | — | — | — | _{s['status']}_ |\n")
@@ -148,10 +148,10 @@ def gerar_markdown(
     L.append("\n")
 
     # Tabela 3 — Por Agente
-    L.append(f"## Tabela 3 — Consumo por Agente\n\n")
-    L.append(f"| Agent | Chamadas | Modelo predomin. | Tok IN | Tok OUT | Custo (USD) | "
-             f"%H | %S | %O |\n")
-    L.append(f"|---|--:|---|--:|--:|--:|--:|--:|--:|\n")
+    L.append("## Tabela 3 — Consumo por Agente\n\n")
+    L.append("| Agent | Chamadas | Modelo predomin. | Tok IN | Tok OUT | Custo (USD) | "
+             "%H | %S | %O |\n")
+    L.append("|---|--:|---|--:|--:|--:|--:|--:|--:|\n")
     for aid in sorted(por_agente):
         a = por_agente[aid]
         L.append(f"| {aid} | {a['chamadas']} | {a['modelo_predominante']} | "
@@ -160,8 +160,8 @@ def gerar_markdown(
     L.append("\n")
 
     # Tabela 4 — Mix de modelos
-    L.append(f"## Tabela 4 — Mix de Modelos (alvo 80/15/5)\n\n")
-    L.append(f"| Modelo | % chamadas | Custo (USD) |\n|---|--:|--:|\n")
+    L.append("## Tabela 4 — Mix de Modelos (alvo 80/15/5)\n\n")
+    L.append("| Modelo | % chamadas | Custo (USD) |\n|---|--:|--:|\n")
     custo_modelo: dict[str, float] = defaultdict(float)
     for s in (individual + consolidado):
         for c in s.get("chamadas", []):
@@ -173,8 +173,8 @@ def gerar_markdown(
 
     # Tabela 5 — Ground-Truth match
     if gt_match:
-        L.append(f"## Tabela 5 — Comparação com Ground-Truth (RESULTADOS_AUDITORIA.zip)\n\n")
-        L.append(f"| Produtor | Tem GT? | PDF GT | Similaridade |\n|---|---|---|--:|\n")
+        L.append("## Tabela 5 — Comparação com Ground-Truth (RESULTADOS_AUDITORIA.zip)\n\n")
+        L.append("| Produtor | Tem GT? | PDF GT | Similaridade |\n|---|---|---|--:|\n")
         for produtor in sorted(gt_match):
             m = gt_match[produtor]
             sim_str = (f"{m['similaridade']:.2%}" if m.get("tem_gt") and "similaridade" in m
@@ -189,8 +189,8 @@ def gerar_markdown(
                      f"(min {min(sims):.2%}, max {max(sims):.2%})\n\n")
 
     # Comparativo
-    L.append(f"## Projeção de Custo\n\n")
-    L.append(f"| Cenário | Atual | Baseline (Sonnet) | Economia |\n|---|--:|--:|--:|\n")
+    L.append("## Projeção de Custo\n\n")
+    L.append("| Cenário | Atual | Baseline (Sonnet) | Economia |\n|---|--:|--:|--:|\n")
     p = economia["projecao_1000_pdfs"]
     L.append(f"| {len(individual) + len(consolidado)} análises | "
              f"{fmt_usd(economia['atual_usd'])} | {fmt_usd(economia['baseline_sonnet_usd'])} | "
@@ -203,16 +203,16 @@ def gerar_markdown(
         L.append(f"## PDFs vazios ({len(pdfs_vazios)})\n\n")
         for nome in pdfs_vazios:
             L.append(f"- {nome}\n")
-        L.append(f"\nObs: extração determinística não encontrou padrões. "
-                 f"Em modo `--real`, fallback `nfa_parser_ai` seria acionado.\n\n")
+        L.append("\nObs: extração determinística não encontrou padrões. "
+                 "Em modo `--real`, fallback `nfa_parser_ai` seria acionado.\n\n")
 
     # Detalhes
-    L.append(f"## Detalhes técnicos\n\n")
-    L.append(f"- **Modo:** mock (estimativa via `len(prompt)//4` no prompt real)\n")
-    L.append(f"- **Mix-alvo:** Haiku 80% · Sonnet 15% · Opus 5%\n")
-    L.append(f"- **max_tokens:** calibrado por agente em `MAX_TOKENS_OTIMO`\n")
-    L.append(f"- **Output ratio:** 40% do max_tokens (estimativa típica)\n")
-    L.append(f"- **Prompt cache:** não simulado (modo conservador, custo real seria menor)\n")
+    L.append("## Detalhes técnicos\n\n")
+    L.append("- **Modo:** mock (estimativa via `len(prompt)//4` no prompt real)\n")
+    L.append("- **Mix-alvo:** Haiku 80% · Sonnet 15% · Opus 5%\n")
+    L.append("- **max_tokens:** calibrado por agente em `MAX_TOKENS_OTIMO`\n")
+    L.append("- **Output ratio:** 40% do max_tokens (estimativa típica)\n")
+    L.append("- **Prompt cache:** não simulado (modo conservador, custo real seria menor)\n")
 
     md_path = out_dir / "relatorio.md"
     md_path.write_text("".join(L), encoding="utf-8")

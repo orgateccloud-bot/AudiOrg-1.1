@@ -8,7 +8,6 @@ Identifica posicao a partir do nome do arquivo:
 from __future__ import annotations
 
 import json
-import re
 import sys
 import time
 from pathlib import Path
@@ -16,8 +15,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from nfa_extractor.domain.extractor import extrair_notas
 from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
+from nfa_extractor.domain.extractor import extrair_notas
 
 
 def posicao_do_arquivo(nome: str) -> str:
@@ -80,10 +79,10 @@ def main(pasta: Path) -> None:
     re1_aplicadas = [n for n in classificadas if n.get("regra_aplicada") == "REGRA_ESPECIAL_1"]
     valor_re1 = sum(float(n["valor_total"]) for n in re1_aplicadas)
     print()
-    print(f"=== RE-1 (VENDA -> COMPRA rural) ===")
+    print("=== RE-1 (VENDA -> COMPRA rural) ===")
     print(f"  Notas reclassificadas:  {len(re1_aplicadas)}")
     print(f"  Valor reclassificado:   R$ {valor_re1:,.2f}")
-    print(f"  Efeito IRPF:            SUBTRAI da receita rural (despesa dedutivel)")
+    print("  Efeito IRPF:            SUBTRAI da receita rural (despesa dedutivel)")
     alertas_500k = [n for n in re1_aplicadas if any("> R$500k" in a for a in n.get("alertas_re1", []))]
     if alertas_500k:
         print(f"  ALERTAS > R$500k:       {len(alertas_500k)} notas (revisao manual obrigatoria)")

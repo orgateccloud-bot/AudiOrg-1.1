@@ -16,7 +16,6 @@ from horizon_blue_one.core.precalc import (
     precalcular,
 )
 
-
 # ── Componentes individuais ──────────────────────────────────────────────────
 
 class TestRE1Classifier:
@@ -241,7 +240,6 @@ class TestPrecalcular:
 class TestXgboostScoreFallback:
     def test_fallback_quando_calcular_score_com_cache_ausente(self, monkeypatch):
         """Se calcular_score_com_cache falha import, usa heurística inline."""
-        import sys
         import horizon_blue_one.ml.xgboost_scorer as xgb_mod
 
         # Remove o atributo para forçar AttributeError no import explícito
@@ -300,7 +298,6 @@ class TestGrafoMetricsSimpleCyclesFalha:
             import networkx as nx
         except ImportError:
             pytest.skip("networkx não instalado")
-        from horizon_blue_one.core import precalc as pre_mod
 
         def boom(g):
             raise RuntimeError("simple_cycles falhou")

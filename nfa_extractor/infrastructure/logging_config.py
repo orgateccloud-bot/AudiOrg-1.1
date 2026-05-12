@@ -16,7 +16,6 @@ import os
 import sys
 from logging.handlers import RotatingFileHandler
 
-
 LOG_FORMAT = "%(asctime)s | %(levelname)-5s | %(name)s | %(message)s"
 LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()

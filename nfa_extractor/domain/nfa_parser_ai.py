@@ -25,23 +25,21 @@ Fluxo:
 
 from __future__ import annotations
 
-import hashlib
 import logging
 import os
 import re
 import time
 from decimal import Decimal
 from pathlib import Path
-from typing import Any
 
 import fitz  # PyMuPDF
 
 from .nfa_ai_schemas import (
+    TOOL_EXTRAIR_NOTAS,
     NFAExtraida,
     ParteAI,
     ProdutoAI,
     ResultadoExtracaoPDF,
-    TOOL_EXTRAIR_NOTAS,
 )
 
 logger = logging.getLogger(__name__)

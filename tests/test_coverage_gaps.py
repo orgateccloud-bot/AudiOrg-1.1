@@ -10,7 +10,6 @@ import pytest
 
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
 
-
 # ── base_agent L34-35: exceção ao ler settings ───────────────────────────────
 
 class TestAgentResultHashFallback:
@@ -75,8 +74,9 @@ class TestDerivarConfidence:
 class TestS2ForenseScoreInvalido:
     @pytest.mark.asyncio
     async def test_score_risco_string_invalida_usa_fallback(self):
-        from horizon_blue_one.agents.s2_forense import ForenseAgent
         import json
+
+        from horizon_blue_one.agents.s2_forense import ForenseAgent
         pre = {
             "detectores": {
                 "carrossel": False, "smurfing": False, "fornecedor_fantasma": [],
@@ -104,8 +104,9 @@ class TestS7CEOBranches:
     @pytest.mark.asyncio
     async def test_resultado_nao_dict_continua(self):
         """L60: out não é dict → continue."""
-        from horizon_blue_one.agents.s7_ceo import CEOAgent
         import json
+
+        from horizon_blue_one.agents.s7_ceo import CEOAgent
         resp = json.dumps({
             "decisao": "APROVAR", "score_final": 10.0,
             "parecer_juridico": "ok", "mda_executivo": "ok",
@@ -127,8 +128,9 @@ class TestS7CEOBranches:
     @pytest.mark.asyncio
     async def test_resultado_sem_chaves_relevantes_pula(self):
         """L63: sub vazio → não inclui no resumo."""
-        from horizon_blue_one.agents.s7_ceo import CEOAgent
         import json
+
+        from horizon_blue_one.agents.s7_ceo import CEOAgent
         resp = json.dumps({
             "decisao": "APROVAR", "score_final": 5.0,
             "parecer_juridico": "x", "mda_executivo": "x",
@@ -150,8 +152,9 @@ class TestS7CEOBranches:
     @pytest.mark.asyncio
     async def test_decisao_rejeitar_vira_status_rejeitado(self):
         """L100: REJEITAR → REJEITADO."""
-        from horizon_blue_one.agents.s7_ceo import CEOAgent
         import json
+
+        from horizon_blue_one.agents.s7_ceo import CEOAgent
         resp = json.dumps({
             "decisao": "REJEITAR", "score_final": 95.0,
             "parecer_juridico": "rejeitar", "mda_executivo": "x",
@@ -173,8 +176,9 @@ class TestS7CEOBranches:
     @pytest.mark.asyncio
     async def test_decisao_escalar_juridico_vira_escalado(self):
         """L102: ESCALAR_JURIDICO → ESCALADO."""
-        from horizon_blue_one.agents.s7_ceo import CEOAgent
         import json
+
+        from horizon_blue_one.agents.s7_ceo import CEOAgent
         resp = json.dumps({
             "decisao": "ESCALAR_JURIDICO", "score_final": 80.0,
             "parecer_juridico": "escalar", "mda_executivo": "x",
@@ -274,7 +278,8 @@ class TestSecurityFallback:
 
 class TestAuditoriaSchema:
     def test_arquivo_excede_tamanho_max_emite_erro(self):
-        from api.schemas.auditoria import TAMANHO_MAX, validar_arquivos as validar_arquivos_upload
+        from api.schemas.auditoria import TAMANHO_MAX
+        from api.schemas.auditoria import validar_arquivos as validar_arquivos_upload
 
         class _FakeFile:
             def __init__(self, filename, size):
@@ -290,12 +295,14 @@ class TestAuditoriaSchema:
 class TestClientesSchemaValidator:
     def test_cpf_invalido_levanta_validation_error(self):
         from pydantic import ValidationError
+
         from api.schemas.clientes import ClienteUpdate
         with pytest.raises(ValidationError, match="CPF inválido"):
             ClienteUpdate(cpf_cnpj="123.456.789-00")  # DV inválido
 
     def test_cnpj_invalido_levanta_validation_error(self):
         from pydantic import ValidationError
+
         from api.schemas.clientes import ClienteUpdate
         with pytest.raises(ValidationError, match="CNPJ inválido"):
             ClienteUpdate(cpf_cnpj="11.222.333/0001-99")  # DV inválido

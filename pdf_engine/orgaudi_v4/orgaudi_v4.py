@@ -36,21 +36,29 @@ import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
-from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.lib.units import mm
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    HRFlowable, PageBreak, Image as RLImage, KeepTogether,
-)
+from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
+from reportlab.platypus import (
+    HRFlowable,
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
+from reportlab.platypus import (
+    Image as RLImage,
+)
 
 # Logger do módulo
 
@@ -961,7 +969,7 @@ class ResumoFiscal:
 
     # Data de referência para escolher a alíquota correta de Funrural
     # (default = última data conhecida do período auditado, injetada por apurar_resumo)
-    data_referencia: Optional[date] = None
+    data_referencia: date | None = None
 
     # Categoria previdenciária do contribuinte (afeta alíquota Funrural — LC 224/2025)
     # Default = PF Patronal (mais comum). Ajustar via Contribuinte ao chamar apurar_resumo.
@@ -1095,8 +1103,8 @@ def classificar_nota(nota: NotaFiscal, contribuinte_cpf: str) -> CategoriaContab
 
 def apurar_resumo(
     notas: list[NotaFiscal],
-    contribuinte: "str | Contribuinte",
-    data_referencia: Optional[date] = None,
+    contribuinte: str | Contribuinte,
+    data_referencia: date | None = None,
 ) -> ResumoFiscal:
     """
     Calcula F1-F6 e tributos a partir da lista de notas (Regra 2).
@@ -1200,7 +1208,7 @@ class GrupoSmurfing:
     destinatario_nome: str
     notas: list[NotaFiscal]
     valor_total: Decimal
-    valor_repetido: Optional[Decimal] = None
+    valor_repetido: Decimal | None = None
     qtd_repeticoes: int = 0
 
 
@@ -1420,7 +1428,7 @@ def _criar_handler_pagina(total_paginas: int = 8):
 
     def _desenhar_rodape(canvas):
         """Rodapé padrão: linha + créditos."""
-        w, h = A4
+        w, _h = A4
         lm, rm = 14 * mm, w - 14 * mm
 
         canvas.setStrokeColor(CBORD)
@@ -1679,7 +1687,7 @@ def construir_pagina_1_capa(
         if not lista:
             continue
         # Cor
-        color, bg, bord = SEV_PALETA[sev]
+        color, bg, _bord = SEV_PALETA[sev]
         # Badge de severidade com cor
         badge = Paragraph(
             f"<b>{label}</b>",
@@ -1727,7 +1735,7 @@ def construir_pagina_1_capa(
         lista = bucket.get(sev, [])
         if not lista:
             continue
-        color, bg, bord = SEV_PALETA[sev]
+        color, bg, _bord = SEV_PALETA[sev]
         # Badge col (col 0) → fundo da cor da severidade
         sev_style_cmds.append(("BACKGROUND", (0, row_idx), (0, row_idx), color))
         sev_style_cmds.append(("TEXTCOLOR",  (0, row_idx), (0, row_idx), BRANCO))
@@ -2541,7 +2549,7 @@ class LaudoOrgAudi:
     notas: list[NotaFiscal] = field(default_factory=list)
 
     # Modo 2 — entrada já processada (sobrescreve modo 1 quando fornecido)
-    resumo: Optional[ResumoFiscal] = None
+    resumo: ResumoFiscal | None = None
     achados: list[Achado] = field(default_factory=list)
     etapas: list[Etapa] = field(default_factory=list)
     planilha_vendas: list[PlanilhaMensal] = field(default_factory=list)
@@ -2549,13 +2557,13 @@ class LaudoOrgAudi:
     planilha_compras: list[PlanilhaMensal] = field(default_factory=list)
 
     # Resultados dos testes (preenchido por processar())
-    t01: Optional[ResultadoT01] = None
-    t02: Optional[ResultadoT02] = None
-    t04: Optional[ResultadoT04] = None
-    t07: Optional[ResultadoT07] = None
+    t01: ResultadoT01 | None = None
+    t02: ResultadoT02 | None = None
+    t04: ResultadoT04 | None = None
+    t07: ResultadoT07 | None = None
     hash_doc: str = ""
 
-    def processar(self) -> "LaudoOrgAudi":
+    def processar(self) -> LaudoOrgAudi:
         """
         Executa o motor: classifica, apura F1-F6, executa T-01 a T-08,
         constrói planilhas mensais e — se não houver achados manuais — sugere.
@@ -3094,7 +3102,7 @@ def _input(label: str, default: str = "", validador=None) -> str:
     while True:
         valor = input(f"  {label}{suf}: ").strip() or default
         if validador and not validador(valor):
-            print(f"     ✗ valor inválido — tente novamente")
+            print("     ✗ valor inválido — tente novamente")
             continue
         return valor
 
@@ -3122,9 +3130,9 @@ def modo_interativo() -> int:
 
     print("\n[2/3] PERÍODO AUDITADO")
     ano_atual = date.today().year - 1
-    inicio = _input(f"Data de início (YYYY-MM-DD)",
+    inicio = _input("Data de início (YYYY-MM-DD)",
                     default=f"{ano_atual}-01-01")
-    fim = _input(f"Data de fim (YYYY-MM-DD)",
+    fim = _input("Data de fim (YYYY-MM-DD)",
                  default=f"{ano_atual}-12-31")
 
     print("\n[3/3] DADOS DAS NOTAS FISCAIS")
@@ -3301,7 +3309,7 @@ def modo_batch(arquivo_lote: str) -> int:
     # Grava log de erros se houver falhas
     if erros:
         with open(log_path, "w", encoding="utf-8") as f:
-            f.write(f"# OrgAudi 1.0 — Log de erros do lote\n")
+            f.write("# OrgAudi 1.0 — Log de erros do lote\n")
             f.write(f"# Arquivo: {arquivo_lote}\n")
             f.write(f"# Timestamp: {timestamp}\n")
             f.write(f"# Total: {len(lote)} | Sucesso: {sucesso} | Falha: {falha}\n\n")

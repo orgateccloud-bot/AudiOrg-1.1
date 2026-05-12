@@ -45,7 +45,7 @@ def _cel_style(
 
 def _cabecalho_linha(ws, row: int, valores: list, larguras: list) -> None:
     """Renderiza uma linha de cabeçalho com cores e largura de colunas."""
-    for j, (v, w) in enumerate(zip(valores, larguras), 1):
+    for j, (v, w) in enumerate(zip(valores, larguras, strict=False), 1):
         _cel_style(ws, row, j, v, bold=True, bg='1E3A8A', fg='FFFFFF', align='center')
         ws.column_dimensions[get_column_letter(j)].width = w
     ws.row_dimensions[row].height = 20

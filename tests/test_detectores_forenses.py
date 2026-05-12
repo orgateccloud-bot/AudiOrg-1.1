@@ -7,7 +7,6 @@ from horizon_blue_one.agents.detectores_forenses import (
     detectar_smurfing,
 )
 
-
 # ── Carrossel ────────────────────────────────────────────────────────────────
 
 class TestCarrossel:

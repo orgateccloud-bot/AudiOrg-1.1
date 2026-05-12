@@ -71,6 +71,14 @@ class TipoTarefa(str, Enum):
     DECISAO_FINAL   = "decisao_final"
 
 
+# Tarefas operacionais elegíveis a downgrade Sonnet→Haiku quando score<50
+# e sem tipologias críticas. FORENSE / JURIDICO / DECISAO_FINAL ficam fora.
+_TAREFAS_OPERACIONAIS_HAIKU: frozenset[TipoTarefa] = frozenset({
+    TipoTarefa.AUDITORIA, TipoTarefa.ICMS,
+    TipoTarefa.ITR, TipoTarefa.LCDPR, TipoTarefa.ESOCIAL,
+})
+
+
 # ── Mix-alvo 90/8/2 (rev 2026-05-10) ─────────────────────────────────────────
 # 90% HAIKU  — toda operação de baixa/média complexidade fica aqui (com downgrade
 #              dinâmico de AUDITORIA para Haiku quando score<50 sem tipologias).
@@ -251,11 +259,9 @@ def rotear(
     # FORENSE / JURIDICO / DECISAO_FINAL ficam fora — exigem raciocínio cruzado
     # mesmo em casos limpos. Regra antiga (score<25 + ≤5 notas) preservada para
     # outras tarefas Sonnet que ainda existirem.
-    _AUDITORIA_OPERACIONAL = (TipoTarefa.AUDITORIA, TipoTarefa.ICMS,
-                              TipoTarefa.ITR, TipoTarefa.LCDPR, TipoTarefa.ESOCIAL)
     if (modelo_base == ModelType.SONNET
             and tipologias_criticas == 0
-            and tipo_tarefa in _AUDITORIA_OPERACIONAL
+            and tipo_tarefa in _TAREFAS_OPERACIONAIS_HAIKU
             and score_risco < 50):
         return RotingDecision(
             modelo=ModelType.HAIKU, tipo_tarefa=tipo_tarefa,

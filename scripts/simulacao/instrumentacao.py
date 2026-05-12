@@ -11,14 +11,15 @@ import contextlib
 import contextvars
 import hashlib
 import json
-from typing import Any, AsyncIterator, Iterator
+from typing import Iterator
 from unittest.mock import patch
 
-from horizon_blue_one.core.token_router import (
-    TipoTarefa, _CUSTO_INPUT, _CUSTO_OUTPUT, registrar_uso, rotear,
-)
 from horizon_blue_one.core.model_adapter import ModelType
-
+from horizon_blue_one.core.token_router import (
+    TipoTarefa,
+    registrar_uso,
+    rotear,
+)
 
 # ── Cache de system prompts (simulação) ──────────────────────────────────────
 # 1ª chamada com determinado system: paga 100% do input do system

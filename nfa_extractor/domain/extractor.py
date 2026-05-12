@@ -1,9 +1,10 @@
-import re
-import pdfplumber
 import logging
-from typing import List, Optional, Dict, Any
+import re
+from typing import Any, Dict, List
+
+import pdfplumber
 from pydantic import BaseModel, Field, field_validator
-from datetime import datetime
+
 from .constants import REGEX
 
 logger = logging.getLogger('NFA_Extractor')
@@ -12,9 +13,9 @@ logger = logging.getLogger('NFA_Extractor')
 
 class Parte(BaseModel):
     nome: str = ""
-    ie: Optional[str] = None
-    cpf_cnpj: Optional[str] = None
-    municipio: Optional[str] = None
+    ie: str | None = None
+    cpf_cnpj: str | None = None
+    municipio: str | None = None
 
 class Produto(BaseModel):
     codigo: str = ""
@@ -31,8 +32,8 @@ class NFA(BaseModel):
     valor_total: float = 0.0
     valor_icms: float = 0.0
     quantidade_total: float = 0.0
-    chave_acesso: Optional[str] = None
-    local_emissao: Optional[str] = None
+    chave_acesso: str | None = None
+    local_emissao: str | None = None
     
     remetente: Parte = Field(default_factory=Parte)
     destinatario: Parte = Field(default_factory=Parte)
@@ -45,7 +46,7 @@ class NFA(BaseModel):
         if isinstance(v, str):
             v = v.replace("R$", "").replace(".", "").replace(",", ".").strip()
             try: return float(v)
-            except: return 0.0
+            except (ValueError, TypeError): return 0.0
         return float(v or 0.0)
 
 # --- LOGIC ---
@@ -115,7 +116,7 @@ def extrair_notas(caminho_pdf: str) -> tuple[List[NFA], str, str]:
                         
                         # Extrai informações da linha
                         # Formato: NOME IE CPF/CNPJ MUNICIPIO
-                        linhas = [l.strip() for l in sub.split('\n') if l.strip()]
+                        linhas = [ln.strip() for ln in sub.split('\n') if ln.strip()]
                         p = Parte()
                         if len(linhas) > 1:
                             # Pula o cabeçalho (ex: INSCRIÇÃO ESTADUAL...) e pega os dados na próxima linha

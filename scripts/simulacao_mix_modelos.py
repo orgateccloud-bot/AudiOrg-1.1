@@ -23,10 +23,14 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from horizon_blue_one.core.token_router import (
-    _AGENTE_TAREFA, _CUSTO_INPUT, _CUSTO_OUTPUT, MAX_TOKENS_OTIMO,
-    ModelType, max_tokens_para, rotear,
+    _AGENTE_TAREFA,
+    _CUSTO_INPUT,
+    _CUSTO_OUTPUT,
+    MAX_TOKENS_OTIMO,
+    ModelType,
+    max_tokens_para,
+    rotear,
 )
-
 
 # ── Estimativas de tokens (rev 2026-05-09 com 5 alavancas ativas) ────────────
 # system: prompt fixo cacheável + compressão (instruções enxutas) → 400 tokens
@@ -109,21 +113,21 @@ def simular(
 
 def main() -> None:
     print(f"\n{'='*78}")
-    print(f"  SIMULAÇÃO ECONOMIA — 3 alavancas (mix · max_tokens · cache)")
+    print("  SIMULAÇÃO ECONOMIA — 3 alavancas (mix · max_tokens · cache)")
     print(f"{'='*78}")
-    print(f"\nPremissas:")
+    print("\nPremissas:")
     print(f"  System tokens (cacheable): {SYSTEM_TOKENS}")
     print(f"  User prompt tokens:        {USER_PROMPT_TOKENS}")
     print(f"  Cache hit rate (típico):   {CACHE_HIT_RATE*100:.0f}%")
     print(f"  Cache hit discount:        {(1-CACHE_DISCOUNT)*100:.0f}%")
-    print(f"  Output médio:              50% do max_tokens calibrado")
+    print("  Output médio:              50% do max_tokens calibrado")
 
     # 4 cenários, mesmo perfil de score (baseline)
-    print(f"\n--- BASELINE (score=42, sem otimizações) ---")
+    print("\n--- BASELINE (score=42, sem otimizações) ---")
     simular("[0] Tudo Sonnet, max_tokens=800, sem cache",
             use_mix=False, use_max_tokens_otimo=False, use_cache=False)
 
-    print(f"\n--- ALAVANCAS PROGRESSIVAS ---")
+    print("\n--- ALAVANCAS PROGRESSIVAS ---")
     simular("[1] +Mix 80/15/5",
             use_mix=True, use_max_tokens_otimo=False, use_cache=False)
     simular("[2] +Mix +max_tokens calibrado",
@@ -132,13 +136,13 @@ def main() -> None:
             "[3] +Mix +max_tokens +cache (FULL)",
             use_mix=True, use_max_tokens_otimo=True, use_cache=True)
 
-    print(f"\n--- CENÁRIO CRÍTICO (score=90, 4 tipologias) ---")
+    print("\n--- CENÁRIO CRÍTICO (score=90, 4 tipologias) ---")
     simular("[4] FULL otimizado em score crítico",
             score=90, tipologias=4, prob_aut=0.85,
             use_mix=True, use_max_tokens_otimo=True, use_cache=True)
 
     # Detalhe do max_tokens por agente
-    print(f"\n--- Calibração max_tokens por agente ---")
+    print("\n--- Calibração max_tokens por agente ---")
     by_size: dict[int, list[str]] = {}
     for aid, mt in sorted(MAX_TOKENS_OTIMO.items()):
         by_size.setdefault(mt, []).append(aid)

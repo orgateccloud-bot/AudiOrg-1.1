@@ -11,7 +11,6 @@ Otimizações de contexto:
 
 from __future__ import annotations
 
-import json
 import logging
 import operator
 from typing import Annotated, Any, List, TypedDict

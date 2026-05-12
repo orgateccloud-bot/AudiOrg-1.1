@@ -15,7 +15,6 @@ from horizon_blue_one.tools.mcp_bridge import (
     executar_tool,
 )
 
-
 # ── _db_path ─────────────────────────────────────────────────────────────────
 
 class TestDbPath:

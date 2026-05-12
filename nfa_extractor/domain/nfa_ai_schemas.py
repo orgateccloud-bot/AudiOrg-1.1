@@ -21,7 +21,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-
 # ─── Naturezas válidas (alinhadas com OrgAudi NaturezaNota) ─────────────────
 NaturezaStr = Literal["VENDA", "REMESSA", "LEILAO", "TRANSFERENCIA", "COMPRA", "OUTRAS"]
 
@@ -154,7 +153,7 @@ class ResultadoExtracaoPDF(BaseModel):
     tokens_output: int = 0
 
     @model_validator(mode="after")
-    def calcular_totais(self) -> "ResultadoExtracaoPDF":
+    def calcular_totais(self) -> ResultadoExtracaoPDF:
         self.total_extraidas = len(self.notas)
         self.por_regex  = sum(1 for n in self.notas if n.origem_extracao == "regex")
         self.por_claude = sum(1 for n in self.notas if "claude" in n.origem_extracao)

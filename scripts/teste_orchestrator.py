@@ -19,9 +19,9 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from nfa_extractor.domain.extractor import extrair_notas
-from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
 from horizon_blue_one.core.orchestrator import Orchestrator
+from horizon_blue_one.orgaudi.regra_especial_1 import aplicar_regra_especial_1
+from nfa_extractor.domain.extractor import extrair_notas
 
 
 async def _fake_call_model(model_type, prompt, system="", max_tokens=4096):
@@ -91,7 +91,7 @@ async def main(pasta: Path) -> None:
     # Pipeline auditor: A-07 → A-08 → A-23 → A-27 → A-13 → A-18 → A-00
     pipeline = ["A-07", "A-08", "A-23", "A-27", "A-13", "A-18", "A-00"]
     print(f"[2/3] Pipeline: {' -> '.join(pipeline)}")
-    print(f"      (A-13 e A-18 vao receber resultados_agentes acumulado)\n")
+    print("      (A-13 e A-18 vao receber resultados_agentes acumulado)\n")
 
     eventos_capturados: list[dict] = []
 
@@ -124,7 +124,7 @@ async def main(pasta: Path) -> None:
         print(f"     {tipo:<15} {n}")
 
     # Validacoes
-    print(f"\n  VALIDAÇÕES:")
+    print("\n  VALIDAÇÕES:")
     ceo_ok = "A-00" in resultados and resultados["A-00"].status in ("APROVADO", "ESCALADO")
     csuite_recebeu = "A-18" in resultados
     monitor_recebeu = "A-13" in resultados
@@ -133,10 +133,10 @@ async def main(pasta: Path) -> None:
     print(f"     [{'OK' if monitor_recebeu else 'X'}] A-13 Monitor processado (gap resolvido)")
     print(f"     [{'OK' if csuite_recebeu else 'X'}] A-18 C-Suite processado (gap resolvido)")
     print(f"     [{'OK' if bus_funcionou else 'X'}] EventBus publicou {len(eventos_capturados)} eventos")
-    print(f"     [OK] anonymize_payload aplicado em A-23 e A-27 (LGPD)")
-    print(f"     [OK] call_otimizado em A-23 e A-27 (A-Token rota Haiku/Sonnet/Opus)")
+    print("     [OK] anonymize_payload aplicado em A-23 e A-27 (LGPD)")
+    print("     [OK] call_otimizado em A-23 e A-27 (A-Token rota Haiku/Sonnet/Opus)")
 
-    print(f"\n  Verifique ledger: out/ledger.jsonl")
+    print("\n  Verifique ledger: out/ledger.jsonl")
 
 
 if __name__ == "__main__":

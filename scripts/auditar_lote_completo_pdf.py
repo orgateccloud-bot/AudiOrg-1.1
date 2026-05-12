@@ -61,6 +61,7 @@ def _extrair_produtor(nome: str, pdfs_por_pos: dict) -> tuple[list, list, str, s
     Retorna (nfas_raw, notas_dicts, cpf_contribuinte, nome_real).
     """
     from src.domain.extractor import extrair_notas
+
     from horizon_blue_one.nfa_bridge import nfa_to_dict
 
     nfas_raw: list = []
