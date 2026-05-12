@@ -6,16 +6,23 @@ Expõe:
 - create_access_token / create_refresh_token — JWT HS256 com tipo "access"/"refresh"
 - create_token_pair — gera o par e o payload de resposta
 - verify_refresh_token / get_current_user — validação com HTTPException(401)
+- revoke_refresh_token — marca jti como revogado (Redis/in-memory)
 - TokenData / TokenPair — schemas Pydantic v2
 
 Senhas: argon2id é o padrão para hashes novos. Hashes bcrypt herdados ($2a/$2b/$2y$)
 continuam verificáveis para não deslogar usuários antigos; verify_password() detecta
 o algoritmo pelo prefixo e o login endpoint deve chamar needs_rehash() para regerar
 o hash em argon2 transparentemente no próximo login bem-sucedido.
+
+Revogação de refresh tokens: cada refresh token carrega um `jti` aleatório.
+verify_refresh_token() consulta o store de revogação (Redis em prod, in-memory em dev)
+antes de aceitar o token. POST /auth/logout chama revoke_refresh_token() para marcar
+o jti como inválido até a data de expiração natural.
 """
 from __future__ import annotations
 
 import os
+import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -26,6 +33,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
+
+from api.auth.revocation_store import get_store as _get_revocation_store
 
 # ── Configurações ────────────────────────────────────────────────────────────
 
@@ -56,6 +65,8 @@ class TokenData(BaseModel):
     email: Optional[str] = None
     role: Optional[str] = None
     type: Optional[str] = None
+    jti: Optional[str] = None
+    exp: Optional[int] = None
 
 
 class TokenPair(BaseModel):
@@ -123,9 +134,15 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Emite refresh token (type=refresh, exp longa)."""
+    """Emite refresh token (type=refresh, exp longa).
+
+    Inclui `jti` aleatório (token_urlsafe(16)) para permitir revogação granular
+    sem invalidar todos os tokens do usuário.
+    """
     delta = expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    return _encode(data, delta, "refresh")
+    payload = data.copy()
+    payload.setdefault("jti", secrets.token_urlsafe(16))
+    return _encode(payload, delta, "refresh")
 
 
 def create_token_pair(data: dict) -> TokenPair:
@@ -159,11 +176,13 @@ def _to_token_data(payload: dict) -> TokenData:
         email=payload.get("email"),
         role=payload.get("role"),
         type=payload.get("type"),
+        jti=payload.get("jti"),
+        exp=payload.get("exp"),
     )
 
 
 def verify_refresh_token(token: str) -> TokenData:
-    """Valida refresh token; rejeita access ou inválido com 401."""
+    """Valida refresh token; rejeita access, inválido ou revogado com 401."""
     payload = _decode(token)
     if payload.get("type") != "refresh":
         raise HTTPException(
@@ -171,6 +190,40 @@ def verify_refresh_token(token: str) -> TokenData:
             detail="Token não é do tipo refresh.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    jti = payload.get("jti")
+    if jti and _get_revocation_store().is_revoked(jti):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token revogado.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return _to_token_data(payload)
+
+
+def revoke_refresh_token(token: str) -> TokenData:
+    """Revoga um refresh token válido pelo seu jti. Idempotente.
+
+    Retorna o TokenData do token revogado para que o caller possa logar/auditar.
+    O TTL no Redis é calibrado para o `exp` restante — sem desperdício de memória.
+    """
+    payload = _decode(token)
+    if payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Apenas refresh tokens podem ser revogados.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    jti = payload.get("jti")
+    if not jti:
+        # Tokens antigos (pré-#21) não têm jti — nada a revogar individualmente.
+        # O cliente deve descartar o token e refazer login.
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token sem jti — emita um novo par via /auth/login.",
+        )
+    exp = int(payload.get("exp", 0))
+    ttl_seconds = max(exp - int(datetime.utcnow().timestamp()), 0)
+    _get_revocation_store().revoke(jti, ttl_seconds)
     return _to_token_data(payload)
 
 
