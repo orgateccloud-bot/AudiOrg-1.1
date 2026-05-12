@@ -8,7 +8,7 @@ Notas de compatibilidade:
 - `sa.true()` / `sa.false()` substitui `sa.text("1")` para que `server_default`
   de Boolean funcione tanto em SQLite (renderiza `1`) quanto Postgres (`TRUE`).
 - `sa.func.now()` é cross-DB.
-- `audit_tasks` (faltante no schema original) incluída aqui.
+- `audit_tasks` movida para migração 002_audit_results_and_pdf_hash (evita duplicação).
 """
 from typing import Sequence, Union
 
@@ -83,20 +83,8 @@ def upgrade() -> None:
         sa.Column("pdf_path", sa.String(500)),
     )
 
-    # Audit tasks (status + payload de tasks de auditoria)
-    op.create_table(
-        "audit_tasks",
-        sa.Column("task_id", sa.String(128), primary_key=True),
-        sa.Column("status", sa.String(32), nullable=False, server_default="iniciado"),
-        sa.Column("progress", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("payload_json", sa.Text()),
-        sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now()),
-    )
-
 
 def downgrade() -> None:
-    op.drop_table("audit_tasks")
     op.drop_table("laudos")
     op.drop_table("produtos")
     op.drop_table("notas")

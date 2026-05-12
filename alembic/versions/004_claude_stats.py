@@ -1,7 +1,7 @@
 """claude_stats — agregado de uso/custo Claude por (periodo, modelo) (#27)
 
-Revision ID: 003_claude_stats
-Revises: 002_ledger_entries
+Revision ID: 004_claude_stats
+Revises: 003_ledger_entries
 Create Date: 2026-05-12
 """
 from typing import Sequence, Union
@@ -9,8 +9,8 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-revision: str = "003_claude_stats"
-down_revision: Union[str, None] = "002_ledger_entries"
+revision: str = "004_claude_stats"
+down_revision: Union[str, None] = "003_ledger_entries"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

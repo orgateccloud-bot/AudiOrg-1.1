@@ -1,7 +1,7 @@
 """ledger_entries — substitui o JSONL append-only por tabela queryable (#26)
 
-Revision ID: 002_ledger_entries
-Revises: 001_initial
+Revision ID: 003_ledger_entries
+Revises: 002_audit_results_and_pdf_hash
 Create Date: 2026-05-12
 """
 from typing import Sequence, Union
@@ -9,8 +9,8 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-revision: str = "002_ledger_entries"
-down_revision: Union[str, None] = "001_initial"
+revision: str = "003_ledger_entries"
+down_revision: Union[str, None] = "002_audit_results_and_pdf_hash"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
