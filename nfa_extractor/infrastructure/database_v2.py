@@ -87,15 +87,37 @@ class Laudo(Base):
     __tablename__ = "laudos"
 
     id: Mapped[int]              = mapped_column(Integer, primary_key=True)
-    cliente_id: Mapped[int]      = mapped_column(Integer, ForeignKey("clientes.id"), nullable=False)
+    cliente_id: Mapped[int]      = mapped_column(Integer, ForeignKey("clientes.id"), nullable=False, index=True)
     data_auditoria: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     veredito_ia: Mapped[str | None]  = mapped_column(Text)
     qtd_notas: Mapped[int | None]    = mapped_column(Integer)
     valor_total: Mapped[float | None] = mapped_column(Float)
     qtd_anomalias: Mapped[int | None] = mapped_column(Integer)
     pdf_path: Mapped[str | None]     = mapped_column(String(500))
+    # P0-6: integridade jurídica do PDF emitido (SHA-256 do binário)
+    pdf_sha256: Mapped[str | None]   = mapped_column(String(64))
 
     cliente = relationship("Cliente", back_populates="laudos")
+
+
+class AuditoriaResultado(Base):
+    """Resultado completo do pipeline NFA-e — substitui resultados_store in-memory.
+
+    P0-2: persistir para sobreviver a restart e suportar multi-instância.
+    Mantém JSON completo do output do pipeline; user_id é coluna para query
+    eficiente de "meus laudos".
+    """
+
+    __tablename__ = "auditoria_resultados"
+
+    result_id: Mapped[str]       = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str | None]  = mapped_column(String(64), index=True)
+    cliente_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("clientes.id"), index=True)
+    audit_hash: Mapped[str | None]  = mapped_column(String(64), index=True)
+    pdf_sha256: Mapped[str | None]  = mapped_column(String(64))
+    payload_json: Mapped[str]    = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
 
 class AuditTask(Base):
