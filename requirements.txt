@@ -46,6 +46,7 @@ torch>=2.2.0           # LSTM temporal; opcional — só necessário se LSTM_MOD
 structlog>=24.0.0          # logging estruturado com sanitização de PII
 tenacity>=9.0.0            # retry com backoff exponencial
 defusedxml>=0.7.1          # hardening contra XXE em parsing XML
+prometheus-client>=0.20.0  # /metrics/prometheus + claude_metrics middleware
 
 # ── HTTP / Requests ──────────────────────────────────────────────────────────
 requests>=2.31.0
