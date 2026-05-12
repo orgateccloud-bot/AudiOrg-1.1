@@ -1,0 +1,25 @@
+# Alíquotas FUNRURAL — fonte de verdade para horizon_blue_one/orgaudi/resumo_fiscal.py
+#
+# Mudanças aqui exigem bump em `versao` e PR revisado por @area/fiscal.
+# Histórico:
+#   - 2026.1 (2026-05-12): primeiro extração para YAML versionado (issue #20)
+#                          mantém o corte 01/04/2026 que já vigia em código.
+
+versao: "2026.1"
+fonte: "RFB Instrução Normativa 03/2026 + reforma FUNRURAL PEC 132/2023"
+
+# Data a partir da qual aliquotas_pos_corte passam a valer (inclusive).
+corte_vigencia: "2026-04-01"
+
+aliquotas_pre_corte:
+  pj: 0.0205                # Pessoa Jurídica (produtor rural empresarial)
+  pf: 0.0150                # Pessoa Física (produtor rural individual)
+  segurado_especial: 0.0150 # Segurado especial (RFB 03/2026 excepcionou)
+
+aliquotas_pos_corte:
+  pj: 0.0223
+  pf: 0.0163
+  segurado_especial: 0.0150 # Excepcionado — mantém 1,50%
+
+# Alíquota IRPF estimada sobre F5 (resultado rural). Mantida fora do corte.
+irpf_resultado_rural: 0.20
