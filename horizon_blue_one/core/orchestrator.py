@@ -329,10 +329,47 @@ class Orchestrator:
             return aid, None
 
     async def _executar_paralelo(self, agentes: list[str], payload: dict) -> dict[str, AgentResult]:
-        """F7: roda agentes independentes em paralelo. Cada um recebe o MESMO payload pré-calculado."""
-        coros = [self._executar_um(aid, payload) for aid in agentes]
-        outs = await asyncio.gather(*coros)
-        return {aid: r for aid, r in outs if r is not None}
+        """F7: roda agentes independentes em ondas, checando token budget entre ondas.
+
+        Onda 1 (Haiku barato): S1, S3, S5, S6 — agentes determinísticos/fiscais
+        Onda 2 (Sonnet/Opus caro): S2, S4    — forense e contábil
+
+        Antes da Onda 2, verifica `__orcamento_tokens__`: se já excedeu,
+        pula os caros (registra warning) e retorna o que tem.
+        """
+        from horizon_blue_one.core.token_router import snapshot_stats
+
+        ONDA_BARATA = {"S1", "S3", "S5", "S6"}
+        baratos = [a for a in agentes if a in ONDA_BARATA]
+        caros = [a for a in agentes if a not in ONDA_BARATA]
+
+        resultados: dict[str, AgentResult] = {}
+
+        # Onda 1
+        if baratos:
+            outs = await asyncio.gather(*[self._executar_um(a, payload) for a in baratos])
+            resultados.update({aid: r for aid, r in outs if r is not None})
+
+        # Check budget entre ondas
+        orcamento = int(payload.get("__orcamento_tokens__", 0))
+        tokens_inicio = int(payload.get("__tokens_inicio__", 0))
+        if orcamento > 0 and caros:
+            consumido = int(snapshot_stats().get("total_tokens", 0)) - tokens_inicio
+            if consumido > orcamento:
+                logger.warning(
+                    "orchestrator.budget_exceeded_paralelo",
+                    consumido=consumido,
+                    orcamento=orcamento,
+                    pulados=caros,
+                )
+                return resultados
+
+        # Onda 2
+        if caros:
+            outs = await asyncio.gather(*[self._executar_um(a, payload) for a in caros])
+            resultados.update({aid: r for aid, r in outs if r is not None})
+
+        return resultados
 
     async def _executar_sequencial(self, agentes: list[str], payload: dict) -> dict[str, AgentResult]:
         """Modo legado: cada agente vê resultados dos anteriores."""

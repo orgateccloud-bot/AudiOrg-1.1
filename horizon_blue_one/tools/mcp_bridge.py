@@ -36,18 +36,43 @@ import structlog
 logger = structlog.get_logger()
 
 # ─── Allowlist de domínios externos permitidos ───────────────────────────────
-# Adicione via env MCP_FETCH_ALLOWLIST="sefazgo.gov.br,receita.fazenda.gov.br"
+# Fontes (uniadas):
+#   1) mcp_allowlist.yaml (versionado, fonte canônica)
+#   2) env MCP_FETCH_ALLOWLIST="dom1,dom2" (override em runtime)
+#   3) hard-coded fallback (caso YAML ausente E env vazia)
+_FALLBACK_HARDCODED = frozenset({
+    "sefazgo.gov.br",
+    "nfe.fazenda.gov.br",
+    "receita.fazenda.gov.br",
+    "cadin.fazenda.gov.br",
+    "cidades.ibge.gov.br",
+})
+
+
+def _ler_yaml_allowlist() -> frozenset[str]:
+    """Lê dominios do mcp_allowlist.yaml. Retorna frozenset vazio se ausente/erro."""
+    yaml_path = Path(__file__).parent / "mcp_allowlist.yaml"
+    if not yaml_path.exists():
+        return frozenset()
+    try:
+        import yaml
+        data = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
+        dominios = data.get("dominios", [])
+        return frozenset(str(d).strip().lower() for d in dominios if str(d).strip())
+    except Exception as exc:
+        logger.warning("mcp_allowlist_yaml_erro", error=str(exc))
+        return frozenset()
+
+
 def _carregar_allowlist() -> frozenset[str]:
     env = os.environ.get("MCP_FETCH_ALLOWLIST", "")
     dominios = {d.strip().lower() for d in env.split(",") if d.strip()}
-    # Domínios seguros por padrão (APIs governamentais)
-    dominios |= {
-        "sefazgo.gov.br",
-        "nfe.fazenda.gov.br",
-        "receita.fazenda.gov.br",
-        "cadin.fazenda.gov.br",
-        "cidades.ibge.gov.br",
-    }
+    yaml_dominios = _ler_yaml_allowlist()
+    if yaml_dominios:
+        dominios |= yaml_dominios
+    else:
+        # YAML ausente → garante mínimo de segurança via hard-coded
+        dominios |= _FALLBACK_HARDCODED
     return frozenset(dominios)
 
 

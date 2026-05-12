@@ -232,6 +232,7 @@ class TestS6RH:
 
     @pytest.mark.asyncio
     async def test_caminho_llm_quando_esocial_presente(self):
+        # >5 trabalhadores OU pendentes não-vazios → não é trivial → LLM
         resp = json.dumps({
             "eventos_pendentes": ["S-1000"], "divergencias_inss": 100.0,
             "fgts_a_recolher": 50.0, "alertas": [], "conformidade": "DIVERGENTE",
@@ -239,7 +240,7 @@ class TestS6RH:
         with patch("horizon_blue_one.agents.s6_rh.call_otimizado",
                    new_callable=AsyncMock, return_value=(resp, {})):
             r = await RHAgent().process({
-                "esocial_data": {"trabalhadores": 5},
+                "esocial_data": {"trabalhadores": 10, "eventos_pendentes": ["S-1000"]},
                 "contribuinte": {"razao_social": "X"},
             })
         assert r.output["divergencias_inss"] == 100.0
@@ -254,7 +255,7 @@ class TestS6RH:
         with patch("horizon_blue_one.agents.s6_rh.call_otimizado",
                    new_callable=AsyncMock, return_value=(resp, {})):
             r = await RHAgent().process({
-                "esocial_data": {"x": 1},
+                "esocial_data": {"trabalhadores": 10, "inss_divergencia": 500},
                 "contribuinte": {},
             })
         assert r.status == "ESCALADO"
@@ -269,7 +270,19 @@ class TestS6RH:
         with patch("horizon_blue_one.agents.s6_rh.call_otimizado",
                    new_callable=AsyncMock, return_value=(resp, {})):
             r = await RHAgent().process({
-                "esocial_data": {"x": 1}, "contribuinte": {},
+                "esocial_data": {"trabalhadores": 10, "inss_divergencia": 100},
+                "contribuinte": {},
             })
         assert r.output["divergencias_inss"] == 0.0
         assert r.output["fgts_a_recolher"] == 0.0
+
+    @pytest.mark.asyncio
+    async def test_skip_llm_quando_esocial_trivial(self):
+        """Microprodutor (≤5 trab) sem pendências/divergência → determinístico."""
+        r = await RHAgent().process({
+            "esocial_data": {"trabalhadores": 3, "eventos_pendentes": []},
+            "contribuinte": {},
+        })
+        assert r.status == "APROVADO"
+        assert r.output["fonte"] == "deterministico"
+        assert "trivial" in r.output["alertas"][0]

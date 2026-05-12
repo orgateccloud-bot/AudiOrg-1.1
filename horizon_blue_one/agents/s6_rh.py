@@ -28,6 +28,26 @@ def _coerce_num(v) -> float:
         return 0.0
 
 
+def _audit_esocial_trivial(esocial: dict) -> bool:
+    """Heurística: dados eSocial sem divergência → skip LLM.
+
+    Critérios (todos devem ser verdadeiros):
+      - trabalhadores ≤ 5 (microprodutor; baixíssimo risco)
+      - eventos_pendentes ausente ou lista vazia
+      - inss_divergencia / fgts_pendente ausentes ou zerados
+    """
+    trabalhadores = int(esocial.get("trabalhadores", 0) or 0)
+    pendentes = esocial.get("eventos_pendentes", []) or []
+    inss_div = _coerce_num(esocial.get("inss_divergencia", 0))
+    fgts_pend = _coerce_num(esocial.get("fgts_pendente", 0))
+    return (
+        trabalhadores <= 5
+        and not pendentes
+        and inss_div == 0.0
+        and fgts_pend == 0.0
+    )
+
+
 class RHAgent(BaseAgent):
     agent_id = "S6"
     name = "@RH"
@@ -49,6 +69,22 @@ class RHAgent(BaseAgent):
                     "fonte": "deterministico",
                 },
                 confidence=0.80,
+            )
+
+        # Skip-LLM: dados triviais sem risco → resposta determinística
+        if _audit_esocial_trivial(esocial):
+            return AgentResult(
+                agent_id=self.agent_id,
+                status="APROVADO",
+                output={
+                    "eventos_pendentes": [],
+                    "divergencias_inss": 0.0,
+                    "fgts_a_recolher": 0.0,
+                    "alertas": ["eSocial trivial — análise determinística aplicada"],
+                    "conformidade": "CONFORME",
+                    "fonte": "deterministico",
+                },
+                confidence=0.82,
             )
 
         prompt = (

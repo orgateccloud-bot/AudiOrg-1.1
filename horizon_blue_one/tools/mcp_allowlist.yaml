@@ -1,0 +1,21 @@
+# MCP Bridge — Allowlist de domínios externos permitidos para _buscar_dados_externos.
+#
+# Edite este arquivo para liberar/bloquear hosts. Mudanças exigem reload do processo.
+# Para overrides rápidos sem editar o YAML, use env MCP_FETCH_ALLOWLIST="dom1,dom2".
+#
+# Domínios são comparados por hostname (sem porta). Match exato — sem wildcards.
+
+dominios:
+  # APIs Receita Federal / SEFAZ
+  - sefazgo.gov.br
+  - nfe.fazenda.gov.br
+  - receita.fazenda.gov.br
+  - cadin.fazenda.gov.br
+
+  # APIs IBGE / Geo
+  - cidades.ibge.gov.br
+  - servicodados.ibge.gov.br
+
+  # APIs eSocial
+  - login.esocial.gov.br
+  - webservices.producaorestrita.esocial.gov.br
