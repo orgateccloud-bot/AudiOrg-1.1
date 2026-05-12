@@ -1,15 +1,15 @@
 """A-00 @CEO — Governança, Anti-Alucinação, Decisão Final.
 
-Hardening v1.1:
-- Score de risco e valor da operação são VALIDADOS antes de seleção do modelo.
-  Cliente que injetar score_risco=0.99 no payload não força mais Opus:
-  exigimos `score_origem == "xgboost_scorer"` para considerar o valor.
-- Caso falte essa marcação, default Sonnet (custo controlado).
+Hardening v1.2:
+- Score e valor da operação são VALIDADOS antes de seleção do modelo
+  (cliente não força Opus injetando score_risco=0.99).
+- Chamada ao LLM passa por @Delta via BaseAgent._call_llm() — CPF/CNPJ
+  do payload de governança são anonimizados antes de sair para Claude.
 """
 import json
 
 from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
-from horizon_blue_one.core.model_adapter import ModelType, call_model
+from horizon_blue_one.core.model_adapter import ModelType
 
 SYSTEM = """Você é o agente @CEO da plataforma ORGATEC IA.
 Sua função é EXCLUSIVAMENTE governança: aprovar, rejeitar ou escalar outputs de outros agentes.
@@ -21,21 +21,13 @@ Critérios de escalação obrigatória:
 - Confiança do output < 0.50
 Responda APENAS com JSON: {"decisao":"APROVADO|REJEITADO|ESCALAR","motivo":"...","confianca":0.0}"""
 
-# Origem confiável de score: somente o módulo interno xgboost_scorer pode
-# carimbar o payload com este valor. Qualquer outro fica desconsiderado para
-# fins de upgrade de modelo.
 ORIGEM_SCORE_CONFIAVEL = {"xgboost_scorer", "a07_assurance", "internal"}
 
 
 def _selecionar_modelo(payload: dict) -> ModelType:
-    """Decide entre Opus e Sonnet com base em sinais CONFIÁVEIS.
-
-    Apenas score que veio do XGBoost (carimbado por `score_origem`) é
-    considerado. Valor da operação é aceito porque vem do schema validado.
-    """
+    """Decide entre Opus e Sonnet apenas com sinais carimbados como confiáveis."""
     score = float(payload.get("score_risco", 0) or 0)
     origem = str(payload.get("score_origem", "")).lower()
-
     score_confiavel = score if origem in ORIGEM_SCORE_CONFIAVEL else 0.0
 
     valor = float(payload.get("valor_total", 0) or 0)
@@ -53,20 +45,26 @@ class CEOAgent(BaseAgent):
         self.log("Iniciando avaliação de governança", payload_keys=list(payload.keys()))
 
         model_to_use = _selecionar_modelo(payload)
-        self.log(f"Selecionando modelo para decisão final: {model_to_use}")
+        self.log(f"Modelo selecionado: {model_to_use.value}")
 
-        prompt = f"Avalie o output do agente:\n{payload}"
-        resp = await call_model(model_to_use, prompt, SYSTEM, max_tokens=512)
+        resp = await self._call_llm(
+            model_type=model_to_use,
+            prompt_payload=payload,
+            prompt_template="Avalie o output do agente:\n{payload}",
+            system=SYSTEM,
+            max_tokens=512,
+        )
+
         try:
             data = json.loads(resp)
         except json.JSONDecodeError:
-            self.log_error("Resposta não é JSON válido", exc=None, raw=resp[:200])
+            self.log_error("Resposta não é JSON válido", raw=resp[:200])
             data = {
                 "decisao": "ESCALADO",
                 "motivo": "Falha ao parsear resposta do modelo",
                 "confianca": 0.0,
             }
-        # Confiança de fallback agora é 0.0 (anteriormente 0.9 enganoso).
+
         return AgentResult(
             agent_id=self.agent_id,
             status=data.get("decisao", "ESCALADO"),

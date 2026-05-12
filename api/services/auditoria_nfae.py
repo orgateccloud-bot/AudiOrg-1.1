@@ -1,23 +1,74 @@
+import hashlib
 import io
 import os
 import tempfile
 from datetime import datetime, timezone
-from typing import List, TYPE_CHECKING
+from typing import Any, List, TYPE_CHECKING
 
 from fastapi import UploadFile
 
-from nfa_extractor.domain.extractor import extrair_notas
-from nfa_extractor.application.analytics_engine import processar_para_dataframe
 from nfa_extractor.application.agents_engine import rodar_auditoria_completa
+from nfa_extractor.application.analytics_engine import processar_para_dataframe
+from nfa_extractor.domain.extractor import extrair_notas
+from nfa_extractor.infrastructure.audit_result_repo import (
+    get_resultado,
+    resultado_existe,
+    upsert_resultado,
+)
 
 if TYPE_CHECKING:
     from api.routes.auditoria import AuditoriaCompletaRequest
 
-# Estado de tarefas em memória (substituir por Redis em produção)
-tasks_status = {}
 
-# Resultados das auditorias NFA-e (para download)
-resultados_store: dict[str, dict] = {}
+# ── Proxy persistente para resultados (P0-2) ─────────────────────────────────
+
+
+class _DbResultadosProxy:
+    """Backend persistente para resultados de auditoria NFA-e.
+
+    Mantém interface dict-like (__setitem__, __getitem__, __contains__, get,
+    pop) para zero impacto em callers que usavam resultados_store[rid] = {...}.
+
+    Persistência via audit_result_repo (PostgreSQL/SQLite).
+    """
+
+    def __setitem__(self, key: str, value: dict[str, Any]) -> None:
+        upsert_resultado(
+            key,
+            value,
+            user_id=value.get("_user_id"),
+            audit_hash=value.get("audit_hash"),
+            pdf_sha256=value.get("pdf_sha256"),
+        )
+
+    def __getitem__(self, key: str) -> dict[str, Any]:
+        data = get_resultado(key)
+        if data is None:
+            raise KeyError(key)
+        return data
+
+    def __contains__(self, key: str) -> bool:
+        return resultado_existe(key)
+
+    def get(self, key: str, default: Any = None) -> Any:
+        data = get_resultado(key)
+        return default if data is None else data
+
+    def pop(self, key: str, default: Any = None) -> Any:
+        from nfa_extractor.infrastructure.audit_result_repo import deletar_resultado
+        data = get_resultado(key)
+        if data is None:
+            return default
+        deletar_resultado(key)
+        return data
+
+
+# Tasks ainda em memória (mantido por compat; tasks_status real vem de
+# auditoria_tasks.py que já persiste)
+tasks_status: dict[str, Any] = {}
+
+# Resultados persistentes (P0-2)
+resultados_store: _DbResultadosProxy = _DbResultadosProxy()
 
 # Estatísticas acumuladas em memória
 _stats = {
@@ -274,4 +325,20 @@ def gerar_pdf_nfae(resultado: dict) -> bytes:
     ))
 
     doc.build(story)
-    return buffer.getvalue()
+    pdf_bytes = buffer.getvalue()
+
+    # P0-6: integridade jurídica — hash SHA-256 do PDF emitido.
+    # Salva no resultado persistente para que GET /resultado/{id} possa devolver.
+    pdf_hash = hashlib.sha256(pdf_bytes).hexdigest()
+    result_id = resultado.get("result_id")
+    if result_id:
+        resultado["pdf_sha256"] = pdf_hash
+        upsert_resultado(
+            result_id,
+            resultado,
+            user_id=resultado.get("_user_id"),
+            audit_hash=resultado.get("audit_hash"),
+            pdf_sha256=pdf_hash,
+        )
+
+    return pdf_bytes

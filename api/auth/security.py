@@ -44,11 +44,20 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
 
 def _secret_key() -> str:
-    """Lê JWT_SECRET_KEY no momento do uso (permite que testes setem antes)."""
+    """Lê JWT_SECRET_KEY no momento do uso (permite que testes setem antes).
+
+    Em produção (APP_ENV=production), levanta RuntimeError se a variável
+    não estiver configurada ou for muito curta. Em dev/test, usa fallback
+    previsível APENAS para permitir testes locais sem configurar segredo.
+    """
     key = os.getenv("JWT_SECRET_KEY")
     if not key or len(key) < 32:
-        # Fallback dev — produção exige env válido
-        return "ORGATEC_SOVEREIGN_SHIELD_2026_DEV_FALLBACK_64BYTES_PLACEHOLDER"
+        if os.getenv("APP_ENV", "").lower() == "production":
+            raise RuntimeError(
+                "JWT_SECRET_KEY ausente ou < 32 caracteres em produção. "
+                "Gere com: python -c 'import secrets; print(secrets.token_urlsafe(64))'"
+            )
+        return "ORGATEC_DEV_FALLBACK_KEY_NAO_USAR_EM_PRODUCAO_32BYTES"
     return key
 
 

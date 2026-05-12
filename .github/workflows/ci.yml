@@ -35,7 +35,7 @@ jobs:
           DATABASE_URL: sqlite:///./test.db
           JWT_SECRET_KEY: test-secret-key-not-for-production
           ANTHROPIC_API_KEY: sk-ant-test-key
-        run: pytest tests/ -v --cov=. --cov-report=xml
+        run: pytest tests/ -v --cov=. --cov-report=xml --cov-fail-under=30
 
       - name: Upload coverage
         if: matrix.python-version == '3.12'

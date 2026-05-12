@@ -30,7 +30,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.middleware.rate_limit import RateLimitMiddleware
-from api.routes import auditoria, auth, clientes, agente
+from api.routes import auditoria, auth, batch, chat, clientes, agente
 from nfa_extractor.infrastructure.database_v2 import Base, engine
 
 logger = logging.getLogger("orgaudi")
@@ -51,13 +51,25 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+def _get_allowed_origins() -> list[str]:
+    """Origens CORS via env var ALLOWED_ORIGINS (CSV).
+
+    Sem env var, mantém os defaults de dev (localhost:5173-5175) para não
+    quebrar o setup local de desenvolvimento.
+    """
+    bruto = os.getenv("ALLOWED_ORIGINS", "").strip()
+    if not bruto:
+        return [
+            "http://localhost:5173", "http://localhost:5174", "http://localhost:5175",
+            "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175",
+        ]
+    return [origem.strip() for origem in bruto.split(",") if origem.strip()]
+
+
 app.add_middleware(RateLimitMiddleware, rate=60, window=60)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", "http://localhost:5174", "http://localhost:5175",
-        "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175",
-    ],
+    allow_origins=_get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -67,14 +79,22 @@ app.include_router(auth.router)
 app.include_router(auditoria.router)
 app.include_router(clientes.router)
 app.include_router(agente.router)
+app.include_router(chat.router)
+app.include_router(batch.router)
 
-try:
-    from api.routes import metrics, finance, nfa_ai_parser
-    app.include_router(metrics.router)
-    app.include_router(finance.router)
-    app.include_router(nfa_ai_parser.router)
-except Exception:
-    pass
+# Routers opcionais — carregados individualmente para que falha em um
+# (ex.: Supabase mal configurado em finance) não derrube os demais.
+# Cada falha é logada como WARNING para que o operador saiba que o endpoint
+# não está disponível, em vez de descobrir por reclamação de cliente.
+for _nome in ("metrics", "finance", "nfa_ai_parser"):
+    try:
+        _mod = __import__(f"api.routes.{_nome}", fromlist=["router"])
+        app.include_router(_mod.router)
+    except Exception as _exc:
+        logger.warning(
+            "router_opcional_indisponivel",
+            extra={"router": _nome, "erro": str(_exc), "tipo_erro": type(_exc).__name__},
+        )
 
 
 @app.get("/ping")
