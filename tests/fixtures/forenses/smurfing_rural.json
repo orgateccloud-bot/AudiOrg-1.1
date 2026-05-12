@@ -1,0 +1,12 @@
+{
+  "descricao": "6 notas pequenas (<R$ 10k) na mesma semana ISO (semana 10 de 2026, 02-08/mar). Aciona detectar_smurfing.",
+  "esperado": "smurfing: true",
+  "notas": [
+    {"numero": "S001", "valor_total": 8500.00, "data": "2026-03-02", "cfop": "5102"},
+    {"numero": "S002", "valor_total": 9200.00, "data": "2026-03-03", "cfop": "5102"},
+    {"numero": "S003", "valor_total": 7800.00, "data": "2026-03-04", "cfop": "5102"},
+    {"numero": "S004", "valor_total": 6500.00, "data": "2026-03-05", "cfop": "5102"},
+    {"numero": "S005", "valor_total": 9800.00, "data": "2026-03-06", "cfop": "5102"},
+    {"numero": "S006", "valor_total": 5200.00, "data": "2026-03-07", "cfop": "5102"}
+  ]
+}

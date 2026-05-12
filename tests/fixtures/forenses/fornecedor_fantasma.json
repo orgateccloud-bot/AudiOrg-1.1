@@ -1,0 +1,9 @@
+{
+  "descricao": "2 notas de VENDA com posicao DESTINATARIO e ie_remetente vazia/ISENTO. Aciona detectar_fornecedor_fantasma — retorna lista com 2 suspeitos.",
+  "esperado": "suspeitos: [F001, F002]",
+  "notas": [
+    {"numero": "F001", "natureza": "VENDA DE GADO", "posicao": "DESTINATARIO", "ie_remetente": "", "valor_total": 45000.00},
+    {"numero": "F002", "natureza": "VENDA DE BOVINOS", "posicao": "DESTINATARIO", "ie_remetente": "ISENTO", "valor_total": 38000.00},
+    {"numero": "F003", "natureza": "VENDA DE GADO", "posicao": "DESTINATARIO", "ie_remetente": "123456789", "valor_total": 50000.00}
+  ]
+}
