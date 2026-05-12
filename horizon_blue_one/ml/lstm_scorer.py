@@ -83,7 +83,8 @@ def _feature_nota(nota: dict, media_global: float, std_global: float) -> list[fl
     valor_norm = (valor - media_global) / (std_global + 1e-9)
 
     cfop_str = str(nota.get("cfop", "0"))
-    cfop_hash = (int(hashlib.md5(cfop_str.encode()).hexdigest(), 16) % 100) / 100.0
+    # MD5 aqui é feature-hashing determinístico (não criptográfico).
+    cfop_hash = (int(hashlib.md5(cfop_str.encode(), usedforsecurity=False).hexdigest(), 16) % 100) / 100.0
 
     data_str = str(nota.get("data", ""))[:10]
     try:
