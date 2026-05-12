@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 
 from api.auth.security import TokenData, get_current_user
+from api.middleware.prometheus import render_metrics
 
 router = APIRouter(prefix="/metrics", tags=["Observabilidade"])
 
@@ -16,3 +17,9 @@ def ai_metrics(current_user: TokenData = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Acesso restrito a administradores.")
     from nfa_extractor.infrastructure.ai_client import get_ai_metrics
     return get_ai_metrics()
+
+
+@router.get("/prometheus")
+def prometheus_metrics():
+    """Endpoint Prometheus — text/plain (público; ACL via gateway/scrape)."""
+    return render_metrics()

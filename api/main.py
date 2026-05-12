@@ -30,6 +30,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.middleware.body_size_limit import BodySizeLimitMiddleware
+from api.middleware.prometheus import PrometheusMiddleware
 from api.middleware.rate_limit import RateLimitMiddleware
 from api.middleware.security_headers import SecurityHeadersMiddleware
 from api.routes import agente, auditoria, auth, clientes
@@ -73,6 +74,7 @@ app.add_middleware(
     max_body_size=int(os.environ.get("MAX_BODY_SIZE_MB", "10")) * 1024 * 1024,
 )
 app.add_middleware(RateLimitMiddleware, rate=60, window=60)
+app.add_middleware(PrometheusMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origens_prod if _em_producao else _origens_dev,
