@@ -1,0 +1,21 @@
+apiVersion: v2
+name: orgaudi
+description: OrgAudi — Plataforma de auditoria fiscal com multi-agent LLM
+type: application
+version: 1.0.0
+appVersion: 8.0.0
+
+maintainers:
+  - name: OrgAudi Team
+    email: orgaudi@orgatec.cloud
+
+keywords:
+  - audit
+  - nfa
+  - fiscal
+  - llm
+  - multi-agent
+
+home: https://github.com/orgateccloud-bot/AudiOrg-1.1
+sources:
+  - https://github.com/orgateccloud-bot/AudiOrg-1.1

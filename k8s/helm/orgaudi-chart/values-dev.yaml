@@ -1,0 +1,47 @@
+# DEV Environment (Minikube/Kind)
+global:
+  environment: development
+  domain: orgaudi.local
+
+backend:
+  replicaCount: 1
+  image:
+    tag: latest
+  service:
+    type: ClusterIP
+
+frontend:
+  replicaCount: 1
+  image:
+    tag: latest
+
+postgresql:
+  enabled: true
+  auth:
+    password: devpassword
+  primary:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+
+redis:
+  enabled: true
+  master:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+
+autoscaling:
+  enabled: false
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: orgaudi.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend: frontend

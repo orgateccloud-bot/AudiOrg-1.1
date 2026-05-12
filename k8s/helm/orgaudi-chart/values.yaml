@@ -1,0 +1,151 @@
+# Configuração Global
+global:
+  environment: production
+  domain: orgaudi.example.com
+
+# Backend API (FastAPI)
+backend:
+  replicaCount: 3
+  image:
+    repository: ghcr.io/orgateccloud-bot/orgaudi-api
+    tag: v8.0.0
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8082
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+  env:
+    - name: LOG_LEVEL
+      value: "INFO"
+    - name: WORKERS
+      value: "4"
+
+# Frontend (React)
+frontend:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/orgateccloud-bot/orgaudi-frontend
+    tag: v8.0.0
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# PostgreSQL (Database)
+postgresql:
+  enabled: true
+  auth:
+    username: orgaudi
+    password: changeme
+    database: orgaudi_prod
+
+  primary:
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+
+# Redis (Cache + Rate Limit)
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: changeme
+
+  master:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# Qdrant (Vector DB para embeddings)
+qdrant:
+  enabled: true
+  image:
+    repository: qdrant/qdrant
+    tag: latest
+
+  service:
+    port: 6333
+
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+
+# Ingress
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+  hosts:
+    - host: orgaudi.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          backend: backend
+        - path: /
+          pathType: Prefix
+          backend: frontend
+
+  tls:
+    - secretName: orgaudi-tls
+      hosts:
+        - orgaudi.example.com
+
+# HPA (Horizontal Pod Autoscaler)
+autoscaling:
+  enabled: true
+  backend:
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  frontend:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
+
+# Monitoring (Prometheus)
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    scrapeInterval: 30s
+
+# Security
+security:
+  networkPolicy:
+    enabled: true
+  podSecurityPolicy:
+    enabled: true

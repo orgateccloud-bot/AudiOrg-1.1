@@ -1,0 +1,66 @@
+# STAGING Environment
+global:
+  environment: staging
+  domain: staging-orgaudi.exemplo.com.br
+
+backend:
+  replicaCount: 2
+  image:
+    tag: latest
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+frontend:
+  replicaCount: 2
+  image:
+    tag: latest
+
+postgresql:
+  enabled: true
+  primary:
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClassName: standard
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+
+redis:
+  enabled: true
+  master:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+
+autoscaling:
+  enabled: true
+  backend:
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+  frontend:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+
+monitoring:
+  enabled: true

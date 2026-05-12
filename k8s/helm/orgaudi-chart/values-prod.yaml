@@ -1,0 +1,104 @@
+# PRODUCTION Environment
+global:
+  environment: production
+  domain: orgaudi.exemplo.com.br
+
+backend:
+  replicaCount: 5
+  image:
+    repository: registry.exemplo.com/orgaudi-api
+    tag: v8.0.0
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+
+frontend:
+  replicaCount: 3
+  image:
+    repository: registry.exemplo.com/orgaudi-frontend
+    tag: v8.0.0
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+
+postgresql:
+  enabled: true
+  auth:
+    password: # Deve ser injetado via secrets
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClassName: fast-ssd
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "8Gi"
+        cpu: "4000m"
+
+redis:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 10Gi
+  master:
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+
+autoscaling:
+  enabled: true
+  backend:
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  frontend:
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 60
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: orgaudi.exemplo.com.br
+      paths:
+        - path: /api
+          pathType: Prefix
+          backend: backend
+        - path: /
+          pathType: Prefix
+          backend: frontend
+  tls:
+    - secretName: orgaudi-tls
+      hosts:
+        - orgaudi.exemplo.com.br
+
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    retention: 30d
+
+security:
+  networkPolicy:
+    enabled: true
+  podSecurityPolicy:
+    enabled: true
