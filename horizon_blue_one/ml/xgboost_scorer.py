@@ -73,7 +73,14 @@ def _try_load_model() -> None:
                 _xgb_model_version = "heuristic"
 
 
-_try_load_model()
+# Lazy: NÃO carrega no import. Primeira chamada a `calcular_score*` chama
+# `_try_load_model()` via `_modelo_atual()`. Reduz tempo de startup e evita
+# overhead quando o módulo é importado mas não usado.
+def _modelo_atual():
+    """Devolve o modelo carregado (lazy). Chamado apenas no primeiro score."""
+    if not _xgb_load_attempted:
+        _try_load_model()
+    return _xgb_model
 
 
 # ─── Extração de features ──────────────────────────────────────────────────────
@@ -139,12 +146,13 @@ def calcular_score(notas: list) -> dict:
     features_base = extrair_features(notas)
     modo          = "heuristico"
 
-    if _xgb_model is not None:
+    modelo = _modelo_atual()
+    if modelo is not None:
         try:
             import pandas as pd
             features_full = extrair_features_completas(notas)
             X    = pd.DataFrame([features_full])[FEATURE_COLS_TREINADO]
-            prob = float(_xgb_model.predict_proba(X)[0][1])
+            prob = float(modelo.predict_proba(X)[0][1])
             score = round(prob * 100, 1)
             modo  = "xgboost_treinado"
         except Exception as exc:
@@ -188,12 +196,13 @@ def calcular_score_com_cache(notas: list, detectores_cache: dict) -> dict:
     """
     features_base = extrair_features(notas)
     modo = "heuristico"
-    if _xgb_model is not None:
+    modelo = _modelo_atual()
+    if modelo is not None:
         try:
             import pandas as pd
             features_full = extrair_features_completas(notas, detectores_cache)
             X = pd.DataFrame([features_full])[FEATURE_COLS_TREINADO]
-            prob = float(_xgb_model.predict_proba(X)[0][1])
+            prob = float(modelo.predict_proba(X)[0][1])
             score = round(prob * 100, 1)
             modo = "xgboost_treinado"
         except Exception as exc:

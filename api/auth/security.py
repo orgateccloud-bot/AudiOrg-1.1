@@ -143,7 +143,14 @@ def verify_refresh_token(token: str) -> TokenData:
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenData:
-    """Dependency FastAPI: extrai e valida access token; rejeita refresh ou inválido."""
+    """Dependency FastAPI: extrai e valida access token; rejeita refresh, blacklist ou inválido."""
+    from api.auth.blacklist import esta_revogado
+    if esta_revogado(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token revogado.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     payload = _decode(token)
     if payload.get("type") != "access":
         raise HTTPException(

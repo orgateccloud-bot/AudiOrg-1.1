@@ -3,6 +3,7 @@ ORGATEC – Rotas de Autenticação
 POST /auth/login    → recebe email+senha, devolve access + refresh token
 POST /auth/refresh  → recebe refresh token, devolve novo par de tokens
 GET  /auth/me       → devolve dados do usuário autenticado
+POST /auth/logout   → revoga access token (blacklist até exp)
 POST /auth/seed     → cria usuário admin inicial (apenas se não existir)
 """
 
@@ -13,11 +14,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from api.auth.blacklist import adicionar as blacklist_adicionar
 from api.auth.security import (
     TokenData,
     create_token_pair,
     get_current_user,
     hash_password,
+    oauth2_scheme,
     verify_password,
     verify_refresh_token,
 )
@@ -108,6 +111,21 @@ def me(current_user: TokenData = Depends(get_current_user), db: Session = Depend
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
     return {"id": user.id, "email": user.email, "nome": user.nome, "role": user.role}
+
+
+@router.post("/logout", status_code=204)
+def logout(token: str = Depends(oauth2_scheme)):
+    """Revoga o access token corrente até o seu `exp` original (blacklist)."""
+    from jose import jwt as jose_jwt
+
+    from api.auth.security import ALGORITHM, _secret_key
+    try:
+        payload = jose_jwt.decode(token, _secret_key(), algorithms=[ALGORITHM])
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="Token inválido.") from exc
+    exp = float(payload.get("exp", 0))
+    blacklist_adicionar(token, exp)
+    return None
 
 
 @router.post("/seed", status_code=201)
