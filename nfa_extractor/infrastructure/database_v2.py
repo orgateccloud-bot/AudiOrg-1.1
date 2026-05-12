@@ -111,6 +111,26 @@ class AuditTask(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
 
+class LedgerEntry(Base):
+    """Ledger de eventos de agentes (substitui o JSONL append-only).
+
+    Cada chamada de agente, roteamento ou decisão crítica vira uma linha.
+    Imutável depois de criada — só inserts, sem updates.
+    """
+
+    __tablename__ = "ledger_entries"
+
+    id: Mapped[int]              = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ts: Mapped[datetime]         = mapped_column(DateTime, default=_utcnow, index=True)
+    requisicao_id: Mapped[str]   = mapped_column(String(64), nullable=False, index=True)
+    agent_id: Mapped[str]        = mapped_column(String(32), nullable=False, index=True)
+    acao: Mapped[str]            = mapped_column(String(255), nullable=False)
+    tier: Mapped[str | None]     = mapped_column(String(32))
+    status: Mapped[str]          = mapped_column(String(32), nullable=False, default="APROVADO")
+    audit_hash: Mapped[str | None] = mapped_column(String(64), index=True)
+    payload_json: Mapped[str | None] = mapped_column(Text)
+
+
 # ── Conexão: seleção de engine por DATABASE_URL ──────────────────────────────
 #
 # Política (#23):
