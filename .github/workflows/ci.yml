@@ -176,6 +176,31 @@ jobs:
         run: mypy horizon_blue_one/core/privacy.py horizon_blue_one/orgaudi/regra_especial_1.py horizon_blue_one/nfa_bridge --ignore-missing-imports --no-strict-optional
         continue-on-error: true
 
+  core-strict-gate:
+    name: Core Strict Gate (ruff + mypy)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar ruff + mypy + deps de runtime de core/
+        run: |
+          python -m pip install --upgrade pip
+          pip install "ruff>=0.4.0" "mypy>=1.10" types-PyYAML
+          pip install -r requirements.txt
+
+      - name: Gate estrito em horizon_blue_one/core/
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/lint_core_strict.py
+
   dependency-audit:
     name: Dependency Audit (pip-audit)
     runs-on: ubuntu-latest
