@@ -27,9 +27,11 @@ Como funciona:
 from __future__ import annotations
 
 import asyncio
+import copy
 import hashlib
 import json
 import re
+import threading
 import time
 from collections.abc import Callable
 from typing import Any
@@ -368,9 +370,14 @@ def _caixa_aggregator(notas: list[dict]) -> dict:
     }
 
 
-# ── Memo cache (TTL 5min, in-process) ───────────────────────────────────────
+# ── Memo cache (TTL 5min, in-process, thread-safe) ──────────────────────────
+# Isolamento por requisição: cache armazena snapshot imutável (deepcopy na
+# escrita); leituras retornam deepcopy para que mutações downstream (a08, a26)
+# não contaminem o cache compartilhado entre requisições concorrentes.
 _MEMO_CACHE: dict[str, tuple[float, dict]] = {}
 _MEMO_TTL = 300.0  # segundos
+_MEMO_LOCK = threading.Lock()
+_MEMO_MAX = 256
 
 
 def _payload_hash(payload: dict) -> str:
@@ -382,6 +389,12 @@ def _payload_hash(payload: dict) -> str:
     }
     raw = json.dumps(chave, sort_keys=True, default=str, ensure_ascii=False)
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+def reset_precalc_cache() -> None:
+    """Limpa o memo cache. Uso restrito a fixtures de teste."""
+    with _MEMO_LOCK:
+        _MEMO_CACHE.clear()
 
 
 # ── Orquestração paralela ───────────────────────────────────────────────────
@@ -397,10 +410,15 @@ async def precalcular(payload: dict) -> dict:
     # ── Memo: hit por contribuinte+notas+lcdpr ───────────────────────────────
     h = _payload_hash(payload)
     agora = time.time()
-    cached = _MEMO_CACHE.get(h)
+    with _MEMO_LOCK:
+        cached = _MEMO_CACHE.get(h)
     if cached and (agora - cached[0]) < _MEMO_TTL:
-        payload["__precalc__"] = cached[1]
-        payload["notas_classificadas"] = cached[1]["notas_re1"]
+        # Deep copy: cada requisição recebe seu próprio snapshot. Agentes
+        # downstream (a08_geo, a26_anomalia) podem mutar __precalc__ sem
+        # contaminar o cache nem outras requisições concorrentes.
+        snapshot = copy.deepcopy(cached[1])
+        payload["__precalc__"] = snapshot
+        payload["notas_classificadas"] = snapshot["notas_re1"]
         logger.info("precalc.memo_hit", hash=h, idade_s=round(agora - cached[0], 1))
         return payload
 
@@ -450,13 +468,23 @@ async def precalcular(payload: dict) -> dict:
         "grafo":        grafo,
         "caixa":        caixa,
     }
+    # Snapshot imutável para o cache (independente do payload que vai pra
+    # downstream). Sem isso, agentes mutando __precalc__ corromperiam o
+    # cache compartilhado.
+    snapshot_cache = copy.deepcopy(pre_resultado)
     payload["__precalc__"] = pre_resultado
     payload["notas_classificadas"] = notas_re1  # compat A-08/A-26
-    _MEMO_CACHE[h] = (agora, pre_resultado)
-    # Limpa entradas expiradas (keep memory bounded)
-    if len(_MEMO_CACHE) > 256:
-        for k in [k for k, (t, _) in _MEMO_CACHE.items() if (agora - t) > _MEMO_TTL]:
-            _MEMO_CACHE.pop(k, None)
+    with _MEMO_LOCK:
+        _MEMO_CACHE[h] = (agora, snapshot_cache)
+        # Limpa entradas expiradas (keep memory bounded). check-then-pop
+        # protegido pelo mesmo lock para evitar race entre requisições.
+        if len(_MEMO_CACHE) > _MEMO_MAX:
+            expirados = [
+                k for k, (t, _) in _MEMO_CACHE.items()
+                if (agora - t) > _MEMO_TTL
+            ]
+            for k in expirados:
+                _MEMO_CACHE.pop(k, None)
 
     logger.info(
         "precalc.concluido",
