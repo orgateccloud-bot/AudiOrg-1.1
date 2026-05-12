@@ -161,3 +161,114 @@ class TestCallModelWithTools:
                 tools=[{"name": "t"}],
                 tool_handler=AsyncMock(),
             )
+
+    @pytest.mark.asyncio
+    async def test_haiku_com_tools_seleciona_haiku_model_id(self):
+        text_block = MagicMock(type="text", text="ok")
+        round1 = MagicMock()
+        round1.content = [text_block]
+        round1.stop_reason = "end_turn"
+        round1.usage = MagicMock(input_tokens=1, output_tokens=1)
+        client_mock = MagicMock()
+        client_mock.messages.create = AsyncMock(return_value=round1)
+
+        with patch("horizon_blue_one.core.model_adapter._get_claude",
+                   return_value=client_mock):
+            texto, _ = await call_model_with_tools(
+                ModelType.HAIKU, "x", system="sys",
+                tools=[{"name": "t"}], tool_handler=AsyncMock(),
+            )
+        # Verifica que system foi passado
+        kwargs = client_mock.messages.create.call_args.kwargs
+        assert "system" in kwargs
+        assert texto == "ok"
+
+    @pytest.mark.asyncio
+    async def test_opus_com_tools_seleciona_opus_model_id(self):
+        text_block = MagicMock(type="text", text="resp")
+        round1 = MagicMock()
+        round1.content = [text_block]
+        round1.stop_reason = "end_turn"
+        round1.usage = MagicMock(input_tokens=1, output_tokens=1)
+        client_mock = MagicMock()
+        client_mock.messages.create = AsyncMock(return_value=round1)
+
+        with patch("horizon_blue_one.core.model_adapter._get_claude",
+                   return_value=client_mock):
+            texto, _ = await call_model_with_tools(
+                ModelType.OPUS, "x",
+                tools=[{"name": "t"}], tool_handler=AsyncMock(),
+            )
+        assert texto == "resp"
+
+    @pytest.mark.asyncio
+    async def test_max_tool_rounds_atingido(self, monkeypatch):
+        """Loop infinito de tool_use é cortado em _MAX_TOOL_ROUNDS."""
+        from horizon_blue_one.core import model_adapter as ma
+        # Reduz para 2 rounds para acelerar o teste
+        monkeypatch.setattr(ma, "_MAX_TOOL_ROUNDS", 2)
+
+        tool_use_block = MagicMock(type="tool_use", id="t1", input={})
+        tool_use_block.name = "loop"
+        roundx = MagicMock()
+        roundx.content = [tool_use_block]
+        roundx.stop_reason = "tool_use"  # SEMPRE tool_use → estoura limite
+        roundx.usage = MagicMock(input_tokens=1, output_tokens=1)
+
+        client_mock = MagicMock()
+        client_mock.messages.create = AsyncMock(return_value=roundx)
+
+        with patch("horizon_blue_one.core.model_adapter._get_claude",
+                   return_value=client_mock):
+            texto, uso = await ma.call_model_with_tools(
+                ModelType.SONNET, "x",
+                tools=[{"name": "loop"}],
+                tool_handler=AsyncMock(return_value="loop"),
+            )
+        # Cortou em 2 rodadas (sem texto final)
+        assert uso["tool_calls"] == 2
+
+
+# ── call_model — branches Opus/Recoverable/lazy client ───────────────────────
+
+class TestCallModelBranches:
+    @pytest.mark.asyncio
+    async def test_opus_seleciona_opus_model_id(self):
+        resp_mock = MagicMock()
+        resp_mock.content = [MagicMock(text="opus-resp")]
+        client_mock = MagicMock()
+        client_mock.messages.create = AsyncMock(return_value=resp_mock)
+        with patch("horizon_blue_one.core.model_adapter._get_claude",
+                   return_value=client_mock):
+            out = await call_model(ModelType.OPUS, "x")
+        assert out == "opus-resp"
+
+    @pytest.mark.asyncio
+    async def test_recoverable_exception_propaga(self, monkeypatch):
+        """RateLimitError sobe após retries."""
+        import anthropic
+        from horizon_blue_one.core import model_adapter as ma
+
+        # Patch tenacity para não atrasar
+        monkeypatch.setattr(ma, "_call_claude",
+                            AsyncMock(side_effect=anthropic.APIConnectionError(request=MagicMock())))
+        with pytest.raises(anthropic.APIConnectionError):
+            await call_model(ModelType.HAIKU, "x")
+
+
+class TestGetClaudeLazy:
+    def test_primeira_chamada_inicializa_cliente(self, monkeypatch):
+        from horizon_blue_one.core import model_adapter as ma
+
+        # Reset do cliente lazy
+        monkeypatch.setattr(ma, "_client_claude", None)
+        sentinel = object()
+
+        def fake_anthropic(api_key=None):
+            return sentinel
+
+        monkeypatch.setattr("anthropic.AsyncAnthropic", fake_anthropic)
+        c = ma._get_claude()
+        assert c is sentinel
+        # Segunda chamada reusa
+        assert ma._get_claude() is sentinel

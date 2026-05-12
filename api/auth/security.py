@@ -11,7 +11,7 @@ Expõe:
 from __future__ import annotations
 
 import os
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -80,7 +80,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 def _encode(data: dict, expires_delta: timedelta, token_type: str) -> str:
     payload = data.copy()
     payload["type"] = token_type
-    payload["exp"] = datetime.utcnow() + expires_delta
+    payload["exp"] = datetime.now(UTC) + expires_delta
     return jwt.encode(payload, _secret_key(), algorithm=ALGORITHM)
 
 

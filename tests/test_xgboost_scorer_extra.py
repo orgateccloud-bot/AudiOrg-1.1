@@ -126,6 +126,46 @@ class TestTryLoadModel:
         assert xgb_mod._xgb_model is None
         assert xgb_mod._xgb_model_version == "heuristic"
 
+    def test_already_attempted_retorna_early(self, monkeypatch):
+        """Segunda chamada ao loader é early-return (cobre L57)."""
+        monkeypatch.setattr(xgb_mod, "_xgb_load_attempted", True)
+        # Mesmo com env apontando para arquivo válido, não tenta carregar
+        chamou = []
+        monkeypatch.setattr("os.path.exists", lambda _p: chamou.append(_p) or True)
+        xgb_mod._try_load_model()
+        assert chamou == []  # nunca chegou no exists()
+
+    def test_carga_sucesso_seta_modelo_e_version(self, tmp_path, monkeypatch):
+        """Cobre L65-69: modelo carrega ok, version=hash do arquivo."""
+        modelo = tmp_path / "ok.json"
+        modelo.write_bytes(b"binario-modelo-fake")
+
+        monkeypatch.setattr(xgb_mod, "_xgb_load_attempted", False)
+        monkeypatch.setattr(xgb_mod, "_xgb_model", None)
+        monkeypatch.setenv("XGBOOST_MODEL_PATH", str(modelo))
+
+        # Mocka xgb.XGBClassifier para não exigir xgboost real
+        import sys
+        import types
+        fake_xgb_mod = types.ModuleType("xgboost")
+        class _FakeClassifier:
+            def load_model(self, p):
+                pass
+        fake_xgb_mod.XGBClassifier = _FakeClassifier
+        monkeypatch.setitem(sys.modules, "xgboost", fake_xgb_mod)
+
+        xgb_mod._try_load_model()
+        assert xgb_mod._xgb_model is not None
+        # Version é hash truncado (12 chars hex)
+        assert len(xgb_mod._xgb_model_version) == 12
+
+
+class TestConcentracaoVazia:
+    def test_concentracao_lista_vazia(self):
+        from horizon_blue_one.ml.xgboost_scorer import _concentracao
+        # destinos vazio retorna 0.0 (cobre L125)
+        assert _concentracao([]) == 0.0
+
 
 # ── FEATURE_COLS_TREINADO sanidade ───────────────────────────────────────────
 
