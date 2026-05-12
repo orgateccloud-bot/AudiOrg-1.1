@@ -131,6 +131,31 @@ class LedgerEntry(Base):
     payload_json: Mapped[str | None] = mapped_column(Text)
 
 
+class ClaudeStats(Base):
+    """Agregado de uso/custo Claude por (periodo, modelo) — #27.
+
+    Substitui o relatório in-memory do token_router por agregação persistente
+    com upsert batched. Uma linha por (periodo_iso, modelo): N calls do mesmo
+    modelo num mesmo período somam tokens/custo na mesma linha. Periodicidade
+    padrão: hora UTC truncada (YYYY-MM-DDTHH:00:00Z).
+    """
+
+    __tablename__ = "claude_stats"
+
+    id: Mapped[int]              = mapped_column(Integer, primary_key=True, autoincrement=True)
+    periodo: Mapped[str]         = mapped_column(String(32), nullable=False, index=True)
+    modelo: Mapped[str]          = mapped_column(String(32), nullable=False, index=True)
+    calls: Mapped[int]           = mapped_column(Integer, nullable=False, default=0)
+    tokens_in: Mapped[int]       = mapped_column(Integer, nullable=False, default=0)
+    tokens_out: Mapped[int]      = mapped_column(Integer, nullable=False, default=0)
+    cost_usd_acumulado: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("periodo", "modelo", name="uq_claude_stats_periodo_modelo"),
+    )
+
+
 # ── Conexão: seleção de engine por DATABASE_URL ──────────────────────────────
 #
 # Política (#23):
