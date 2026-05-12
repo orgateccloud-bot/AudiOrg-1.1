@@ -10,12 +10,12 @@ import os
 from pathlib import Path
 
 
-def _ler_arquivo_env(caminho: Path) -> dict:
-    resultado = {}
+def _ler_arquivo_env(caminho: Path) -> dict[str, str]:
+    resultado: dict[str, str] = {}
     if caminho.exists():
-        with open(caminho, encoding="utf-8") as f:
-            for linha in f:
-                linha = linha.strip()
+        with caminho.open(encoding="utf-8") as f:
+            for raw in f:
+                linha = raw.strip()
                 if linha and "=" in linha and not linha.startswith("#"):
                     k, v = linha.split("=", 1)
                     resultado[k.strip()] = v.strip()

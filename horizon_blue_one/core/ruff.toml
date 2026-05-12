@@ -1,0 +1,55 @@
+# Configuração estrita para horizon_blue_one/core/ — núcleo crítico do sistema.
+#
+# Herda do ruff.toml raiz e adiciona categorias mais rigorosas, pois este
+# diretório concentra:
+#   - orchestrator: coordenação multi-agente
+#   - model_adapter: I/O com Anthropic API
+#   - token_router: contabilidade de custo
+#   - precalc: pré-cálculo determinístico
+#   - ledger: trilha de auditoria
+#
+# Quebras aqui afetam todos os agentes. Vale o custo extra de linting.
+
+extend = "../../ruff.toml"
+
+[lint]
+# Estende seleção do raiz com categorias focadas em bugs reais.
+# Não usa `ALL` porque categorias D (docstrings) e PLR2004 (magic values)
+# trariam ruído sem capturar bugs.
+extend-select = [
+    "ASYNC",  # padrões async corretos (await em sleep, etc)
+    "TRY",    # raise/except idiomáticos
+    "RET",    # return statements consistentes
+    "SIM",    # simplificações idiomáticas
+    "ARG",    # argumentos não usados
+    "PIE",    # antipatterns
+    "PERF",   # antipatterns de performance
+    "TID",    # imports organizados
+    "PTH",    # pathlib em vez de os.path
+    "T20",    # sem print() em produção
+    "FBT",    # boolean trap em args
+    "PLE",    # pylint errors (bugs reais)
+    "N",      # PEP8 naming
+]
+
+# Ignores adicionais — escopo: core/.
+# Mantém ignores do raiz e adiciona razões específicas do núcleo.
+extend-ignore = [
+    "TRY003",  # mensagens de exceção fora da classe — verbosidade demais
+    "TRY300",  # else block em try — debatível, dificulta linearidade
+    "TRY400",  # logger.exception em vez de logger.error — não queremos traceback completo em prod
+    "FBT001",  # bool positional — código existente; refatorar quebra callsites
+    "FBT002",  # idem
+    "PERF401", # list-comprehension em vez de for+append — preferimos clareza
+    "PLR0913", # too many args — assinaturas vêm de contratos públicos
+    "PLR2004", # magic values em comparações — ruído em código numérico
+    "SIM105",  # contextlib.suppress — try/except/pass mais legível aqui
+    "TID252",  # relative imports — projeto usa absolutos
+]
+
+[lint.per-file-ignores]
+# Lazy imports para evitar ciclos — intencional em orchestrator/precalc.
+"orchestrator.py" = ["PLC0415", "BLE001"]  # BLE: boundary que captura erros de agentes
+"precalc.py"      = ["PLC0415", "BLE001"]  # BLE: fallback determinístico não pode crashar
+"ledger.py"       = ["BLE001"]             # BLE: I/O de auditoria nunca pode quebrar pipeline
+"model_adapter.py" = ["PLW0603"]           # global do client singleton é proposital

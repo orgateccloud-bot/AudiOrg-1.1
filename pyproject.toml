@@ -1,0 +1,38 @@
+# pyproject.toml — configuração de ferramentas (sem build).
+# OrgAudi não distribui como pacote PyPI; este arquivo centraliza configs.
+
+# ─── mypy ────────────────────────────────────────────────────────────────────
+# Estratégia: gate estrito em horizon_blue_one/core/ (núcleo crítico) e
+# tolerante no resto. Justificativa: mudanças em core/ afetam todos os agentes,
+# então o custo de typing detalhado se paga em estabilidade.
+
+[tool.mypy]
+python_version       = "3.10"
+follow_imports       = "silent"
+ignore_missing_imports = true   # libs como xgboost/structlog não têm stubs
+warn_unused_ignores  = false
+exclude              = "horizon_blue_one/agents/_legacy"
+
+# Strict-mode em core/ — equivale a `mypy --strict` mas seletivo.
+[[tool.mypy.overrides]]
+module = "horizon_blue_one.core.*"
+disallow_untyped_defs           = true   # funções públicas precisam de tipos
+disallow_incomplete_defs        = true   # argumentos parciais não passam
+check_untyped_defs              = true   # checa corpo de funções não-anotadas
+warn_return_any                 = true
+warn_unreachable                = true
+strict_equality                 = true
+no_implicit_optional            = true   # `def f(x: int = None)` deve ser `int | None`
+
+# Trade-off pragmático: dict/list sem args genéricos é comum em código existente
+# (carga de migração inviável). Desligamos esta check para evitar paralisia.
+disallow_any_generics           = false
+
+# Tipagem dinâmica via Any em **kwargs é idiomática em adapters HTTP/MCP.
+disallow_any_explicit           = false
+
+# call_overload das libs (Anthropic SDK) usa Literal types que requerem mock
+# elaborado — desabilitamos no escopo do adapter.
+[[tool.mypy.overrides]]
+module = "horizon_blue_one.core.model_adapter"
+disable_error_code = ["call-overload", "no-any-return", "type-arg"]

@@ -30,6 +30,7 @@ from __future__ import annotations
 import asyncio
 import importlib
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -62,10 +63,14 @@ class EventBus:
 
     def __init__(self) -> None:
         self._queue: asyncio.Queue[EventoBus] = asyncio.Queue()
-        self._subscribers: list[tuple[str, Any]] = []   # (filtro_tipo, async_fn)
-        self._task: asyncio.Task | None = None
+        self._subscribers: list[tuple[str, Callable[[EventoBus], Awaitable[None]]]] = []
+        self._task: asyncio.Task[None] | None = None
 
-    def subscribe(self, tipo_filtro: str, callback) -> None:
+    def subscribe(
+        self,
+        tipo_filtro: str,
+        callback: Callable[[EventoBus], Awaitable[None]],
+    ) -> None:
         """tipo_filtro: '*' para todos, ou exato (ESCALADO, APROVADO, etc.)."""
         self._subscribers.append((tipo_filtro, callback))
 
@@ -122,6 +127,10 @@ _AGENT_MODULES = {
 
 # Pipeline default consolidado: S1..S7 (CEO chamado por último automaticamente)
 PIPELINE_DEFAULT = ["S1", "S2", "S3", "S4", "S5", "S6", "S7"]
+
+# Ondas de execução paralela — Onda 1: agentes determinísticos/Haiku (baratos).
+# Onda 2 implícita: complemento (S2/S4 — forense/contábil em Sonnet, caros).
+ONDA_BARATA = frozenset({"S1", "S3", "S5", "S6"})
 
 
 def _instanciar(agent_id: str) -> BaseAgent:
@@ -339,7 +348,6 @@ class Orchestrator:
         """
         from horizon_blue_one.core.token_router import snapshot_stats
 
-        ONDA_BARATA = {"S1", "S3", "S5", "S6"}
         baratos = [a for a in agentes if a in ONDA_BARATA]
         caros = [a for a in agentes if a not in ONDA_BARATA]
 

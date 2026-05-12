@@ -31,6 +31,7 @@ import hashlib
 import json
 import re
 import time
+from collections.abc import Callable
 from typing import Any
 
 import structlog
@@ -311,7 +312,7 @@ async def precalcular(payload: dict) -> dict:
     # PASSO 2: 9 funções restantes em paralelo
     loop = asyncio.get_event_loop()
 
-    async def _run(fn, *args):
+    async def _run(fn: Callable[..., Any], *args: Any) -> Any:
         return await loop.run_in_executor(None, fn, *args)
 
     pii, docs, det, cfop, lcdpr_d, itr_d, grafo, caixa = await asyncio.gather(
@@ -364,6 +365,7 @@ async def precalcular(payload: dict) -> dict:
     return payload
 
 
-def get_precalc(payload: dict) -> dict[str, Any]:
+def get_precalc(payload: dict[str, Any]) -> dict[str, Any]:
     """Retorna o cache `__precalc__` ou {} se ainda não rodou."""
-    return payload.get("__precalc__", {})
+    pc: dict[str, Any] = payload.get("__precalc__", {})
+    return pc

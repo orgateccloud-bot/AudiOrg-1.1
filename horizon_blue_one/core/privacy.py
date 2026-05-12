@@ -1,5 +1,8 @@
 """Protocolo @Delta — Anonimização de PII antes de enviar dados para LLMs."""
+from __future__ import annotations
+
 import re
+from typing import Any
 
 RE_CPF  = re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b")
 RE_CNPJ = re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b")
@@ -10,16 +13,17 @@ _CAMPOS_SENSIVEIS = {
 }
 
 
-def anonymize_pii(text: str) -> str:
+def anonymize_pii(text: Any) -> Any:
+    # Guarda defensiva: pode receber None/int em estruturas heterogêneas (ledger,
+    # payloads parciais). Retorna a entrada inalterada para não quebrar o caller.
     if not isinstance(text, str):
         return text
     text = RE_CPF.sub("[CPF_PROTEGIDO]", text)
-    text = RE_CNPJ.sub("[CNPJ_PROTEGIDO]", text)
-    return text
+    return RE_CNPJ.sub("[CNPJ_PROTEGIDO]", text)
 
 
-def anonymize_payload(payload: dict) -> dict:
-    novo = {}
+def anonymize_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    novo: dict[str, Any] = {}
     for k, v in payload.items():
         if k in _CAMPOS_SENSIVEIS and isinstance(v, str):
             novo[k] = f"[NOME_REDACTED_{len(v)}]"
