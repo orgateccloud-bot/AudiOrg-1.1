@@ -25,13 +25,17 @@ Fluxo:
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import re
+import threading
 import time
+from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 import fitz  # PyMuPDF
 
@@ -382,6 +386,77 @@ def _parse_bloco_regex(bloco: str) -> tuple[NFAExtraida | None, float]:
     return nota, nota.confianca
 
 
+# ─── Cache LRU de lotes Claude ───────────────────────────────────────────────
+# F2.a do estudo Claude: relatórios noturnos e re-runs de PDFs hitam o mesmo
+# conjunto de blocos. Cache por (modelo, conteúdo dos blocos) evita re-pagar
+# os tokens. Bounded para não vazar memória em pipelines longos.
+
+_PARSE_CACHE: OrderedDict[str, tuple[list[dict[str, Any]], int, int]] = OrderedDict()
+_PARSE_CACHE_LOCK = threading.Lock()
+_PARSE_CACHE_MAX  = 256
+_PARSE_CACHE_HITS:   int = 0
+_PARSE_CACHE_MISSES: int = 0
+
+
+def _hash_lote(modelo: str, blocos: list[str]) -> str:
+    h = hashlib.sha256()
+    h.update(modelo.encode("utf-8"))
+    h.update(b"\x00")
+    for b in blocos:
+        h.update(b.encode("utf-8", errors="ignore"))
+        h.update(b"\x00")
+    return h.hexdigest()[:32]
+
+
+def _cache_get(key: str) -> tuple[list[NFAExtraida], int, int] | None:
+    """Retorna cópia fresca das notas (NFAExtraida é mutável)."""
+    global _PARSE_CACHE_HITS, _PARSE_CACHE_MISSES
+    with _PARSE_CACHE_LOCK:
+        val = _PARSE_CACHE.get(key)
+        if val is None:
+            _PARSE_CACHE_MISSES += 1
+            return None
+        _PARSE_CACHE_HITS += 1
+        _PARSE_CACHE.move_to_end(key)
+        notas_dump, t_in, t_out = val
+    # Reconstrói NFAExtraida a partir dos dicts armazenados.
+    notas = [NFAExtraida(**d) for d in notas_dump]
+    return notas, t_in, t_out
+
+
+def _cache_put(key: str, notas: list[NFAExtraida], t_in: int, t_out: int) -> None:
+    with _PARSE_CACHE_LOCK:
+        _PARSE_CACHE[key] = (
+            [n.model_dump() for n in notas],
+            t_in,
+            t_out,
+        )
+        _PARSE_CACHE.move_to_end(key)
+        while len(_PARSE_CACHE) > _PARSE_CACHE_MAX:
+            _PARSE_CACHE.popitem(last=False)
+
+
+def cache_stats() -> dict[str, Any]:
+    """Hits/misses/size/hit_rate do cache de lotes Claude."""
+    with _PARSE_CACHE_LOCK:
+        total = _PARSE_CACHE_HITS + _PARSE_CACHE_MISSES
+        return {
+            "hits":     _PARSE_CACHE_HITS,
+            "misses":   _PARSE_CACHE_MISSES,
+            "size":     len(_PARSE_CACHE),
+            "hit_rate": (_PARSE_CACHE_HITS / total) if total else 0.0,
+        }
+
+
+def cache_reset() -> None:
+    """Zera contadores e esvazia cache. Usado em testes e em re-deploy."""
+    global _PARSE_CACHE_HITS, _PARSE_CACHE_MISSES
+    with _PARSE_CACHE_LOCK:
+        _PARSE_CACHE.clear()
+        _PARSE_CACHE_HITS = 0
+        _PARSE_CACHE_MISSES = 0
+
+
 # ─── Parser Claude (fallback semântico) ──────────────────────────────────────
 
 def _parse_lote_claude(
@@ -397,6 +472,13 @@ def _parse_lote_claude(
     """
     if not blocos:
         return [], 0, 0
+
+    cache_key = _hash_lote(modelo, blocos)
+    hit = _cache_get(cache_key)
+    if hit is not None:
+        notas, t_in, t_out = hit
+        logger.info("Claude cache HIT [%s] lote=%d in=%d out=%d", modelo, len(blocos), t_in, t_out)
+        return notas, t_in, t_out
 
     # Monta prompt com todos os blocos numerados
     blocos_txt = "\n\n---NOTA---\n".join(
@@ -472,6 +554,7 @@ def _parse_lote_claude(
             except Exception as e:
                 logger.warning("Nota Claude inválida ignorada: %s — %s", r, e)
 
+    _cache_put(cache_key, notas, resp.usage.input_tokens, resp.usage.output_tokens)
     return notas, resp.usage.input_tokens, resp.usage.output_tokens
 
 

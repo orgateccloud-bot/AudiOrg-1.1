@@ -161,21 +161,103 @@ def _lstm_score(notas: list[dict]) -> dict:
         return {"modo": "erro", "score_medio": 0.0, "produtores_anomalos": [], "detalhes": {}}
 
 
-# ── 6. CFOP validator ───────────────────────────────────────────────────────
+# ── 6. CFOP validator + breakdown por tipo (F3: detalha entrada/saída) ──────
+# 1xxx = entrada interna · 2xxx = entrada interestadual
+# 5xxx = saída interna   · 6xxx = saída interestadual
+def _cfop_tipo(cfop: str) -> str:
+    if not cfop:
+        return "ausente"
+    primeiro = cfop[0]
+    if primeiro == "1":
+        return "entrada_interna"
+    if primeiro == "2":
+        return "entrada_interestadual"
+    if primeiro == "5":
+        return "saida_interna"
+    if primeiro == "6":
+        return "saida_interestadual"
+    return "outro"
+
+
 def _cfop_validator(notas: list[dict]) -> dict:
     divergentes: list[dict] = []
     validos = 0
+    breakdown: dict[str, int] = {
+        "entrada_interna": 0, "entrada_interestadual": 0,
+        "saida_interna":   0, "saida_interestadual":   0,
+        "outro":           0, "ausente":               0,
+    }
+    valor_por_tipo: dict[str, float] = dict.fromkeys(breakdown, 0.0)
     for n in notas:
         cfop = str(n.get("cfop", "")).strip()
+        tipo = _cfop_tipo(cfop)
+        breakdown[tipo] += 1
+        valor_por_tipo[tipo] += float(n.get("valor_total", 0) or 0)
         if cfop in _CFOP_RURAL_VALIDOS:
             validos += 1
         else:
-            divergentes.append({"numero": n.get("numero", "?"), "cfop": cfop})
+            divergentes.append({"numero": n.get("numero", "?"), "cfop": cfop, "tipo": tipo})
     return {
-        "total":         len(notas),
-        "validos":       validos,
-        "divergentes":   divergentes[:50],
+        "total":              len(notas),
+        "validos":            validos,
+        "divergentes":        divergentes[:50],
         "total_divergencias": len(divergentes),
+        "por_tipo":           breakdown,
+        "valor_por_tipo":     {k: round(v, 2) for k, v in valor_por_tipo.items()},
+    }
+
+
+# ── 6b. ICMS — alíquota efetiva por CFOP + divergências (F3) ────────────────
+# Heurística rural GO: intra-UF (1xxx/5xxx) tende a alíquota efetiva ≈ 0
+# (isenção/diferimento). Interestadual rural deve cair na banda 7%–18%.
+# Divergências sinalizam — não decidem; S3/@Fiscalista valida no LLM.
+_BANDA_ALIQ_INTERESTADUAL = (0.05, 0.18)
+
+
+def _icms_por_cfop(notas: list[dict]) -> dict:
+    """Agrega ICMS por tipo de CFOP e detecta alíquotas suspeitas."""
+    agregado: dict[str, dict[str, float]] = {}
+    suspeitas: list[dict] = []
+    for n in notas:
+        cfop  = str(n.get("cfop", "")).strip()
+        tipo  = _cfop_tipo(cfop)
+        valor = float(n.get("valor_total", 0) or 0)
+        icms  = float(n.get("valor_icms",  0) or 0)
+        slot  = agregado.setdefault(tipo, {"valor_total": 0.0, "icms_total": 0.0, "n": 0})
+        slot["valor_total"] += valor
+        slot["icms_total"]  += icms
+        slot["n"]           += 1
+        if valor > 0:
+            aliq = icms / valor
+            if tipo == "saida_interestadual" and not (
+                _BANDA_ALIQ_INTERESTADUAL[0] <= aliq <= _BANDA_ALIQ_INTERESTADUAL[1]
+            ):
+                suspeitas.append({
+                    "numero": n.get("numero", "?"),
+                    "cfop":   cfop,
+                    "aliquota_efetiva": round(aliq, 4),
+                    "motivo": "fora_banda_interestadual",
+                })
+            elif tipo in ("entrada_interna", "saida_interna") and icms > 0:
+                suspeitas.append({
+                    "numero": n.get("numero", "?"),
+                    "cfop":   cfop,
+                    "aliquota_efetiva": round(aliq, 4),
+                    "motivo": "icms_em_intra_uf_rural",
+                })
+    resumo: dict[str, dict[str, float]] = {}
+    for tipo, slot in agregado.items():
+        v = slot["valor_total"]
+        resumo[tipo] = {
+            "n":                int(slot["n"]),
+            "valor_total":      round(v, 2),
+            "icms_total":       round(slot["icms_total"], 2),
+            "aliquota_efetiva": round(slot["icms_total"] / v, 4) if v > 0 else 0.0,
+        }
+    return {
+        "por_tipo":    resumo,
+        "suspeitas":   suspeitas[:50],
+        "n_suspeitas": len(suspeitas),
     }
 
 
@@ -205,16 +287,36 @@ def _lcdpr_diff(notas: list[dict], lcdpr: dict) -> dict:
     }
 
 
-# ── 8. ITR — Capacidade de uso ──────────────────────────────────────────────
+# ── 8. ITR — Capacidade de uso + classe GU (F3) ─────────────────────────────
+# Classes GU conforme Lei 9.393/96 (alíquotas progressivas do ITR):
+#   alta:        gu >= 80%   (alíquota mínima)
+#   media:       50% <= gu < 80%
+#   baixa:       30% <= gu < 50%
+#   subutilizada: gu < 30%  (alíquota máxima — risco de autuação)
+def _classe_gu(gu_pct: float, area_total: float) -> str:
+    if area_total <= 0:
+        return "sem_imovel"
+    if gu_pct >= 80:
+        return "alta"
+    if gu_pct >= 50:
+        return "media"
+    if gu_pct >= 30:
+        return "baixa"
+    return "subutilizada"
+
+
 def _itr_capacidade(contribuinte: dict) -> dict:
     area_total = float(contribuinte.get("area_total_ha", 0))
     area_util  = float(contribuinte.get("area_utilizada_ha", 0))
     gu = (area_util / area_total * 100) if area_total > 0 else 0
+    classe = _classe_gu(gu, area_total)
     return {
         "area_total_ha":   area_total,
         "area_utilizada":  area_util,
         "gu_pct":          round(gu, 2),
         "subutilizado":    gu < 80 if area_total > 0 else False,
+        "classe_gu":       classe,
+        "risco_autuacao":  classe in ("baixa", "subutilizada"),
     }
 
 
@@ -315,11 +417,12 @@ async def precalcular(payload: dict) -> dict:
     async def _run(fn: Callable[..., Any], *args: Any) -> Any:
         return await loop.run_in_executor(None, fn, *args)
 
-    pii, docs, det, cfop, lcdpr_d, itr_d, grafo, caixa = await asyncio.gather(
+    pii, docs, det, cfop, icms, lcdpr_d, itr_d, grafo, caixa = await asyncio.gather(
         _run(_pii_scanner, notas_re1),
         _run(_doc_validator, notas_re1, contribuinte),
         _run(_detectores_all, notas_re1),
         _run(_cfop_validator, notas_re1),
+        _run(_icms_por_cfop, notas_re1),
         _run(_lcdpr_diff, notas_re1, lcdpr),
         _run(_itr_capacidade, contribuinte),
         _run(_grafo_metrics, notas_re1),
@@ -341,6 +444,7 @@ async def precalcular(payload: dict) -> dict:
         "xgboost":      xgb,
         "lstm":         lstm,
         "cfop":         cfop,
+        "icms":         icms,
         "lcdpr":        lcdpr_d,
         "itr":          itr_d,
         "grafo":        grafo,
