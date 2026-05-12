@@ -47,5 +47,9 @@ defusedxml>=0.7.1          # hardening contra XXE em parsing XML
 # ── HTTP / Requests ──────────────────────────────────────────────────────────
 requests>=2.31.0
 
+# ── Rate limit / cache ───────────────────────────────────────────────────────
+redis>=5.0.0               # backend de rate limit (api/middleware/rate_limit.py)
+fakeredis>=2.0.0           # backend in-memory para testes do rate limit
+
 # ── UI Desktop (opcional — Tkinter app) ──────────────────────────────────────
 customtkinter>=5.2.0
