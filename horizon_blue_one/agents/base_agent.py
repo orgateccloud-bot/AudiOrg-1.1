@@ -1,11 +1,21 @@
-"""Classe base para todos os agentes ORGATEC IA — Pydantic V2 + audit_hash SHA-256."""
-import json
+"""Classe base para todos os agentes ORGATEC IA — Pydantic V2 + audit_hash SHA-256.
+
+Inclui `_call_llm()` que aplica @Delta (privacy.anonymize_payload) automaticamente
+antes de chamar o modelo. Agentes não devem chamar model_adapter.call_model()
+direto — sempre passar pelo BaseAgent para garantir conformidade LGPD.
+"""
 import hashlib
-import structlog
+import json
+import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from typing import Any, Union
+
+import structlog
 from pydantic import BaseModel
+
+from horizon_blue_one.core.model_adapter import ModelType, call_model
+from horizon_blue_one.core.privacy import anonymize_payload
 
 logger = structlog.get_logger()
 
@@ -25,7 +35,7 @@ class AgentResult(BaseModel):
         raw = (
             self.output.model_dump_json()
             if isinstance(self.output, BaseModel)
-            else json.dumps(self.output, sort_keys=True, ensure_ascii=False)
+            else json.dumps(self.output, sort_keys=True, ensure_ascii=False, default=str)
         )
         try:
             from horizon_blue_one.core.config import settings
@@ -42,6 +52,8 @@ class BaseAgent(ABC):
     @abstractmethod
     async def process(self, payload: dict) -> AgentResult: ...
 
+    # ── Logging ──────────────────────────────────────────────────────────────
+
     def log(self, msg: str, **kwargs):
         structlog.get_logger().info(msg, agent_id=self.agent_id, agent_name=self.name, **kwargs)
 
@@ -53,6 +65,39 @@ class BaseAgent(ABC):
             error=str(exc) if exc else None,
             **kwargs,
         )
+
+    # ── Chamada protegida ao LLM ─────────────────────────────────────────────
+
+    async def _call_llm(
+        self,
+        model_type: ModelType,
+        prompt_payload: dict,
+        prompt_template: str,
+        system: str = "",
+        max_tokens: int = 4096,
+        requisicao_id: str | None = None,
+    ) -> str:
+        """Aplica @Delta no payload e chama o modelo.
+
+        Args:
+            model_type: HAIKU | SONNET | OPUS
+            prompt_payload: dict que será inserido no prompt — passa por @Delta
+            prompt_template: string com `{payload}` placeholder
+            system: system prompt (não anonimizado — é texto técnico)
+            max_tokens: limite de saída
+            requisicao_id: UUID rastreável (default: gerado aqui)
+
+        Returns:
+            Resposta bruta do modelo (string).
+        """
+        req_id = requisicao_id or str(uuid.uuid4())
+        payload_seguro = anonymize_payload(
+            prompt_payload, requisicao_id=req_id, agente=self.agent_id,
+        )
+        prompt = prompt_template.format(payload=json.dumps(payload_seguro, ensure_ascii=False, default=str))
+        return await call_model(model_type, prompt, system, max_tokens=max_tokens)
+
+    # ── Helpers de parsing ───────────────────────────────────────────────────
 
     @staticmethod
     def parse_json_response(

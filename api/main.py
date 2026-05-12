@@ -30,7 +30,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.middleware.rate_limit import RateLimitMiddleware
-from api.routes import auditoria, auth, clientes, agente
+from api.routes import auditoria, auth, batch, chat, clientes, agente
 from nfa_extractor.infrastructure.database_v2 import Base, engine
 
 logger = logging.getLogger("orgaudi")
@@ -79,6 +79,8 @@ app.include_router(auth.router)
 app.include_router(auditoria.router)
 app.include_router(clientes.router)
 app.include_router(agente.router)
+app.include_router(chat.router)
+app.include_router(batch.router)
 
 # Routers opcionais — carregados individualmente para que falha em um
 # (ex.: Supabase mal configurado em finance) não derrube os demais.

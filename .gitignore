@@ -60,3 +60,4 @@ data/laudos/
 
 # Logs
 extractor.log
+.coverage

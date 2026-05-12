@@ -1,15 +1,19 @@
-"""A-27 @Epsilon — Forensic Intelligence & Relationship Mining
-Mindset: "Follow the money"
+"""A-27 @Epsilon — Forensic Intelligence & Relationship Mining.
+
+Mindset: "Follow the money".
 
 Analisa grafos de transações para detectar:
 - Triangulação fiscal (ciclos no grafo remetente→destinatário)
 - Fragmentação (smurfing — muitas arestas de baixo valor)
 - Conluio por centralidade de betweenness
+
+v1.1: chamada ao LLM passa por @Delta via BaseAgent._call_llm() — CPFs
+e nomes do grafo são anonimizados antes de irem para Claude.
 """
-import json
 from pydantic import BaseModel, Field
-from horizon_blue_one.agents.base_agent import BaseAgent, AgentResult
-from horizon_blue_one.core.model_adapter import call_model, ModelType
+
+from horizon_blue_one.agents.base_agent import AgentResult, BaseAgent
+from horizon_blue_one.core.model_adapter import ModelType
 
 
 class RelationshipGraphSchema(BaseModel):
@@ -52,8 +56,6 @@ def _build_graph(notas: list):
     ciclos = list(nx.simple_cycles(G))
     centralidade = nx.betweenness_centrality(G, weight="weight")
     max_central = max(centralidade.values()) if centralidade else 0.0
-
-    # Score de conluio: ciclos indicam triangulação, alta centralidade indica nó pivô
     score = min(len(ciclos) * 0.20 + max_central * 0.50, 1.0)
 
     metricas = {
@@ -78,33 +80,40 @@ class EpsilonAgent(BaseAgent):
         notas = payload.get("notas", [])
         self.log("Minerando grafo de relacionamentos", total_notas=len(notas))
 
-        G, metricas = _build_graph(notas)
+        _, metricas = _build_graph(notas)
 
         if not metricas:
-            # networkx não disponível ou notas vazias — análise degradada via LLM
             entidades = payload.get("entidades", [])
-            prompt = f"Analise risco de conluio com {len(notas)} notas e entidades: {entidades[:20]}"
+            prompt_payload = {"qtd_notas": len(notas), "entidades": entidades[:20]}
+            template = (
+                "Análise degradada (sem grafo): {payload}\n"
+                "Interprete risco de conluio com os dados disponíveis."
+            )
             metricas = {"nos": 0, "arestas": 0, "ciclos_detectados": 0, "score_conluio": 0.0}
         else:
-            prompt = (
-                f"Grafo de {metricas['nos']} entidades e {metricas['arestas']} transações. "
-                f"Ciclos detectados: {metricas['ciclos_detectados']}. "
-                f"Score de conluio (0-1): {metricas['score_conluio']}. "
-                f"Entidades mais centrais: {metricas['entidades_suspeitas']}. "
-                f"Interprete o risco fiscal e recomende ações."
+            prompt_payload = {"metricas": metricas}
+            template = (
+                "Grafo de transações: {payload}\n"
+                "Interprete o risco fiscal e recomende ações."
             )
 
-        resp = await call_model(ModelType.SONNET, prompt, SYSTEM)
+        resp = await self._call_llm(
+            model_type=ModelType.SONNET,
+            prompt_payload=prompt_payload,
+            prompt_template=template,
+            system=SYSTEM,
+            max_tokens=2048,
+        )
 
-        try:
-            analise = json.loads(resp)
-        except json.JSONDecodeError:
-            analise = {
+        analise, _ok = self.parse_json_response(
+            resp,
+            fallback={
                 "conclusao": resp[:500],
                 "risco_conluio": "ALTO" if metricas.get("ciclos_detectados", 0) > 0 else "MÉDIO",
                 "acoes_recomendadas": ["Verificar ciclos de transações", "Cruzar dados SEFAZ-GO"],
                 "confianca": 0.75,
-            }
+            },
+        )
 
         score = metricas.get("score_conluio", 0.0)
         deve_escalar = score > 0.5 or metricas.get("ciclos_detectados", 0) > 0
@@ -124,5 +133,5 @@ class EpsilonAgent(BaseAgent):
                 "metricas_grafo": metricas,
                 "score_conluio": score,
             },
-            confidence=analise.get("confianca", 0.85),
+            confidence=float(analise.get("confianca", 0.85)),
         )
