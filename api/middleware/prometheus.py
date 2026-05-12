@@ -85,6 +85,13 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
                 method=method, path=path, status=str(status_code),
             ).inc()
             HTTP_REQUESTS_IN_PROGRESS.labels(method=method, path=path).dec()
+            # Issue #25: errors_s5 separado para alertas no dashboard
+            if status_code >= 500:
+                try:
+                    from api.observability.orgaudi_metrics import registrar_erro_s5
+                    registrar_erro_s5(path)
+                except Exception:  # noqa: BLE001 — métrica não pode quebrar request
+                    pass
 
 
 def render_metrics() -> StarletteResponse:

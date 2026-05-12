@@ -34,6 +34,8 @@ from api.middleware.body_size_limit import BodySizeLimitMiddleware
 from api.middleware.prometheus import PrometheusMiddleware
 from api.middleware.rate_limit import RateLimitMiddleware
 from api.middleware.security_headers import SecurityHeadersMiddleware
+from api.observability import orgaudi_metrics as _orgaudi_metrics  # noqa: F401  — registra listener + counters orgaudi_*
+from api.observability.sentry_init import init_sentry
 from api.routes import agente, auditoria, auth, clientes
 from nfa_extractor.infrastructure.database_v2 import Base, engine
 
@@ -42,6 +44,7 @@ logger = logging.getLogger("orgaudi")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    init_sentry()  # #25: no-op se SENTRY_DSN ausente; warn se ENVIRONMENT=production sem DSN
     Base.metadata.create_all(bind=engine)
     logger.info("OrgAudi iniciado — banco sincronizado")
     yield

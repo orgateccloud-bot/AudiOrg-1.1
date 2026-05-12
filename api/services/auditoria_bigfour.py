@@ -535,8 +535,18 @@ async def processar_lote_auditoria(
                 triangulacoes=triangulacoes or None,
             )
             logger.info("Laudo OrgAudi gerado: %s", pdf_path)
+            try:
+                from api.observability.orgaudi_metrics import registrar_laudo
+                registrar_laudo("sucesso")
+            except Exception:  # noqa: BLE001 — métrica não pode bloquear emissão
+                pass
         except Exception as exc:
             logger.error("Erro ao gerar laudo OrgAudi: %s", exc, exc_info=True)
+            try:
+                from api.observability.orgaudi_metrics import registrar_laudo
+                registrar_laudo("falha")
+            except Exception:  # noqa: BLE001
+                pass
             tasks_status[task_id] = {
                 "status": "erro", "progress": 100,
                 "erro": f"Falha ao gerar PDF: {exc}",
