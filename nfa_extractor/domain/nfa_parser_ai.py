@@ -29,6 +29,7 @@ import logging
 import os
 import re
 import time
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -493,6 +494,28 @@ def _deduplicar(notas: list[NFAExtraida]) -> list[NFAExtraida]:
     return list(visto.values())
 
 
+# ─── Helpers de ordenação / período ──────────────────────────────────────────
+
+def _sort_key_emissao(n: NFAExtraida) -> datetime:
+    try:
+        return datetime.strptime(n.emissao, "%d/%m/%Y")
+    except ValueError:
+        return datetime.min
+
+
+def _calcular_periodo(notas: list[NFAExtraida]) -> tuple[str | None, str | None]:
+    """Retorna (data_inicio, data_fim) em DD/MM/AAAA, ou (None, None) se vazio."""
+    datas: list[datetime] = []
+    for n in notas:
+        try:
+            datas.append(datetime.strptime(n.emissao, "%d/%m/%Y"))
+        except ValueError:
+            pass
+    if not datas:
+        return None, None
+    return min(datas).strftime("%d/%m/%Y"), max(datas).strftime("%d/%m/%Y")
+
+
 # ─── API pública ─────────────────────────────────────────────────────────────
 
 class NFAParserAI:
@@ -547,8 +570,6 @@ class NFAParserAI:
         logger.info("Iniciando extração: %s", caminho_pdf.name)
 
         resultado = ResultadoExtracaoPDF(notas=[])
-        erros: list[str] = []
-        tokens_in = tokens_out = 0
 
         # ── 1. Extração de texto ────────────────────────────────────────────
         try:
@@ -567,8 +588,27 @@ class NFAParserAI:
             return resultado
 
         # ── 3. Regex pass ───────────────────────────────────────────────────
-        notas_ok:     list[NFAExtraida] = []
-        blocos_falhos: list[str]        = []
+        notas_ok, blocos_falhos, erros = self._passe_regex(blocos, usar_claude, max_erros)
+
+        # ── 4. Claude pass (lotes) ──────────────────────────────────────────
+        notas_claude, tokens_in, tokens_out = self._passe_claude(blocos_falhos, erros, usar_claude)
+
+        # ── 5+6. Merge, dedup, ordenação, período, estatísticas ────────────
+        self._finalizar_resultado(
+            resultado, blocos, notas_ok + notas_claude, erros, tokens_in, tokens_out,
+        )
+        return resultado
+
+    def _passe_regex(
+        self,
+        blocos:      list[str],
+        usar_claude: bool,
+        max_erros:   int,
+    ) -> tuple[list[NFAExtraida], list[str], list[str]]:
+        """Aplica regex em cada bloco; separa OK, falhos (para Claude) e erros."""
+        notas_ok:      list[NFAExtraida] = []
+        blocos_falhos: list[str]         = []
+        erros:         list[str]         = []
 
         for i, bloco in enumerate(blocos):
             try:
@@ -591,69 +631,73 @@ class NFAParserAI:
 
         logger.info(
             "Regex: %d OK / %d para Claude / %d erros",
-            len(notas_ok), len(blocos_falhos), len(erros)
+            len(notas_ok), len(blocos_falhos), len(erros),
         )
+        return notas_ok, blocos_falhos, erros
 
-        # ── 4. Claude pass (lotes) ──────────────────────────────────────────
+    def _passe_claude(
+        self,
+        blocos_falhos: list[str],
+        erros:         list[str],
+        usar_claude:   bool,
+    ) -> tuple[list[NFAExtraida], int, int]:
+        """Envia blocos falhos em lotes para Claude; acumula erros in-place."""
         notas_claude: list[NFAExtraida] = []
-        if usar_claude and blocos_falhos and self._api_key:
-            for i in range(0, len(blocos_falhos), self.max_blocos):
-                lote = blocos_falhos[i: i + self.max_blocos]
-                try:
-                    notas_lote, t_in, t_out = _parse_lote_claude(lote, self.client, self.modelo)
-                    notas_claude.extend(notas_lote)
-                    tokens_in  += t_in
-                    tokens_out += t_out
-                except Exception as e:
-                    erros.append(f"Claude lote {i//self.max_blocos}: {e}")
-                    logger.error("Erro no lote Claude: %s", e)
+        tokens_in = tokens_out = 0
 
-        # ── 5. Merge + deduplicação ─────────────────────────────────────────
-        todas = notas_ok + notas_claude
-        todas = _deduplicar(todas)
+        if not (usar_claude and blocos_falhos and self._api_key):
+            return notas_claude, tokens_in, tokens_out
 
-        # ── 6. Ordena por data de emissão ───────────────────────────────────
-        from datetime import datetime
-        def _sort_key(n: NFAExtraida):
+        for i in range(0, len(blocos_falhos), self.max_blocos):
+            lote = blocos_falhos[i: i + self.max_blocos]
             try:
-                return datetime.strptime(n.emissao, "%d/%m/%Y")
-            except ValueError:
-                return datetime.min
+                notas_lote, t_in, t_out = _parse_lote_claude(lote, self.client, self.modelo)
+                notas_claude.extend(notas_lote)
+                tokens_in  += t_in
+                tokens_out += t_out
+            except Exception as e:
+                erros.append(f"Claude lote {i//self.max_blocos}: {e}")
+                logger.error("Erro no lote Claude: %s", e)
 
-        todas.sort(key=_sort_key)
+        return notas_claude, tokens_in, tokens_out
+
+    def _finalizar_resultado(
+        self,
+        resultado:  ResultadoExtracaoPDF,
+        blocos:     list[str],
+        todas:      list[NFAExtraida],
+        erros:      list[str],
+        tokens_in:  int,
+        tokens_out: int,
+    ) -> None:
+        """Dedup, ordena, calcula totais e período. Muta `resultado` in-place."""
+        todas = _deduplicar(todas)
+        todas.sort(key=_sort_key_emissao)
 
         # Calcula totais explicitamente (model_validator roda no __init__ com notas=[])
-        resultado.notas          = todas
-        resultado.total_extraidas = len(todas)
-        resultado.por_regex      = sum(1 for n in todas if n.origem_extracao == "regex")
-        resultado.por_claude     = sum(1 for n in todas if "claude" in n.origem_extracao)
-        resultado.descartadas    = len(blocos) - len(todas)
-        resultado.erros          = erros
-        resultado.tokens_input   = tokens_in
-        resultado.tokens_output  = tokens_out
+        por_regex  = sum(1 for n in todas if n.origem_extracao == "regex")
+        por_claude = sum(1 for n in todas if "claude" in n.origem_extracao)
 
-        # Período
-        from datetime import datetime as _dt
-        _datas = []
-        for n in todas:
-            try:
-                _datas.append(_dt.strptime(n.emissao, "%d/%m/%Y"))
-            except ValueError:
-                pass
-        if _datas:
-            resultado.periodo_inicio = min(_datas).strftime("%d/%m/%Y")
-            resultado.periodo_fim    = max(_datas).strftime("%d/%m/%Y")
+        resultado.notas           = todas
+        resultado.total_extraidas = len(todas)
+        resultado.por_regex       = por_regex
+        resultado.por_claude      = por_claude
+        resultado.descartadas     = len(blocos) - len(todas)
+        resultado.erros           = erros
+        resultado.tokens_input    = tokens_in
+        resultado.tokens_output   = tokens_out
+
+        inicio, fim = _calcular_periodo(todas)
+        if inicio:
+            resultado.periodo_inicio = inicio
+            resultado.periodo_fim    = fim
 
         logger.info(
             "Extração concluída: %d notas | %d regex | %d claude | "
             "%d descartadas | tokens in=%d out=%d",
-            len(todas),
-            sum(1 for n in todas if n.origem_extracao == "regex"),
-            sum(1 for n in todas if "claude" in n.origem_extracao),
-            resultado.descartadas,
-            tokens_in, tokens_out,
+            len(todas), por_regex, por_claude,
+            resultado.descartadas, tokens_in, tokens_out,
         )
-        return resultado
 
     def extrair_multiplos(
         self,
