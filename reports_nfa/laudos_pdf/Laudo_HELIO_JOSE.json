@@ -1,0 +1,78 @@
+{
+  "produtor": "HELIO JOSE",
+  "nome_real": "HELIO JOSE",
+  "cpf": "043.575.391-61",
+  "score_precalc": 52.0,
+  "pf": 0.52,
+  "agentes": {
+    "S3": {
+      "status": "APROVADO",
+      "confidence": 0.94,
+      "output": {
+        "icms_status": "OK",
+        "itr_status": "OK",
+        "lcdpr_status": "CONFORME",
+        "cfop_status": "OK",
+        "cfop": {
+          "total": 343,
+          "validos": 343,
+          "divergentes": [],
+          "total_divergencias": 0
+        },
+        "lcdpr": {
+          "receita_notas": 9638704.23,
+          "receita_lcdpr": 9638704.23,
+          "despesa_lcdpr": 14443494.67,
+          "divergencia": 0.0,
+          "saldo_lcdpr": -4804790.44,
+          "status_conformidade": "CONFORME"
+        },
+        "itr": {
+          "area_total_ha": 100.0,
+          "area_utilizada": 90.0,
+          "gu_pct": 90.0,
+          "subutilizado": false
+        },
+        "caixa": {
+          "entradas": 9638704.23,
+          "saidas": 8703310.45,
+          "saldo": 935393.78
+        },
+        "deducoes_legais": [],
+        "alertas": [],
+        "total_divergencia": 0.0,
+        "fonte": "deterministico"
+      }
+    },
+    "S5": {
+      "status": "APROVADO",
+      "confidence": 0.375,
+      "output": {
+        "total_notas": 343,
+        "total_valor": 24082198.9,
+        "divergencias": [],
+        "riscos": [
+          "fornecedor_fantasma",
+          "anomalia_temporal"
+        ],
+        "conformidade_sefaz_go": "CONFORME"
+      }
+    },
+    "S7": {
+      "status": "APROVADO",
+      "confidence": 0.5,
+      "output": {
+        "decisao": "APROVAR",
+        "score_final": 52.0,
+        "parecer_juridico": "Parecer indisponível (parse falhou).",
+        "mda_executivo": "MD&A indisponível.",
+        "acoes_imediatas": [],
+        "riscos_residuais": [],
+        "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+        "precalc_score": 52.0
+      }
+    }
+  },
+  "tokens": 1546,
+  "custo_usd": 0.0161
+}

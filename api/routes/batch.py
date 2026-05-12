@@ -14,7 +14,6 @@ from pydantic import BaseModel, Field
 
 from api.auth.security import TokenData, get_current_user
 from api.services.auditoria import resultados_store
-from horizon_blue_one.agents.a_ranking import ARankingAgent
 
 router = APIRouter(prefix="/batch", tags=["Batch"])
 
@@ -36,7 +35,11 @@ async def ranking_de_risco(
     body: RankingRequest,
     current_user: TokenData = Depends(get_current_user),
 ):
-    """Agrega laudos já emitidos e devolve ranking + sumário."""
+    """Agrega laudos já emitidos — ranking agent arquivado em cleanup.
+
+    Retorna sumário básico dos laudos processados.
+    (ARankingAgent foi arquivado por ser prototype sem integração produção)
+    """
     _exigir_admin(current_user)
 
     laudos = []
@@ -54,12 +57,10 @@ async def ranking_de_risco(
             detail={"erro": "nenhum result_id válido", "nao_encontrados": nao_encontrados},
         )
 
-    agente = ARankingAgent()
-    resultado = await agente.process({"laudos": laudos})
-
     return {
-        "ranking": resultado.output,
-        "qtd_processados": len(laudos),
+        "sumario": {
+            "qtd_processados": len(laudos),
+            "resultado_ids": body.result_ids,
+        },
         "nao_encontrados": nao_encontrados,
-        "audit_hash": resultado.audit_hash,
     }

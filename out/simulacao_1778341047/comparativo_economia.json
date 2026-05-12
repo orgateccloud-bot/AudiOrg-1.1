@@ -1,0 +1,17 @@
+{
+  "atual_usd": 3.1942,
+  "baseline_sonnet_usd": 2.0153,
+  "economia_usd": -1.1789,
+  "economia_pct": -58.49,
+  "distribuicao_modelos": {
+    "haiku": 78.6,
+    "sonnet": 14.3,
+    "opus": 7.1
+  },
+  "total_chamadas": 140,
+  "projecao_1000_pdfs": {
+    "atual": 638.84,
+    "baseline": 403.07,
+    "economia": -235.77
+  }
+}

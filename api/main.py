@@ -122,9 +122,11 @@ def get_stats():
 
 @app.get("/tokens")
 async def get_token_stats():
-    """Relatório de uso e custo de tokens Claude por modelo."""
-    from horizon_blue_one.agents.a_token import relatorio_custo
-    return await relatorio_custo()
+    """Relatório de uso e custo de tokens — agente foi arquivado em cleanup.
+
+    Retorna status indicando que o agente de tokens foi arquivado.
+    """
+    return {"status": "token_agent_archived", "detail": "a_token agente foi arquivado"}
 
 
 @app.get("/")

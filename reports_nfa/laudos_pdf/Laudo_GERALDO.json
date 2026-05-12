@@ -1,0 +1,114 @@
+{
+  "produtor": "GERALDO",
+  "nome_real": "GERALDO",
+  "cpf": "434.067.691-87",
+  "score_precalc": 66.1,
+  "pf": 0.661,
+  "agentes": {
+    "S1": {
+      "status": "APROVADO",
+      "confidence": 0.333,
+      "output": {
+        "lgpd_status": "ALERTA",
+        "documentos_status": "OK",
+        "recomendacoes": [],
+        "pii": {
+          "cpfs_detectados": 64,
+          "cnpjs_detectados": 2,
+          "contas_detectadas": 72,
+          "total_pii": 361
+        },
+        "documentos": {
+          "documentos_validos": 95,
+          "pendencias": [],
+          "ie_valida": true,
+          "total_pendencias": 0
+        }
+      }
+    },
+    "S2": {
+      "status": "ESCALADO",
+      "confidence": 0.5,
+      "output": {
+        "score_risco": 66.1,
+        "nivel": "ALTO",
+        "tipologias": [
+          "fornecedor_fantasma",
+          "anomalia_temporal"
+        ],
+        "narrativa": "```json\n{\n  \"score_risco\": 66,\n  \"nivel\": \"ALTO\",\n  \"tipologias\": [\"AN-05\", \"AN-11\", \"AN-14\"],\n  \"narrativa\": \"Análise forense identificou risco ALTO (score 66,1 / prob. autuação 66,1%) sustentado por duas criticidades convergentes: anomalia temporal nas operações fiscais (AN-14) e indicador de fornecedor fantasma com pontuação limiar de 50 (AN-05). O grafo de relacionamentos, embora de baixa densidade (0,02), apresenta 7 ciclos em rede de 62 nós e 68 arestas, sugerindo estrutura de conluio com ",
+        "evidencias": [],
+        "acoes": []
+      }
+    },
+    "S3": {
+      "status": "APROVADO",
+      "confidence": 0.94,
+      "output": {
+        "icms_status": "OK",
+        "itr_status": "OK",
+        "lcdpr_status": "CONFORME",
+        "cfop_status": "OK",
+        "cfop": {
+          "total": 95,
+          "validos": 95,
+          "divergentes": [],
+          "total_divergencias": 0
+        },
+        "lcdpr": {
+          "receita_notas": 3073276.3,
+          "receita_lcdpr": 3073276.3,
+          "despesa_lcdpr": 3587331.54,
+          "divergencia": 0.0,
+          "saldo_lcdpr": -514055.24,
+          "status_conformidade": "CONFORME"
+        },
+        "itr": {
+          "area_total_ha": 100.0,
+          "area_utilizada": 90.0,
+          "gu_pct": 90.0,
+          "subutilizado": false
+        },
+        "caixa": {
+          "entradas": 3073276.3,
+          "saidas": 3289108.4,
+          "saldo": -215832.1
+        },
+        "deducoes_legais": [],
+        "alertas": [],
+        "total_divergencia": 0.0,
+        "fonte": "deterministico"
+      }
+    },
+    "S5": {
+      "status": "APROVADO",
+      "confidence": 0.375,
+      "output": {
+        "total_notas": 95,
+        "total_valor": 6660607.84,
+        "divergencias": [],
+        "riscos": [
+          "fornecedor_fantasma",
+          "anomalia_temporal"
+        ],
+        "conformidade_sefaz_go": "CONFORME"
+      }
+    },
+    "S7": {
+      "status": "ESCALADO",
+      "confidence": 0.5,
+      "output": {
+        "decisao": "REVISAR",
+        "score_final": 66.1,
+        "parecer_juridico": "Parecer indisponível (parse falhou).",
+        "mda_executivo": "MD&A indisponível.",
+        "acoes_imediatas": [],
+        "riscos_residuais": [],
+        "resumo_agentes": "S1: lgpd_status=ALERTA | documentos_status=OK\nS2: nivel=ALTO\nS3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+        "precalc_score": 66.1
+      }
+    }
+  },
+  "tokens": 2973,
+  "custo_usd": 0.0301
+}

@@ -2,8 +2,8 @@
 
 **Data:** 2026-05-12  
 **Versão:** 8.0.0  
-**Status Geral:** 🟢 **PRODUÇÃO-READY** (com 3 quick fixes)  
-**Score Global:** **8.1 / 10**
+**Status Geral:** 🟢 **PRODUÇÃO-READY** (com K8s deployment)  
+**Score Global:** **9.0 / 10** ⬆️ (de 8.1)
 
 ---
 

@@ -1,0 +1,112 @@
+{
+  "produtor": "ETERVALDO",
+  "nome_real": "ETERVALDO",
+  "cpf": "070.967.711-15",
+  "score_precalc": 65.0,
+  "pf": 0.65,
+  "agentes": {
+    "S1": {
+      "status": "APROVADO",
+      "confidence": 0.333,
+      "output": {
+        "lgpd_status": "ALERTA",
+        "documentos_status": "OK",
+        "recomendacoes": [],
+        "pii": {
+          "cpfs_detectados": 6,
+          "cnpjs_detectados": 0,
+          "contas_detectadas": 6,
+          "total_pii": 24
+        },
+        "documentos": {
+          "documentos_validos": 6,
+          "pendencias": [],
+          "ie_valida": true,
+          "total_pendencias": 0
+        }
+      }
+    },
+    "S2": {
+      "status": "ESCALADO",
+      "confidence": 0.5,
+      "output": {
+        "score_risco": 65.0,
+        "nivel": "ALTO",
+        "tipologias": [
+          "fornecedor_fantasma"
+        ],
+        "narrativa": "```json\n{\n  \"score_risco\": 65,\n  \"nivel\": \"MEDIO\",\n  \"tipologias\": [\"AN-11\"],\n  \"narrativa\": \"Identificado 1 fornecedor com características de empresa fantasma (detector fornecedor_fantasma=5), principal fator de risco nesta análise. O grafo de relacionamentos apresenta densidade baixa (0,17) com 6 nós e 5 arestas, sem ciclos detectados, sugerindo estrutura linear sem conluio complexo. Demais detectores (carrossel, smurfing, devolução, anomalia temporal) não acionados. Score XGBoost de 65,0 com ",
+        "evidencias": [],
+        "acoes": []
+      }
+    },
+    "S3": {
+      "status": "APROVADO",
+      "confidence": 0.94,
+      "output": {
+        "icms_status": "OK",
+        "itr_status": "OK",
+        "lcdpr_status": "CONFORME",
+        "cfop_status": "OK",
+        "cfop": {
+          "total": 6,
+          "validos": 6,
+          "divergentes": [],
+          "total_divergencias": 0
+        },
+        "lcdpr": {
+          "receita_notas": 0,
+          "receita_lcdpr": 0.0,
+          "despesa_lcdpr": 733194.8,
+          "divergencia": 0.0,
+          "saldo_lcdpr": -733194.8,
+          "status_conformidade": "CONFORME"
+        },
+        "itr": {
+          "area_total_ha": 100.0,
+          "area_utilizada": 90.0,
+          "gu_pct": 90.0,
+          "subutilizado": false
+        },
+        "caixa": {
+          "entradas": 0.0,
+          "saidas": 617034.8,
+          "saldo": -617034.8
+        },
+        "deducoes_legais": [],
+        "alertas": [],
+        "total_divergencia": 0.0,
+        "fonte": "deterministico"
+      }
+    },
+    "S5": {
+      "status": "APROVADO",
+      "confidence": 0.375,
+      "output": {
+        "total_notas": 6,
+        "total_valor": 733194.8,
+        "divergencias": [],
+        "riscos": [
+          "fornecedor_fantasma"
+        ],
+        "conformidade_sefaz_go": "CONFORME"
+      }
+    },
+    "S7": {
+      "status": "ESCALADO",
+      "confidence": 0.5,
+      "output": {
+        "decisao": "REVISAR",
+        "score_final": 65.0,
+        "parecer_juridico": "Parecer indisponível (parse falhou).",
+        "mda_executivo": "MD&A indisponível.",
+        "acoes_imediatas": [],
+        "riscos_residuais": [],
+        "resumo_agentes": "S1: lgpd_status=ALERTA | documentos_status=OK\nS2: nivel=ALTO\nS3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+        "precalc_score": 65.0
+      }
+    }
+  },
+  "tokens": 2598,
+  "custo_usd": 0.0266
+}

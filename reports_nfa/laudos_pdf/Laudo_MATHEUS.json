@@ -1,0 +1,77 @@
+{
+  "produtor": "MATHEUS",
+  "nome_real": "MATHEUS",
+  "cpf": "052.713.671-93",
+  "score_precalc": 48.6,
+  "pf": 0.486,
+  "agentes": {
+    "S3": {
+      "status": "APROVADO",
+      "confidence": 0.94,
+      "output": {
+        "icms_status": "OK",
+        "itr_status": "OK",
+        "lcdpr_status": "CONFORME",
+        "cfop_status": "OK",
+        "cfop": {
+          "total": 7,
+          "validos": 7,
+          "divergentes": [],
+          "total_divergencias": 0
+        },
+        "lcdpr": {
+          "receita_notas": 285910.0,
+          "receita_lcdpr": 285910.0,
+          "despesa_lcdpr": 223320.0,
+          "divergencia": 0.0,
+          "saldo_lcdpr": 62590.0,
+          "status_conformidade": "CONFORME"
+        },
+        "itr": {
+          "area_total_ha": 100.0,
+          "area_utilizada": 90.0,
+          "gu_pct": 90.0,
+          "subutilizado": false
+        },
+        "caixa": {
+          "entradas": 285910.0,
+          "saidas": 223320.0,
+          "saldo": 62590.0
+        },
+        "deducoes_legais": [],
+        "alertas": [],
+        "total_divergencia": 0.0,
+        "fonte": "deterministico"
+      }
+    },
+    "S5": {
+      "status": "APROVADO",
+      "confidence": 0.375,
+      "output": {
+        "total_notas": 7,
+        "total_valor": 509230.0,
+        "divergencias": [],
+        "riscos": [
+          "fornecedor_fantasma"
+        ],
+        "conformidade_sefaz_go": "CONFORME"
+      }
+    },
+    "S7": {
+      "status": "APROVADO",
+      "confidence": 0.5,
+      "output": {
+        "decisao": "APROVAR",
+        "score_final": 48.6,
+        "parecer_juridico": "Parecer indisponível (parse falhou).",
+        "mda_executivo": "MD&A indisponível.",
+        "acoes_imediatas": [],
+        "riscos_residuais": [],
+        "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+        "precalc_score": 48.6
+      }
+    }
+  },
+  "tokens": 1122,
+  "custo_usd": 0.0095
+}

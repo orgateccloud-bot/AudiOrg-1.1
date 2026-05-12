@@ -1,0 +1,314 @@
+[
+  {
+    "produtor": "GERALDO",
+    "latencia_ms": 72019,
+    "n_notas": 95,
+    "score_precalc": 66.1,
+    "agentes": {
+      "S1": {
+        "status": "APROVADO",
+        "confidence": 0.33,
+        "destaque": [
+          "lgpd_status",
+          "documentos_status",
+          "recomendacoes",
+          "pii",
+          "documentos"
+        ]
+      },
+      "S2": {
+        "status": "ESCALADO",
+        "confidence": 0.5,
+        "destaque": [
+          "score_risco",
+          "nivel",
+          "tipologias",
+          "narrativa",
+          "evidencias"
+        ]
+      },
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      },
+      "S5": {
+        "status": "APROVADO",
+        "confidence": 0.38,
+        "destaque": [
+          "total_notas",
+          "total_valor",
+          "divergencias",
+          "riscos",
+          "conformidade_sefaz_go"
+        ]
+      },
+      "S7": {
+        "status": "ESCALADO",
+        "confidence": 0.5,
+        "destaque": [
+          "decisao",
+          "score_final",
+          "parecer_juridico",
+          "mda_executivo",
+          "acoes_imediatas"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "FABIO",
+    "latencia_ms": 68554,
+    "n_notas": 50,
+    "score_precalc": 65.2,
+    "agentes": {
+      "S1": {
+        "status": "APROVADO",
+        "confidence": 0.33,
+        "destaque": [
+          "lgpd_status",
+          "documentos_status",
+          "recomendacoes",
+          "pii",
+          "documentos"
+        ]
+      },
+      "S2": {
+        "status": "ESCALADO",
+        "confidence": 0.5,
+        "destaque": [
+          "score_risco",
+          "nivel",
+          "tipologias",
+          "narrativa",
+          "evidencias"
+        ]
+      },
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      },
+      "S5": {
+        "status": "APROVADO",
+        "confidence": 0.38,
+        "destaque": [
+          "total_notas",
+          "total_valor",
+          "divergencias",
+          "riscos",
+          "conformidade_sefaz_go"
+        ]
+      },
+      "S7": {
+        "status": "ESCALADO",
+        "confidence": 0.5,
+        "destaque": [
+          "decisao",
+          "score_final",
+          "parecer_juridico",
+          "mda_executivo",
+          "acoes_imediatas"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "ETERVALDO",
+    "latencia_ms": 70062,
+    "n_notas": 6,
+    "score_precalc": 65.0,
+    "agentes": {
+      "S1": {
+        "status": "APROVADO",
+        "confidence": 0.33,
+        "destaque": [
+          "lgpd_status",
+          "documentos_status",
+          "recomendacoes",
+          "pii",
+          "documentos"
+        ]
+      },
+      "S2": {
+        "status": "ESCALADO",
+        "confidence": 0.5,
+        "destaque": [
+          "score_risco",
+          "nivel",
+          "tipologias",
+          "narrativa",
+          "evidencias"
+        ]
+      },
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      },
+      "S5": {
+        "status": "APROVADO",
+        "confidence": 0.38,
+        "destaque": [
+          "total_notas",
+          "total_valor",
+          "divergencias",
+          "riscos",
+          "conformidade_sefaz_go"
+        ]
+      },
+      "S7": {
+        "status": "ESCALADO",
+        "confidence": 0.5,
+        "destaque": [
+          "decisao",
+          "score_final",
+          "parecer_juridico",
+          "mda_executivo",
+          "acoes_imediatas"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "CLEITON",
+    "latencia_ms": 37791,
+    "n_notas": 73,
+    "score_precalc": 64.3,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      },
+      "S5": {
+        "status": "APROVADO",
+        "confidence": 0.38,
+        "destaque": [
+          "total_notas",
+          "total_valor",
+          "divergencias",
+          "riscos",
+          "conformidade_sefaz_go"
+        ]
+      },
+      "S7": {
+        "status": "APROVADO",
+        "confidence": 0.5,
+        "destaque": [
+          "decisao",
+          "score_final",
+          "parecer_juridico",
+          "mda_executivo",
+          "acoes_imediatas"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "RAUL",
+    "latencia_ms": 34977,
+    "n_notas": 21,
+    "score_precalc": 62.2,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      },
+      "S5": {
+        "status": "APROVADO",
+        "confidence": 0.38,
+        "destaque": [
+          "total_notas",
+          "total_valor",
+          "divergencias",
+          "riscos",
+          "conformidade_sefaz_go"
+        ]
+      },
+      "S7": {
+        "status": "APROVADO",
+        "confidence": 0.5,
+        "destaque": [
+          "decisao",
+          "score_final",
+          "parecer_juridico",
+          "mda_executivo",
+          "acoes_imediatas"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "ADELA",
+    "latencia_ms": 37762,
+    "n_notas": 26,
+    "score_precalc": 61.9,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      },
+      "S5": {
+        "status": "ESCALADO",
+        "confidence": 0.88,
+        "destaque": [
+          "total_notas",
+          "total_valor",
+          "divergencias",
+          "riscos",
+          "conformidade_sefaz_go"
+        ]
+      },
+      "S7": {
+        "status": "APROVADO",
+        "confidence": 0.5,
+        "destaque": [
+          "decisao",
+          "score_final",
+          "parecer_juridico",
+          "mda_executivo",
+          "acoes_imediatas"
+        ]
+      }
+    }
+  }
+]
