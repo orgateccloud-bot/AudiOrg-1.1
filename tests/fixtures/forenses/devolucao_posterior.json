@@ -1,0 +1,8 @@
+{
+  "descricao": "VENDA de R$ 50.000 (CPF 111.111.111-11) + DEVOLUCAO de R$ 55.000 (~110%) do mesmo CPF como destinatario. round(50000, -2)=50000 e round(55000*1.1, -2)=60500. Para casar: devolução de 45.454,55 (round(45454.55*1.1, -2)=round(50000, -2)=50000). Aciona detectar_devolucao_posterior.",
+  "esperado": "devolucao_posterior: true",
+  "notas": [
+    {"numero": "D001", "natureza": "VENDA DE GADO", "remetente_cpf": "11111111111", "destinatario_cpf": "22222222222", "valor_total": 50000.00, "data": "2026-01-10"},
+    {"numero": "D002", "natureza": "DEVOLUCAO DE MERCADORIA", "remetente_cpf": "22222222222", "destinatario_cpf": "11111111111", "valor_total": 45454.55, "data": "2026-04-15"}
+  ]
+}

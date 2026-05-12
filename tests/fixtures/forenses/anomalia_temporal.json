@@ -1,0 +1,14 @@
+{
+  "descricao": "7 notas com valores em torno de R$ 10.000 + 1 outlier de R$ 500.000 (>>2σ). Aciona detectar_anomalia_temporal.",
+  "esperado": "anomalia_temporal: true",
+  "notas": [
+    {"numero": "A001", "valor_total": 10000.00, "data": "2026-01-05"},
+    {"numero": "A002", "valor_total": 9500.00,  "data": "2026-01-12"},
+    {"numero": "A003", "valor_total": 11000.00, "data": "2026-01-19"},
+    {"numero": "A004", "valor_total": 10200.00, "data": "2026-01-26"},
+    {"numero": "A005", "valor_total": 9800.00,  "data": "2026-02-02"},
+    {"numero": "A006", "valor_total": 10500.00, "data": "2026-02-09"},
+    {"numero": "A007", "valor_total": 9300.00,  "data": "2026-02-16"},
+    {"numero": "A008", "valor_total": 500000.00, "data": "2026-02-23"}
+  ]
+}
