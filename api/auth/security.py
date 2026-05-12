@@ -2,11 +2,16 @@
 ORGATEC – Camada de autenticação e autorização (JWT).
 
 Expõe:
-- hash_password / verify_password — bcrypt via passlib
+- hash_password / verify_password / needs_rehash — argon2id com fallback bcrypt
 - create_access_token / create_refresh_token — JWT HS256 com tipo "access"/"refresh"
 - create_token_pair — gera o par e o payload de resposta
 - verify_refresh_token / get_current_user — validação com HTTPException(401)
 - TokenData / TokenPair — schemas Pydantic v2
+
+Senhas: argon2id é o padrão para hashes novos. Hashes bcrypt herdados ($2a/$2b/$2y$)
+continuam verificáveis para não deslogar usuários antigos; verify_password() detecta
+o algoritmo pelo prefixo e o login endpoint deve chamar needs_rehash() para regerar
+o hash em argon2 transparentemente no próximo login bem-sucedido.
 """
 from __future__ import annotations
 
@@ -14,10 +19,12 @@ import os
 from datetime import datetime, timedelta
 from typing import Optional
 
+import bcrypt
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerifyMismatchError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from pydantic import BaseModel
 
 # ── Configurações ────────────────────────────────────────────────────────────
@@ -36,7 +43,8 @@ def _secret_key() -> str:
     return key
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+_argon2 = PasswordHasher(time_cost=3, memory_cost=64 * 1024, parallelism=4)
+_BCRYPT_PREFIXES = ("$2a$", "$2b$", "$2y$")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=True)
 
 
@@ -57,12 +65,12 @@ class TokenPair(BaseModel):
     expires_in: int
 
 
-# ── Senhas (bcrypt) ──────────────────────────────────────────────────────────
+# ── Senhas (argon2id + fallback bcrypt) ──────────────────────────────────────
 
 
 def hash_password(plain: str) -> str:
-    """Gera hash bcrypt da senha em texto puro."""
-    return pwd_context.hash(plain)
+    """Gera hash argon2id da senha em texto puro."""
+    return _argon2.hash(plain)
 
 
 def get_password_hash(plain: str) -> str:
@@ -70,9 +78,32 @@ def get_password_hash(plain: str) -> str:
     return hash_password(plain)
 
 
+def _verify_bcrypt(plain: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except (ValueError, TypeError):
+        return False
+
+
 def verify_password(plain: str, hashed: str) -> bool:
-    """Confere senha em texto contra hash bcrypt armazenado."""
-    return pwd_context.verify(plain, hashed)
+    """Confere senha contra hash armazenado (argon2 ou bcrypt legacy)."""
+    if hashed.startswith(_BCRYPT_PREFIXES):
+        return _verify_bcrypt(plain, hashed)
+    try:
+        _argon2.verify(hashed, plain)
+        return True
+    except (VerifyMismatchError, InvalidHashError):
+        return False
+
+
+def needs_rehash(hashed: str) -> bool:
+    """True quando o hash deve ser regerado: bcrypt legacy ou argon2 com parâmetros antigos."""
+    if hashed.startswith(_BCRYPT_PREFIXES):
+        return True
+    try:
+        return _argon2.check_needs_rehash(hashed)
+    except InvalidHashError:
+        return True
 
 
 # ── JWT — emissão ────────────────────────────────────────────────────────────

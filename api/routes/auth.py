@@ -17,6 +17,7 @@ from api.auth.security import (
     create_token_pair,
     get_current_user,
     hash_password,
+    needs_rehash,
     verify_password,
     verify_refresh_token,
     TokenData,
@@ -65,6 +66,10 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
 
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Conta desativada. Contate o administrador.")
+
+    if needs_rehash(user.hashed_password):
+        user.hashed_password = hash_password(form.password)
+        db.commit()
 
     token_data = {"sub": str(user.id), "email": user.email, "role": user.role}
     pair = create_token_pair(token_data)
