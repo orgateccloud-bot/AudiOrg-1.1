@@ -2,6 +2,7 @@
 ORGATEC – Rotas de Autenticação
 POST /auth/login    → recebe email+senha, devolve access + refresh token
 POST /auth/refresh  → recebe refresh token, devolve novo par de tokens
+POST /auth/logout   → revoga o refresh token (jti vai para blacklist Redis)
 GET  /auth/me       → devolve dados do usuário autenticado
 POST /auth/seed     → cria usuário admin inicial (apenas se não existir)
 """
@@ -18,6 +19,7 @@ from api.auth.security import (
     get_current_user,
     hash_password,
     needs_rehash,
+    revoke_refresh_token,
     verify_password,
     verify_refresh_token,
     TokenData,
@@ -106,6 +108,18 @@ def refresh(body: RefreshRequest, db: Session = Depends(get_db)):
         "expires_in": new_pair.expires_in,
         "user": {"id": user.id, "email": user.email, "nome": user.nome, "role": user.role},
     }
+
+
+@router.post("/logout", status_code=200)
+def logout(body: RefreshRequest):
+    """Revoga o refresh token apresentado.
+
+    Idempotente: se o jti já estiver revogado, segue retornando 200.
+    Acaba retornando 401 só quando o token é inválido (assinatura ruim, tipo
+    errado, expirado) — nesses casos não há o que revogar.
+    """
+    data = revoke_refresh_token(body.refresh_token)
+    return {"detail": "Refresh token revogado.", "jti": data.jti}
 
 
 @router.get("/me", response_model=MeResponse)
