@@ -43,7 +43,8 @@ jobs:
           DATABASE_URL: sqlite:///./test.db
           ANTHROPIC_API_KEY: sk-ant-test-key
           PYTHONPATH: ${{ github.workspace }}
-        run: python -m pytest horizon_blue_one/tests/test_sprint_smoke.py -v
+        # --no-cov: smoke isolado não é representativo do coverage global (10 testes).
+        run: python -m pytest horizon_blue_one/tests/test_sprint_smoke.py -v --no-cov
 
       - name: Upload coverage
         if: matrix.python-version == '3.12'
