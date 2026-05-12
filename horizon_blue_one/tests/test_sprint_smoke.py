@@ -120,7 +120,11 @@ async def test_precalc_memo_reusa_5min():
     pre1 = p1["__precalc__"]
     p2 = await precalcular(dict(payload))
     pre2 = p2["__precalc__"]
-    assert pre1 is pre2  # memo retorna mesmo dict
+    # Issue #28: memo retorna snapshots isolados (deep copy) — equivalentes
+    # mas com referências distintas para evitar contaminação cross-request.
+    assert pre1 is not pre2
+    assert pre1["notas_re1"] == pre2["notas_re1"]
+    assert pre1["xgboost"] == pre2["xgboost"]
 
 
 @pytest.mark.asyncio
