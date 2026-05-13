@@ -1,14 +1,14 @@
 """
-orgaudi_v250.report_builder
-═══════════════════════════
-Ponto de entrada do laudo OrgAudi v2.5.0.
+pdf_engine.orgaudi.report_builder
+═════════════════════════════════
+Ponto de entrada do laudo OrgAudi v2.5.0 (motor HTML/Chrome — padrão).
 
-Interface pública compatível com orgaudi_v240:
-    from pdf_engine.orgaudi_v250.report_builder import gerar_laudo_v250
+Interface pública:
+    from pdf_engine import gerar_laudo_v250
     gerar_laudo_v250(notas, cliente_nome, cliente_cpf, saida, municipio, estado)
 
 Arquitetura:
-    1. Reutiliza os módulos de dados do v240 (domain, data_processing, validators)
+    1. Reutiliza domain + data_processing + validators (mesma pasta)
     2. Converte para ctx dict que o template_builder entende
     3. Gera HTML self-contained (fontes base64)
     4. Renderiza via Chrome headless → PDF
@@ -22,7 +22,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Optional
 
-from ..orgaudi_v240.data_processing import (
+from .data_processing import (
     apurar_resumo,
     construir_planilha_mensal,
     hash_laudo,
@@ -31,7 +31,7 @@ from ..orgaudi_v240.data_processing import (
     teste_t04_concentracao_pf,
     teste_t07_documental,
 )
-from ..orgaudi_v240.domain import (
+from .domain import (
     Achado,
     CategoriaContabil,
     Contribuinte,
@@ -39,7 +39,7 @@ from ..orgaudi_v240.domain import (
     Periodo,
     Severidade,
 )
-from ..orgaudi_v240.validators import fmt_brl, fmt_data, fmt_pct, validar_cpf
+from .validators import fmt_brl, fmt_data, fmt_pct, validar_cpf
 
 from .template_builder import construir_html
 from .renderer import html_para_pdf
@@ -167,8 +167,8 @@ def _preparar_ctx(
 
     hash_doc = hash_laudo(contribuinte, periodo, resumo, notas)
 
-    # ── Sugerir achados (mesma lógica do v240) ──────────────────────────────
-    from ..orgaudi_v240.report_builder import LaudoOrgAudi
+    # ── Sugerir achados (mesma lógica do report_builder_rl) ────────────────
+    from .report_builder_rl import LaudoOrgAudi
     laudo_tmp = LaudoOrgAudi(
         contribuinte=contribuinte,
         periodo=periodo,
@@ -281,8 +281,8 @@ def gerar_laudo_v250(
     saida = Path(saida)
 
     # ── Converter NFA → NotaFiscal se necessário ────────────────────────────
-    # O adapter do v240 já tem toda a lógica de conversão; reutilizamos.
-    from ..orgaudi.orgaudi_adapter import _converter_nota, _normalizar_doc, _fallback_cpf
+    # O adapter já tem toda a lógica de conversão; reutilizamos.
+    from .adapter import _converter_nota, _normalizar_doc, _fallback_cpf
     import re
 
     cpf_limpo = re.sub(r"\D", "", str(cliente_cpf))
