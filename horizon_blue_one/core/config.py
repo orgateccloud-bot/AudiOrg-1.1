@@ -51,11 +51,6 @@ class Settings:
     APP_PORT: int
     LOG_LEVEL: str
 
-    # ─── Supabase (opcional) ────────────────────────────────────────────────
-    SUPABASE_URL: str
-    SUPABASE_SERVICE_KEY: str
-    SUPABASE_ANON_KEY: str
-
     # ─── Auditoria ──────────────────────────────────────────────────────────
     AUDIT_HASH_LEN: int
 
@@ -65,17 +60,14 @@ class Settings:
         self.HAIKU_MODEL_ID    = _obter("HAIKU_MODEL_ID",  "claude-haiku-4-5-20251001")
         self.OPUS_MODEL_ID     = _obter("OPUS_MODEL_ID",   "claude-opus-4-7")
 
-        self.JWT_SECRET         = _obter("JWT_SECRET", "nfa-extractor-dev-secret-orgatec-2026!!")
+        secret_default = "nfa-extractor-dev-secret-orgatec-2026!!"
+        self.JWT_SECRET = _obter("JWT_SECRET", secret_default)
         self.JWT_ALGORITHM      = _obter("JWT_ALGORITHM", "HS256")
         self.JWT_EXPIRE_MINUTES = int(_obter("JWT_EXPIRE_MINUTES", "60"))
 
         self.APP_ENV   = _obter("APP_ENV", "development")
         self.APP_PORT  = int(_obter("APP_PORT", "8081"))
         self.LOG_LEVEL = _obter("LOG_LEVEL", "INFO")
-
-        self.SUPABASE_URL         = _obter("SUPABASE_URL")
-        self.SUPABASE_SERVICE_KEY = _obter("SUPABASE_SERVICE_KEY")
-        self.SUPABASE_ANON_KEY    = _obter("SUPABASE_ANON_KEY")
 
         try:
             self.AUDIT_HASH_LEN = int(_obter("AUDIT_HASH_LEN", "64"))
