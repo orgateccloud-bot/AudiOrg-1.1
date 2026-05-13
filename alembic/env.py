@@ -47,8 +47,6 @@ def run_migrations_online() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-        # pgBouncer transaction mode: desabilita prepared statements
-        connect_args={"prepare_threshold": None},
     )
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
