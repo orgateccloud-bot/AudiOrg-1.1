@@ -16,13 +16,6 @@ from collections import Counter
 import numpy as np
 import structlog
 
-from horizon_blue_one.agents.detectores_forenses import (
-    detectar_anomalia_temporal,
-    detectar_carrossel,
-    detectar_devolucao_posterior,
-    detectar_fornecedor_fantasma,
-    detectar_smurfing,
-)
 
 logger = structlog.get_logger()
 
@@ -98,6 +91,13 @@ def extrair_features(notas: list) -> dict:
 
 
 def extrair_features_completas(notas: list) -> dict:
+    from horizon_blue_one.agents.detectores_forenses import (
+        detectar_anomalia_temporal,
+        detectar_carrossel,
+        detectar_devolucao_posterior,
+        detectar_fornecedor_fantasma,
+        detectar_smurfing,
+    )
     base = extrair_features(notas)
     return {
         **base,

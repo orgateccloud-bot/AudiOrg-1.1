@@ -8,7 +8,8 @@ Hierarquia de custo (Anthropic 2026):
 Política de roteamento:
   HAIKU   → tarefas simples: classificação, extração, roteamento, LGPD
   SONNET  → auditoria padrão: fiscal rural, ICMS, ITR, planejamento, jurídico
-  OPUS    → análise rigorosa: score >= 85, >=3 tipologias criticas, prob. autuação >= 0.75
+  OPUS    → análise rigorosa: score >= 85, >=3 tipologias críticas,
+            prob. autuação >= 0.75
 """
 from __future__ import annotations
 
@@ -169,14 +170,23 @@ def rotear(
             )
 
     # ── Downgrade para Haiku ──────────────────────────────────────────────────
+    tarefas_proibidas = (
+        TipoTarefa.FORENSE,
+        TipoTarefa.FORENSE_CRITICO,
+        TipoTarefa.DECISAO_FINAL,
+    )
     if (modelo_base == ModelType.SONNET
             and score_risco < 25
             and num_notas <= 5
             and tipologias_criticas == 0
-            and tipo_tarefa not in (TipoTarefa.FORENSE, TipoTarefa.FORENSE_CRITICO, TipoTarefa.DECISAO_FINAL)):
+            and tipo_tarefa not in tarefas_proibidas):
+        motivo = (
+            f"Score baixo {score_risco:.0f} + {num_notas} notas -> "
+            "Haiku (downgrade)"
+        )
         return RotingDecision(
             modelo=ModelType.HAIKU, tipo_tarefa=tipo_tarefa,
-            motivo=f"Score baixo {score_risco:.0f} + {num_notas} notas -> Haiku (downgrade)",
+            motivo=motivo,
             score_risco=score_risco, tipologias_criticas=tipologias_criticas,
             downgrade_aplicado=True,
         )
@@ -228,6 +238,11 @@ class _TokenStats:
             if decision.downgrade_aplicado:
                 self.downgrades += 1
 
+    def _calc_economia_percentual(self, total_custo: float) -> str:
+        denom = max(0.000001, total_custo + self.economia_usd)
+        pct = self.economia_usd / denom * 100
+        return f"{pct:.1f}%"
+
     def resumo(self) -> dict:
         total_chamadas = sum(self.chamadas.values()) or 1
         total_custo    = sum(self.custo_usd.values())
@@ -243,7 +258,7 @@ class _TokenStats:
             },
             "custo_total_usd":          round(total_custo, 6),
             "economia_vs_sonnet_usd":   round(self.economia_usd, 6),
-            "economia_percentual":      f"{self.economia_usd / max(0.000001, total_custo + self.economia_usd) * 100:.1f}%",
+            "economia_percentual": self._calc_economia_percentual(total_custo),
             "upgrades_para_opus":       self.upgrades,
             "downgrades_para_haiku":    self.downgrades,
         }

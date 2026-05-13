@@ -412,7 +412,7 @@ def perguntar(
     prompt = pergunta
     if context_ia:
         prompt = f"CONTEXTO: {context_ia}\nPERGUNTA: {pergunta}"
-    return analisar(notas, system_override=None)
+    return analisar(notas, system_override=SYSTEM_GAMA if not prompt else None) if not prompt else _claude_generate(prompt, SYSTEM_GAMA, max_tokens=TOKEN_LIMITS["chat"])
 
 
 def get_ai_metrics() -> dict:
