@@ -197,6 +197,11 @@ def _carregar_database_url() -> str:
     if db_url:
         return db_url
 
+    # Em testes (PYTEST_CURRENT_TEST definido pelo pytest) não ler config.env
+    # para evitar que credenciais de produção vazem para testes de isolamento.
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        return ""
+
     env_path = Path(__file__).parent.parent.parent / "config.env"
     if env_path.exists():
         for line in env_path.read_text(encoding="utf-8").splitlines():
