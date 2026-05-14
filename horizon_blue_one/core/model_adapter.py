@@ -77,7 +77,9 @@ async def call_model(
         return resp
     except RECOVERABLE as exc:
         ms = round((time.monotonic() - inicio) * 1000, 2)
-        logger.warning("model_call_falhou", model=model_type.value, ms=ms, erro=str(exc))
+        logger.warning(
+            "model_call_falhou", model=model_type.value, ms=ms, erro=str(exc)
+        )
         raise
 
 

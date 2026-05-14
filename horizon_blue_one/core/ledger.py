@@ -44,7 +44,10 @@ def _write_fallback_jsonl(entry: dict[str, Any]) -> None:
         with _FALLBACK_PATH.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(entry, default=str) + "\n")
     except OSError as exc:
-        logger.error("ledger_fallback_falhou motivo=%s entry_keys=%s", exc, list(entry.keys()))
+        entry_keys = list(entry.keys())
+        logger.error(
+            "ledger_fallback_falhou motivo=%s entry_keys=%s", exc, entry_keys
+        )
 
 
 def _insert_sync(

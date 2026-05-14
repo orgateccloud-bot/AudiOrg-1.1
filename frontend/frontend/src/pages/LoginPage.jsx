@@ -2,24 +2,34 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Mail } from 'lucide-react';
 import MatrixBackground from '../components/MatrixBackground';
+import api from '../services/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      if (email.includes('@orgatec.com.br') || (email === 'admin' && password === 'admin123')) {
-        localStorage.setItem('orgatec_token', 'mock_jwt_token');
-        window.location.href = '/dashboard';
-      } else {
-        alert('Credenciais não autorizadas pelo Protocolo ORGATEC.');
-      }
+    setErro('');
+    try {
+      const params = new URLSearchParams();
+      params.append('username', email);
+      params.append('password', password);
+      const res = await api.post('/auth/login', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
+      localStorage.setItem('orgatec_token', res.data.access_token);
+      localStorage.setItem('orgatec_refresh', res.data.refresh_token);
+      window.location.href = '/dashboard';
+    } catch (err) {
+      const detalhe = err.response?.data?.detail || 'Credenciais inválidas.';
+      setErro(detalhe);
+    } finally {
       setLoading(false);
-    }, 800)
+    }
   };
 
   return (
@@ -84,7 +94,11 @@ const LoginPage = () => {
               </div>
             </div>
 
-            <button 
+            {erro && (
+              <p className="text-red-400 text-xs text-center font-bold">{erro}</p>
+            )}
+
+            <button
               type="submit"
               disabled={loading}
               className="w-full bg-sovereign-cyan/20 hover:bg-sovereign-cyan border border-sovereign-cyan/40 text-sovereign-cyan hover:text-white font-black py-3 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 text-sm"

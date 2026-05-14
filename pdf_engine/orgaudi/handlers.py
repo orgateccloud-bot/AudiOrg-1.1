@@ -21,7 +21,7 @@ from reportlab.lib.utils import ImageReader
 
 from reportlab.lib import colors as rl_colors
 
-from ..styles import AZUL, AZUL_CL, BRANCO, CBORD, CTXT, _get_logo_h, _get_logo_t
+from .styles import AZUL, AZUL_CL, BRANCO, CBORD, CTXT, _get_logo_h, _get_logo_t
 
 # Banda de acento dourado no topo — identidade premium ORGATEC
 _OURO = rl_colors.HexColor("#C08B18")   # ouro institucional

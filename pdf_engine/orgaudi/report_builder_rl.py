@@ -50,8 +50,8 @@ from .domain import (
     Periodo,
     Severidade,
 )
-from .pdf.handlers import criar_handler_pagina
-from .pdf.pages import (
+from .handlers import criar_handler_pagina
+from .pages import (
     construir_pagina_1_capa,
     construir_pagina_2_resumo_executivo,
     construir_pagina_achados,

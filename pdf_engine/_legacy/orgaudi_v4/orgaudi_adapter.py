@@ -30,7 +30,6 @@ from typing import Any
 from ..orgaudi_v240 import (
     Achado,
     Contribuinte,
-    LaudoOrgAudi,
     NaturezaNota,
     NotaFiscal,
     Periodo,
