@@ -25,20 +25,20 @@ class Produto(BaseModel):
         vlr_total: float = 0.0
 
 class NFA(BaseModel):
-        numero: str = ""
-        natureza: str = "OUTRAS"
-        emissao: str = ""
-        valor_total: float = 0.0
-        valor_icms: float = 0.0
-        quantidade_total: float = 0.0
-        # P1-B: campo cabecas adicionado — ausencia causava distorcao silenciosa no XGBoost
-        # xgboost_scorer.py usa n.get("cabecas", 0) — sem este campo, score era sempre 0
-        cabecas: float = 0.0
-        chave_acesso: Optional[str] = None
-        local_emissao: Optional[str] = None
-        cfop: Optional[str] = None  # P1-B: CFOP adicionado para feature de consistencia_cfop no XGBoost
-        destinatario_cpf: Optional[str] = None  # P1-B: alias para xgboost_scorer (proporcao_pf, concentracao_dest)
-        regra_aplicada: Optional[str] = None  # rastreabilidade RE-1
+    numero: str = ""
+    natureza: str = "OUTRAS"
+    emissao: str = ""
+    valor_total: float = 0.0
+    valor_icms: float = 0.0
+    quantidade_total: float = 0.0
+    # P1-B: campo cabecas adicionado — ausencia causava distorcao silenciosa no XGBoost
+    # xgboost_scorer.py usa n.get("cabecas", 0) — sem este campo, score era sempre 0
+    cabecas: float = 0.0
+    chave_acesso: Optional[str] = None
+    local_emissao: Optional[str] = None
+    cfop: Optional[str] = None  # P1-B: CFOP adicionado para feature de consistencia_cfop no XGBoost
+    destinatario_cpf: Optional[str] = None  # P1-B: alias para xgboost_scorer (proporcao_pf, concentracao_dest)
+    regra_aplicada: Optional[str] = None  # rastreabilidade RE-1
 
     remetente: Parte = Field(default_factory=Parte)
     destinatario: Parte = Field(default_factory=Parte)
