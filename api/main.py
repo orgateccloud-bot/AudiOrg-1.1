@@ -83,10 +83,8 @@ app.include_router(chat.router)
 app.include_router(batch.router)
 
 # Routers opcionais — carregados individualmente para que falha em um
-# (ex.: Supabase mal configurado em finance) não derrube os demais.
-# Cada falha é logada como WARNING para que o operador saiba que o endpoint
-# não está disponível, em vez de descobrir por reclamação de cliente.
-for _nome in ("metrics", "finance", "nfa_ai_parser"):
+# não derrube os demais.
+for _nome in ("metrics", "nfa_ai_parser"):
     try:
         _mod = __import__(f"api.routes.{_nome}", fromlist=["router"])
         app.include_router(_mod.router)

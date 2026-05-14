@@ -505,7 +505,7 @@ async def processar_lote_auditoria(
         pdf_path = os.path.join("data", "laudos", pdf_filename)
 
         try:
-            from pdf_engine.orgaudi_v4.orgaudi_adapter import gerar_laudo_orgaudi
+            from pdf_engine import gerar_laudo_orgaudi  # unificado em pdf_engine/orgaudi/
             gerar_laudo_orgaudi(
                 notas=notas_unicas,
                 cliente_nome=client_name,
