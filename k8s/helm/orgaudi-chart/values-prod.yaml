@@ -28,22 +28,10 @@ frontend:
   service:
     type: ClusterIP
 
+# PostgreSQL local — DESATIVADO em produção
+# Banco gerenciado pelo Supabase (cloud). Injete DATABASE_URL via Secret orgaudi-supabase.
 postgresql:
-  enabled: true
-  auth:
-    password: # Deve ser injetado via secrets
-  primary:
-    persistence:
-      enabled: true
-      size: 100Gi
-      storageClassName: fast-ssd
-    resources:
-      requests:
-        memory: "2Gi"
-        cpu: "1000m"
-      limits:
-        memory: "8Gi"
-        cpu: "4000m"
+  enabled: false
 
 redis:
   enabled: true
