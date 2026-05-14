@@ -37,8 +37,8 @@ class NFA(BaseModel):
         chave_acesso: Optional[str] = None
         local_emissao: Optional[str] = None
         cfop: Optional[str] = None  # P1-B: CFOP adicionado para feature de consistencia_cfop no XGBoost
-    destinatario_cpf: Optional[str] = None  # P1-B: alias para xgboost_scorer (proporcao_pf, concentracao_dest)
-    regra_aplicada: Optional[str] = None  # rastreabilidade RE-1
+        destinatario_cpf: Optional[str] = None  # P1-B: alias para xgboost_scorer (proporcao_pf, concentracao_dest)
+        regra_aplicada: Optional[str] = None  # rastreabilidade RE-1
 
     remetente: Parte = Field(default_factory=Parte)
     destinatario: Parte = Field(default_factory=Parte)
