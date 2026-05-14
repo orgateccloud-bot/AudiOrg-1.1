@@ -1,0 +1,114 @@
+{
+  "produtor": "FABIO",
+  "nome_real": "FABIO",
+  "cpf": "463.935.521-15",
+  "score_precalc": 65.2,
+  "pf": 0.652,
+  "agentes": {
+    "S1": {
+      "status": "APROVADO",
+      "confidence": 0.333,
+      "output": {
+        "lgpd_status": "ALERTA",
+        "documentos_status": "OK",
+        "recomendacoes": [],
+        "pii": {
+          "cpfs_detectados": 38,
+          "cnpjs_detectados": 1,
+          "contas_detectadas": 37,
+          "total_pii": 191
+        },
+        "documentos": {
+          "documentos_validos": 50,
+          "pendencias": [],
+          "ie_valida": true,
+          "total_pendencias": 0
+        }
+      }
+    },
+    "S2": {
+      "status": "ESCALADO",
+      "confidence": 0.5,
+      "output": {
+        "score_risco": 65.2,
+        "nivel": "ALTO",
+        "tipologias": [
+          "fornecedor_fantasma",
+          "anomalia_temporal"
+        ],
+        "narrativa": "```json\n{\n  \"score_risco\": 65,\n  \"nivel\": \"ALTO\",\n  \"tipologias\": [\"AN-05\", \"AN-11\", \"AN-14\"],\n  \"narrativa\": \"Análise forense identifica 38 fornecedores com perfil fantasma na rede de relacionamentos (39 nós, 41 arestas, densidade 0,03), indicando estrutura societária rarefeita e artificial. Detectados 3 ciclos no grafo, sugerindo triangulação de operações com possível retorno de recursos ao contribuinte originário. A anomalia temporal sinaliza emissão ou escrituração de documentos fiscais fora",
+        "evidencias": [],
+        "acoes": []
+      }
+    },
+    "S3": {
+      "status": "APROVADO",
+      "confidence": 0.94,
+      "output": {
+        "icms_status": "OK",
+        "itr_status": "OK",
+        "lcdpr_status": "CONFORME",
+        "cfop_status": "OK",
+        "cfop": {
+          "total": 50,
+          "validos": 50,
+          "divergentes": [],
+          "total_divergencias": 0
+        },
+        "lcdpr": {
+          "receita_notas": 738334.35,
+          "receita_lcdpr": 738334.35,
+          "despesa_lcdpr": 2297747.93,
+          "divergencia": 0.0,
+          "saldo_lcdpr": -1559413.58,
+          "status_conformidade": "CONFORME"
+        },
+        "itr": {
+          "area_total_ha": 100.0,
+          "area_utilizada": 90.0,
+          "gu_pct": 90.0,
+          "subutilizado": false
+        },
+        "caixa": {
+          "entradas": 738334.35,
+          "saidas": 1980445.19,
+          "saldo": -1242110.84
+        },
+        "deducoes_legais": [],
+        "alertas": [],
+        "total_divergencia": 0.0,
+        "fonte": "deterministico"
+      }
+    },
+    "S5": {
+      "status": "APROVADO",
+      "confidence": 0.375,
+      "output": {
+        "total_notas": 50,
+        "total_valor": 3036082.28,
+        "divergencias": [],
+        "riscos": [
+          "fornecedor_fantasma",
+          "anomalia_temporal"
+        ],
+        "conformidade_sefaz_go": "CONFORME"
+      }
+    },
+    "S7": {
+      "status": "ESCALADO",
+      "confidence": 0.5,
+      "output": {
+        "decisao": "REVISAR",
+        "score_final": 65.2,
+        "parecer_juridico": "Parecer indisponível (parse falhou).",
+        "mda_executivo": "MD&A indisponível.",
+        "acoes_imediatas": [],
+        "riscos_residuais": [],
+        "resumo_agentes": "S1: lgpd_status=ALERTA | documentos_status=OK\nS2: nivel=ALTO\nS3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+        "precalc_score": 65.2
+      }
+    }
+  },
+  "tokens": 2786,
+  "custo_usd": 0.0269
+}

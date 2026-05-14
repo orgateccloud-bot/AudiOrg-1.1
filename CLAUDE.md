@@ -12,9 +12,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 python -m venv .venv && .venv\Scripts\activate
 pip install -r requirements.txt
 
-# Banco — Postgres dev (docker) ou SQLite (default)
-docker compose up -d              # Postgres :5433 + Redis :6379
-alembic upgrade head              # aplica migrations
+# Banco — Supabase (produção) ou SQLite (dev, auto-criado no lifespan)
+# Dev local: SQLite orgatec_sovereign.db criado automaticamente — nenhum setup
+# Produção: DATABASE_URL em config.env aponta para Supabase Transaction Pooler (:6543)
+#
+# Migrations dev (SQLite):
+alembic upgrade head
+# Migrations produção (requer direct URL :5432, não pooler — PowerShell):
+#   $env:DATABASE_URL=$env:DATABASE_URL_DIRECT; alembic upgrade head
 alembic revision --autogenerate -m "msg"
 
 # Executar

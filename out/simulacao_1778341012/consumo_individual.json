@@ -1,0 +1,284 @@
+[
+  {
+    "pdf": "ADELA DEST.pdf",
+    "produtor": "ADELA",
+    "papel": "DESTINATARIO",
+    "n_notas": 7,
+    "valor_total": 655460.0,
+    "status": "OK",
+    "duracao_s": 1.72,
+    "chamadas": [
+      {
+        "agent_id": "A-07",
+        "modelo": "sonnet",
+        "tokens_in": 1026,
+        "tokens_out": 529,
+        "custo_usd": 0.011013
+      },
+      {
+        "agent_id": "A-08",
+        "modelo": "opus",
+        "tokens_in": 4636,
+        "tokens_out": 1251,
+        "custo_usd": 0.163365
+      },
+      {
+        "agent_id": "A-23",
+        "modelo": "sonnet",
+        "tokens_in": 880,
+        "tokens_out": 500,
+        "custo_usd": 0.01014
+      },
+      {
+        "agent_id": "A-27",
+        "modelo": "sonnet",
+        "tokens_in": 222,
+        "tokens_out": 374,
+        "custo_usd": 0.006276
+      },
+      {
+        "agent_id": "A-00",
+        "modelo": "opus",
+        "tokens_in": 5997,
+        "tokens_out": 512,
+        "custo_usd": 0.128355
+      }
+    ],
+    "totais": {
+      "tokens_in": 12761,
+      "tokens_out": 3166,
+      "custo_usd": 0.319149,
+      "custo_baseline_sonnet": 0.085773,
+      "economia_pct": -272.09,
+      "distribuicao": {
+        "sonnet": 6,
+        "opus": 3
+      }
+    },
+    "resultados": {
+      "A-07": {
+        "status": "ESCALADO",
+        "confidence": 0.8,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-08": {
+        "status": "APROVADO",
+        "confidence": 0.95,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-23": {
+        "status": "APROVADO",
+        "confidence": 0.42,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-27": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-00": {
+        "status": "APROVADO",
+        "confidence": 0.0,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      }
+    }
+  },
+  {
+    "pdf": "ADELA REM.pdf",
+    "produtor": "ADELA",
+    "papel": "REMETENTE",
+    "n_notas": 19,
+    "valor_total": 941050.08,
+    "status": "OK",
+    "duracao_s": 1.06,
+    "chamadas": [
+      {
+        "agent_id": "A-07",
+        "modelo": "sonnet",
+        "tokens_in": 1134,
+        "tokens_out": 550,
+        "custo_usd": 0.011652
+      },
+      {
+        "agent_id": "A-08",
+        "modelo": "opus",
+        "tokens_in": 10710,
+        "tokens_out": 2372,
+        "custo_usd": 0.33855
+      },
+      {
+        "agent_id": "A-23",
+        "modelo": "sonnet",
+        "tokens_in": 838,
+        "tokens_out": 491,
+        "custo_usd": 0.009879
+      },
+      {
+        "agent_id": "A-27",
+        "modelo": "sonnet",
+        "tokens_in": 224,
+        "tokens_out": 374,
+        "custo_usd": 0.006282
+      },
+      {
+        "agent_id": "A-00",
+        "modelo": "opus",
+        "tokens_in": 12022,
+        "tokens_out": 512,
+        "custo_usd": 0.21873
+      }
+    ],
+    "totais": {
+      "tokens_in": 24928,
+      "tokens_out": 4299,
+      "custo_usd": 0.585093,
+      "custo_baseline_sonnet": 0.139269,
+      "economia_pct": -320.12,
+      "distribuicao": {
+        "sonnet": 6,
+        "opus": 3
+      }
+    },
+    "resultados": {
+      "A-07": {
+        "status": "APROVADO",
+        "confidence": 0.8,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-08": {
+        "status": "APROVADO",
+        "confidence": 0.95,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-23": {
+        "status": "APROVADO",
+        "confidence": 0.42,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-27": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-00": {
+        "status": "APROVADO",
+        "confidence": 0.0,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      }
+    }
+  },
+  {
+    "pdf": "CLEITON DEST.pdf",
+    "produtor": "CLEITON",
+    "papel": "DESTINATARIO",
+    "n_notas": 3,
+    "valor_total": 33284.33,
+    "status": "OK",
+    "duracao_s": 0.22,
+    "chamadas": [
+      {
+        "agent_id": "A-07",
+        "modelo": "sonnet",
+        "tokens_in": 796,
+        "tokens_out": 483,
+        "custo_usd": 0.009633
+      },
+      {
+        "agent_id": "A-08",
+        "modelo": "opus",
+        "tokens_in": 2136,
+        "tokens_out": 751,
+        "custo_usd": 0.088365
+      },
+      {
+        "agent_id": "A-23",
+        "modelo": "sonnet",
+        "tokens_in": 856,
+        "tokens_out": 495,
+        "custo_usd": 0.009993
+      },
+      {
+        "agent_id": "A-27",
+        "modelo": "sonnet",
+        "tokens_in": 222,
+        "tokens_out": 374,
+        "custo_usd": 0.006276
+      },
+      {
+        "agent_id": "A-00",
+        "modelo": "opus",
+        "tokens_in": 3473,
+        "tokens_out": 512,
+        "custo_usd": 0.090495
+      }
+    ],
+    "totais": {
+      "tokens_in": 7483,
+      "tokens_out": 2615,
+      "custo_usd": 0.204762,
+      "custo_baseline_sonnet": 0.061674,
+      "economia_pct": -232.01,
+      "distribuicao": {
+        "sonnet": 6,
+        "opus": 3
+      }
+    },
+    "resultados": {
+      "A-07": {
+        "status": "ESCALADO",
+        "confidence": 0.8,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-08": {
+        "status": "APROVADO",
+        "confidence": 0.95,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-23": {
+        "status": "APROVADO",
+        "confidence": 0.42,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-27": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-00": {
+        "status": "APROVADO",
+        "confidence": 0.0,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      }
+    }
+  }
+]

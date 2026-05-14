@@ -1,0 +1,52 @@
+{
+  "A-00": {
+    "chamadas": 5,
+    "tokens_in": 41302,
+    "tokens_out": 2560,
+    "custo_usd": 0.81153,
+    "modelo_predominante": "opus",
+    "%_haiku": 0.0,
+    "%_sonnet": 0.0,
+    "%_opus": 100.0
+  },
+  "A-07": {
+    "chamadas": 5,
+    "tokens_in": 4938,
+    "tokens_out": 2606,
+    "custo_usd": 0.053904,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-08": {
+    "chamadas": 5,
+    "tokens_in": 34632,
+    "tokens_out": 7497,
+    "custo_usd": 1.081755,
+    "modelo_predominante": "opus",
+    "%_haiku": 0.0,
+    "%_sonnet": 0.0,
+    "%_opus": 100.0
+  },
+  "A-23": {
+    "chamadas": 5,
+    "tokens_in": 4310,
+    "tokens_out": 2481,
+    "custo_usd": 0.050145,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-27": {
+    "chamadas": 5,
+    "tokens_in": 1114,
+    "tokens_out": 1870,
+    "custo_usd": 0.031392,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  }
+}

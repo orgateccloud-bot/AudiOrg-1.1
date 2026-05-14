@@ -1,0 +1,116 @@
+[
+  {
+    "produtor": "GERALDO",
+    "latencia_ms": 10263,
+    "n_notas": 95,
+    "score_precalc": 66.1,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "FABIO",
+    "latencia_ms": 3432,
+    "n_notas": 50,
+    "score_precalc": 65.2,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "ETERVALDO",
+    "latencia_ms": 936,
+    "n_notas": 6,
+    "score_precalc": 65.0,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "CLEITON",
+    "latencia_ms": 4601,
+    "n_notas": 73,
+    "score_precalc": 64.3,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "RAUL",
+    "latencia_ms": 2167,
+    "n_notas": 21,
+    "score_precalc": 62.2,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      }
+    }
+  },
+  {
+    "produtor": "ADELA",
+    "latencia_ms": 1945,
+    "n_notas": 26,
+    "score_precalc": 61.9,
+    "agentes": {
+      "S3": {
+        "status": "APROVADO",
+        "confidence": 0.94,
+        "destaque": [
+          "icms_status",
+          "itr_status",
+          "lcdpr_status",
+          "cfop_status",
+          "cfop"
+        ]
+      }
+    }
+  }
+]

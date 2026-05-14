@@ -1,0 +1,16 @@
+{
+  "ADELA": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_ADELA_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 20355,
+    "tamanho_novo": 666
+  },
+  "CLEITON": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_CLEITON_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 21870,
+    "tamanho_novo": 666
+  }
+}

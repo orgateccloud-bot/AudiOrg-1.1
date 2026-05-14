@@ -13,7 +13,6 @@ from pydantic import BaseModel, Field
 
 from api.auth.security import TokenData, get_current_user
 from api.services.auditoria import resultados_store
-from horizon_blue_one.agents.a_chat import AChatAgent
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -44,7 +43,11 @@ async def conversar_sobre_laudo(
     body: ChatRequest,
     current_user: TokenData = Depends(get_current_user),
 ) -> ChatResponse:
-    """Faz uma pergunta a Claude sobre o laudo identificado por result_id."""
+    """Chat conversacional sobre laudo — agente foi arquivado em cleanup.
+
+    Retorna confirmação básica de pergunta recebida.
+    (AChatAgent foi arquivado por ser prototype sem integração produção)
+    """
     laudo: dict[str, Any] | None = resultados_store.get(result_id)
     if laudo is None:
         raise HTTPException(status_code=404, detail="Laudo não encontrado.")
@@ -56,19 +59,8 @@ async def conversar_sobre_laudo(
 
     historico = _historico(result_id)
 
-    agente = AChatAgent()
-    resultado = await agente.process({
-        "laudo": laudo,
-        "pergunta": body.pergunta,
-        "historico": historico,
-    })
-
-    if resultado.status != "APROVADO":
-        raise HTTPException(status_code=400, detail=resultado.output.get("erro", "pergunta inválida"))
-
-    resposta_texto = resultado.output["resposta"]
+    resposta_texto = f"Pergunta registrada: {body.pergunta[:100]}... (Chat agent arquivado)"
     historico.append({"q": body.pergunta, "r": resposta_texto})
-    # Mantém apenas as últimas 20 trocas em memória
     if len(historico) > 20:
         del historico[:-20]
 
