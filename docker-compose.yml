@@ -1,36 +1,20 @@
 version: "3.9"
 
-# OrgAudi — Stack de desenvolvimento local (#23)
+# OrgAudi — Stack de desenvolvimento local
 #
-# Serviços:
-#   - postgres   : Postgres 16 com volume persistente, exposto em :5433
-#   - redis      : Redis 7 (rate-limit #16 + revogação refresh tokens #21), :6379
+# Banco de dados: Supabase (cloud) — não sobe Postgres local.
+# Apenas Redis é necessário localmente para rate-limit e revogação de tokens.
+#
+# Pré-requisitos:
+#   Copiar .env.example → config.env e preencher SUPABASE_URL, SUPABASE_ANON_KEY, etc.
+#   DATABASE_URL deve apontar para Supabase (Transaction Pooler porta 6543).
 #
 # Uso:
-#   docker compose up -d                  # sobe Postgres + Redis
-#   alembic upgrade head                   # aplica schema no Postgres
-#   docker compose down                    # mantém volume (dados persistem)
-#   docker compose down -v                 # apaga volume (banco vazio na próxima)
+#   docker compose up -d          # sobe apenas Redis
+#   docker compose down           # para Redis (dados persistem no volume)
+#   docker compose down -v        # apaga volume Redis
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: orgaudi-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-nfa_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nfa_dev_pwd}
-      POSTGRES_DB: ${POSTGRES_DB:-nfa_extractor}
-    ports:
-      - "5433:5432"
-    volumes:
-      - orgaudi_pg_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nfa_user} -d ${POSTGRES_DB:-nfa_extractor}"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
   redis:
     image: redis:7-alpine
     container_name: orgaudi-redis
@@ -46,5 +30,4 @@ services:
       retries: 10
 
 volumes:
-  orgaudi_pg_data:
   orgaudi_redis_data:
