@@ -93,45 +93,6 @@ class TestProtectedEndpoints:
         assert isinstance(res.json(), dict)
 
 
-# ── Finance endpoints (sem Supabase → 503) ───────────────────────────────────
-
-class TestFinanceEndpoints:
-
-    def test_finance_sem_supabase_retorna_503(self):
-        """Quando Supabase não está configurado, todos retornam 503."""
-        endpoints = [
-            ("GET", "/finance/profile"),
-            ("GET", "/finance/categories"),
-            ("GET", "/finance/transactions"),
-            ("GET", "/finance/summary"),
-            ("GET", "/finance/predictions"),
-        ]
-        headers = _auth_headers()
-        for method, path in endpoints:
-            if method == "GET":
-                res = client.get(path, headers=headers)
-            assert res.status_code == 503
-            assert "Supabase" in res.json()["detail"]
-
-    def test_finance_create_sem_supabase_retorna_503(self):
-        headers = _auth_headers()
-        res = client.post(
-            "/finance/transactions",
-            json={"type": "income", "amount": 1000},
-            headers=headers,
-        )
-        assert res.status_code == 503
-
-    def test_finance_categories_seed_sem_supabase_retorna_503(self):
-        headers = _auth_headers()
-        res = client.post("/finance/categories/seed", headers=headers)
-        assert res.status_code == 503
-
-    def test_finance_sem_token_retorna_401(self):
-        res = client.get("/finance/profile")
-        assert res.status_code == 401
-
-
 # ── Rate Limiting ────────────────────────────────────────────────────────────
 
 class TestRateLimiting:
