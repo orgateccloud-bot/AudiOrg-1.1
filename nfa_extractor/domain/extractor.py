@@ -31,8 +31,14 @@ class NFA(BaseModel):
     valor_total: float = 0.0
     valor_icms: float = 0.0
     quantidade_total: float = 0.0
+    # P1-B: campo cabecas adicionado — ausencia causava distorcao silenciosa no XGBoost
+    # xgboost_scorer.py usa n.get("cabecas", 0) — sem este campo, score era sempre 0
+    cabecas: float = 0.0
     chave_acesso: Optional[str] = None
     local_emissao: Optional[str] = None
+    cfop: Optional[str] = None  # P1-B: CFOP adicionado para feature de consistencia_cfop no XGBoost
+    destinatario_cpf: Optional[str] = None  # P1-B: alias para xgboost_scorer (proporcao_pf, concentracao_dest)
+    regra_aplicada: Optional[str] = None  # rastreabilidade RE-1
     
     remetente: Parte = Field(default_factory=Parte)
     destinatario: Parte = Field(default_factory=Parte)
@@ -48,6 +54,20 @@ class NFA(BaseModel):
             except: return 0.0
         return float(v or 0.0)
 
+
+    @field_validator("cabecas", "quantidade_total", mode="before")
+    @classmethod
+    def parse_quantity(cls, v: Any) -> float:
+        if isinstance(v, str):
+            v = v.replace(".", "").replace(",", ".").strip()
+            try: return float(v)
+            except: return 0.0
+        return float(v or 0.0)
+
+    def sync_destinatario_cpf(self) -> None:
+        """Sincroniza destinatario_cpf a partir do destinatario.cpf_cnpj para uso no XGBoost."""
+        if self.destinatario and self.destinatario.cpf_cnpj:
+            object.__setattr__(self, 'destinatario_cpf', self.destinatario.cpf_cnpj)
 # --- LOGIC ---
 
 def classificar_natureza(natureza: str) -> str:
