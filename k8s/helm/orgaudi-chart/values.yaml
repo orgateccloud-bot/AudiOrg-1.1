@@ -28,6 +28,35 @@ backend:
       value: "INFO"
     - name: WORKERS
       value: "4"
+    # ── Supabase ──────────────────────────────────────────────────────────────
+    # Os valores reais devem ser injetados via Kubernetes Secret, não hardcoded aqui.
+    # Crie o secret com:
+    #   kubectl create secret generic orgaudi-supabase     #     --from-literal=SUPABASE_URL=https://<ref>.supabase.co     #     --from-literal=SUPABASE_ANON_KEY=<anon_key>     #     --from-literal=SUPABASE_SERVICE_ROLE_KEY=<service_role_key>     #     --from-literal=SUPABASE_JWT_SECRET=<jwt_secret>     #     --from-literal=DATABASE_URL=postgresql://...     #     -n orgaudi
+    - name: SUPABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: SUPABASE_URL
+    - name: SUPABASE_ANON_KEY
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: SUPABASE_ANON_KEY
+    - name: SUPABASE_SERVICE_ROLE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: SUPABASE_SERVICE_ROLE_KEY
+    - name: SUPABASE_JWT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: SUPABASE_JWT_SECRET
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: DATABASE_URL
 
 # Frontend (React)
 frontend:
@@ -49,22 +78,11 @@ frontend:
       memory: "1Gi"
       cpu: "500m"
 
-# PostgreSQL (Database)
+# PostgreSQL local — DESATIVADO
+# Banco de dados gerenciado pelo Supabase (cloud).
+# Para migrations use: DATABASE_URL_DIRECT + alembic upgrade head
 postgresql:
-  enabled: true
-  auth:
-    username: orgaudi
-    password: changeme
-    database: orgaudi_prod
-
-  primary:
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "500m"
-      limits:
-        memory: "4Gi"
-        cpu: "2000m"
+  enabled: false
 
 # Redis (Cache + Rate Limit)
 redis:
@@ -121,31 +139,3 @@ ingress:
     - secretName: orgaudi-tls
       hosts:
         - orgaudi.example.com
-
-# HPA (Horizontal Pod Autoscaler)
-autoscaling:
-  enabled: true
-  backend:
-    minReplicas: 3
-    maxReplicas: 10
-    targetCPUUtilizationPercentage: 70
-    targetMemoryUtilizationPercentage: 80
-
-  frontend:
-    minReplicas: 2
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 60
-
-# Monitoring (Prometheus)
-monitoring:
-  enabled: true
-  prometheus:
-    enabled: true
-    scrapeInterval: 30s
-
-# Security
-security:
-  networkPolicy:
-    enabled: true
-  podSecurityPolicy:
-    enabled: true
