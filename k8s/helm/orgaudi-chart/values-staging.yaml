@@ -22,20 +22,10 @@ frontend:
   image:
     tag: latest
 
+# PostgreSQL local — DESATIVADO em staging
+# Banco gerenciado pelo Supabase (cloud). Injete DATABASE_URL via Secret orgaudi-supabase.
 postgresql:
-  enabled: true
-  primary:
-    persistence:
-      enabled: true
-      size: 50Gi
-      storageClassName: standard
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "500m"
-      limits:
-        memory: "4Gi"
-        cpu: "2000m"
+  enabled: false
 
 redis:
   enabled: true
