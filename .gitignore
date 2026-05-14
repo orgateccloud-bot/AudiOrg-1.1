@@ -63,3 +63,11 @@ data/laudos/
 # Logs
 extractor.log
 .coverage
+
+
+# Runtime outputs gerados (relatórios, simulações, ledger JSONL)
+out/
+reports_nfa/*.json
+reports_nfa/*.md
+reports_nfa/*.txt
+reports_nfa/laudos_pdf/
