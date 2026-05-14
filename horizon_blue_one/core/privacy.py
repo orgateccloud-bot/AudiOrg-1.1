@@ -15,6 +15,12 @@ Identificadores detectados:
 - Placa de veículo Mercosul (AAA-0000 e AAA-0A00)
 - CEP brasileiro (00000-000)
 - Campos textuais "sensíveis" (nome, razão social, etc.) por nome de chave
+
+API:
+- anonymize_pii(text) -> (texto, cpfs, cnpjs, emails)
+  Compatibilidade retroativa: mantém o tuple de 4 elementos.
+- anonymize_pii_extendido(text) -> (texto, dict_categorias)
+  Nova versão com telefone/placa/CEP detalhado.
 """
 from __future__ import annotations
 
@@ -31,16 +37,16 @@ RE_CPF = re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b")
 RE_CNPJ = re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b")
 RE_EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 
-# Telefone BR — captura formatos como (62) 99999-9999, 62999999999, +55 62 99999-9999
+# Telefone BR — captura (62) 99999-9999, 62999999999, +55 62 99999-9999
 RE_TELEFONE = re.compile(
-    r"(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?9?\d{4}[-\s]?\d{4}\b"
+    r"(?:\+?55\s?)?\(?\d{2}\)?\s?9\d{4}[-\s]?\d{4}\b"
 )
 
 # Placa Mercosul (AAA0A00) e antiga (AAA-0000)
 RE_PLACA = re.compile(r"\b[A-Z]{3}[-\s]?\d[A-Z0-9]\d{2}\b")
 
 # CEP BR (00000-000 ou 00000000)
-RE_CEP = re.compile(r"\b\d{5}-?\d{3}\b")
+RE_CEP = re.compile(r"\b\d{5}-\d{3}\b")
 
 # Campos cujo valor textual é nome próprio (não passa por regex)
 _CAMPOS_SENSIVEIS = frozenset({
@@ -64,13 +70,13 @@ def _registrar_operacao(
     operacao: str,
     requisicao_id: str,
     agente: str,
-    cpfs: list[str],
-    cnpjs: list[str],
-    emails: list[str],
-    nomes: list[str],
-    telefones: list[str] | None = None,
-    placas: list[str] | None = None,
-    ceps: list[str] | None = None,
+    cpfs: list,
+    cnpjs: list,
+    emails: list,
+    nomes: list,
+    telefones: list = None,
+    placas: list = None,
+    ceps: list = None,
 ) -> None:
     """Loga a operação @Delta sem nunca registrar o valor original em claro."""
     telefones = telefones or []
@@ -101,13 +107,35 @@ def _registrar_operacao(
 # ── API pública ──────────────────────────────────────────────────────────────
 
 
-def anonymize_pii(text: str) -> tuple[str, dict[str, list[str]]]:
+def anonymize_pii(text):
     """Substitui CPF/CNPJ/email/telefone/placa/CEP no texto por placeholders.
 
-    Retorna (texto_anonimizado, identificadores_encontrados).
-    O dict de identificadores tem chaves: cpfs, cnpjs, emails, telefones, placas, ceps.
-    Os valores em claro são devolvidos APENAS para que o caller possa logar
-    hashes — nunca devem ser persistidos pelo agente.
+    Retorna (texto_anonimizado, cpfs, cnpjs, emails) — compatibilidade
+    retroativa. Telefones/placas/CEPs também são anonimizados no texto,
+    mas para acessá-los explicitamente use anonymize_pii_extendido().
+    """
+    if not isinstance(text, str):
+        return text, [], [], []
+
+    cpfs = RE_CPF.findall(text)
+    cnpjs = RE_CNPJ.findall(text)
+    emails = RE_EMAIL.findall(text)
+
+    # CPF/CNPJ primeiro (têm precedência sobre telefone — evita confusão)
+    texto = RE_CPF.sub("[CPF_PROTEGIDO]", text)
+    texto = RE_CNPJ.sub("[CNPJ_PROTEGIDO]", texto)
+    texto = RE_EMAIL.sub("[EMAIL_PROTEGIDO]", texto)
+    texto = RE_TELEFONE.sub("[TELEFONE_PROTEGIDO]", texto)
+    texto = RE_PLACA.sub("[PLACA_PROTEGIDA]", texto)
+    texto = RE_CEP.sub("[CEP_PROTEGIDO]", texto)
+
+    return texto, cpfs, cnpjs, emails
+
+
+def anonymize_pii_extendido(text):
+    """Versão extendida — retorna (texto, dict com todas categorias).
+
+    Categorias retornadas: cpfs, cnpjs, emails, telefones, placas, ceps.
     """
     if not isinstance(text, str):
         return text, {"cpfs": [], "cnpjs": [], "emails": [], "telefones": [], "placas": [], "ceps": []}
@@ -116,7 +144,6 @@ def anonymize_pii(text: str) -> tuple[str, dict[str, list[str]]]:
     cnpjs = RE_CNPJ.findall(text)
     emails = RE_EMAIL.findall(text)
 
-    # CPF/CNPJ primeiro (têm precedência sobre telefone — evita confusão de dígitos)
     texto = RE_CPF.sub("[CPF_PROTEGIDO]", text)
     texto = RE_CNPJ.sub("[CNPJ_PROTEGIDO]", texto)
     texto = RE_EMAIL.sub("[EMAIL_PROTEGIDO]", texto)
@@ -140,40 +167,35 @@ def anonymize_pii(text: str) -> tuple[str, dict[str, list[str]]]:
     }
 
 
-def anonymize_payload(
-    payload: Any,
-    *,
-    requisicao_id: str | None = None,
-    agente: str = "desconhecido",
-) -> dict | list | Any:
+def anonymize_payload(payload, *, requisicao_id=None, agente="desconhecido"):
     """Anonimiza recursivamente um payload destinado a um LLM.
 
-    Acumula CPFs/CNPJs/nomes vistos durante a varredura e emite UM log
+    Acumula CPFs/CNPJs/nomes/etc. vistos durante a varredura e emite UM log
     estruturado por chamada (não por valor encontrado, para não inflar log).
     """
     requisicao_id = requisicao_id or str(uuid.uuid4())
-    cpfs_vistos: list[str] = []
-    cnpjs_vistos: list[str] = []
-    emails_vistos: list[str] = []
-    nomes_vistos: list[str] = []
-    telefones_vistos: list[str] = []
-    placas_vistas: list[str] = []
-    ceps_vistos: list[str] = []
+    cpfs_vistos = []
+    cnpjs_vistos = []
+    emails_vistos = []
+    nomes_vistos = []
+    telefones_vistos = []
+    placas_vistas = []
+    ceps_vistos = []
 
-    def _walk(node: Any) -> Any:
+    def _walk(node):
         if isinstance(node, dict):
-            saida: dict = {}
+            saida = {}
             for k, v in node.items():
                 if k in _CAMPOS_SENSIVEIS and isinstance(v, str) and v:
                     nomes_vistos.append(v)
-                    saida[k] = f"[NOME_REDACTED_{len(v)}]"
+                    saida[k] = "[NOME_REDACTED_" + str(len(v)) + "]"
                 else:
                     saida[k] = _walk(v)
             return saida
         if isinstance(node, list):
             return [_walk(item) for item in node]
         if isinstance(node, str):
-            texto, achados = anonymize_pii(node)
+            texto, achados = anonymize_pii_extendido(node)
             cpfs_vistos.extend(achados["cpfs"])
             cnpjs_vistos.extend(achados["cnpjs"])
             emails_vistos.extend(achados["emails"])
@@ -207,5 +229,6 @@ __all__ = [
     "RE_PLACA",
     "RE_CEP",
     "anonymize_pii",
+    "anonymize_pii_extendido",
     "anonymize_payload",
 ]
