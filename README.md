@@ -1,7 +1,7 @@
 # OrgAudi — Plataforma de Auditoria Fiscal
 
 **Versão:** 1.0.0  
-**Pilha:** FastAPI · React 19 · LangGraph · Claude/Gemini · XGBoost · SQLite · ReportLab  
+**Pilha:** FastAPI · React 19 · LangGraph · Claude/Gemini · XGBoost · Supabase Postgres (SQLite em dev) · ReportLab  
 **Responsável:** ORGATEC IA
 
 ---
@@ -30,7 +30,7 @@ OrgAudi/
 ├── documentos/             # Documentação técnica
 ├── roteiros/               # Scripts utilitários
 ├── testes/                 # Suíte de testes
-└── orgatec_sovereign.db    # SQLite — clientes e laudos
+└── orgatec_sovereign.db    # SQLite (fallback dev) — clientes e laudos quando DATABASE_URL ausente
 ```
 
 ---
@@ -156,7 +156,10 @@ ANTHROPIC_API_KEY=sk-ant-...
 SQUAD_MODEL=anthropic:claude-sonnet-4-6
 AUDITORIA_MODEL=anthropic:claude-sonnet-4-6
 AUDITORIA_MODEL_SIMPLES=anthropic:claude-haiku-4-5-20251001
-DATABASE_URL=sqlite:///./orgatec_sovereign.db
+# Produção (Supabase Postgres Transaction Pooler — porta 6543):
+DATABASE_URL=postgresql://postgres.<ref>:<pwd>@aws-1-sa-east-1.pooler.supabase.com:6543/postgres
+# Dev local (omita DATABASE_URL para usar SQLite fallback)
+# DATABASE_URL=sqlite:///./orgatec_sovereign.db
 ```
 
 Veja `.env.exemplo` na raiz para a lista completa.
@@ -207,5 +210,5 @@ Detalhes em `SEGURANÇA.md`.
 - **Integração / onboarding**: ver `INTEGRAÇÃO.md` e `CLAUDE.md`.
 - **Score de qualidade**: ver `ATUALIZADO_SCORE_9.0.md`.
 - **Migrações de banco**: Alembic em `alambique/` (`alembic.ini` na raiz).
-- **Docker**: `docker-compose.yml` (Redis + serviços).
+- **Docker**: `docker-compose.yml` (apenas Redis — Postgres migrado para Supabase cloud).
 - **Pré-commit**: `.pre-commit-config.yaml` (ruff, mypy, bandit).
