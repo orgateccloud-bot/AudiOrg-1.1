@@ -84,7 +84,7 @@ app.include_router(batch.router)
 
 # Routers opcionais — carregados individualmente para que falha em um
 # não derrube os demais.
-for _nome in ("metrics", "nfa_ai_parser"):
+for _nome in ("metrics", "nfa_ai_parser", "prometheus"):
     try:
         _mod = __import__(f"api.routes.{_nome}", fromlist=["router"])
         app.include_router(_mod.router)
