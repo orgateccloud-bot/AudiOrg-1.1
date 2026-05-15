@@ -19,7 +19,7 @@ argon2-cffi>=23.1.0                # hash de senhas (argon2id) — padrão atual
 bcrypt>=4.0                        # verify de hashes legacy bcrypt (login transparente)
 
 # ── PDF / Excel / Imagens ────────────────────────────────────────────────────
-pdfplumber>=0.10.0
+pdfplumber>=0.11.9
 PyMuPDF>=1.24.0            # fitz — usado em nfa_extractor/domain/nfa_parser_ai
 reportlab>=4.0.0
 openpyxl>=3.1.0
