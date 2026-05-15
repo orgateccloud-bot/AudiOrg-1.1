@@ -1,4 +1,4 @@
-"""OrgAudi Sovereign API v8.0 â Motor unificado com 4 mÃ³dulos."""
+"""OrgAudi API v1.0 â Motor unificado com 4 mÃ³dulos."""
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
