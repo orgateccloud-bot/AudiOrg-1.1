@@ -54,3 +54,8 @@ fakeredis>=2.35.1           # backend in-memory para testes do rate limit
 
 # ── UI Desktop (opcional — Tkinter app) ──────────────────────────────────────
 customtkinter>=5.2.2
+
+
+# ── Observabilidade (P1-6 / Issue #25) ───────────────────────────────
+prometheus-client>=0.20.0   # exposição /metrics + Counter/Histogram
+sentry-sdk[fastapi]>=2.0.0  # ativo apenas se SENTRY_DSN estiver definido
