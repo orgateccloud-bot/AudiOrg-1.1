@@ -1,4 +1,4 @@
-"""OrgAudi Sovereign API v8.0 — Motor unificado com 4 módulos."""
+"""OrgAudi API v1.0 â Motor unificado com 4 mÃ³dulos."""
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -7,7 +7,7 @@ import logging
 
 def _carregar_env_local() -> None:
     """Carrega config.env (ou .env) na raiz do projeto em os.environ.
-    Variáveis já existentes no ambiente NÃO são sobrescritas."""
+    VariÃ¡veis jÃ¡ existentes no ambiente NÃO sÃ£o sobrescritas."""
     base = Path(__file__).resolve().parent.parent
     for nome in ("config.env", ".env"):
         caminho = base / nome
@@ -30,6 +30,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.middleware.rate_limit import RateLimitMiddleware
+
+try:
+    from api.middleware.error_metrics import ErrorMetricsMiddleware
+    _ERROR_METRICS_MIDDLEWARE_AVAILABLE = True
+except Exception as _exc:  # prometheus_client opcional
+    ErrorMetricsMiddleware = None  # type: ignore[assignment]
+    _ERROR_METRICS_MIDDLEWARE_AVAILABLE = False
 from api.routes import auditoria, auth, batch, chat, clientes, agente
 from nfa_extractor.infrastructure.database_v2 import Base, engine
 
@@ -39,7 +46,7 @@ logger = logging.getLogger("orgaudi")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
-    logger.info("OrgAudi iniciado — banco sincronizado")
+    logger.info("OrgAudi iniciado â banco sincronizado")
     yield
     logger.info("OrgAudi encerrado")
 
@@ -54,7 +61,7 @@ app = FastAPI(
 def _get_allowed_origins() -> list[str]:
     """Origens CORS via env var ALLOWED_ORIGINS (CSV).
 
-    Sem env var, mantém os defaults de dev (localhost:5173-5175) para não
+    Sem env var, mantÃ©m os defaults de dev (localhost:5173-5175) para nÃ£o
     quebrar o setup local de desenvolvimento.
     """
     bruto = os.getenv("ALLOWED_ORIGINS", "").strip()
@@ -67,6 +74,8 @@ def _get_allowed_origins() -> list[str]:
 
 
 app.add_middleware(RateLimitMiddleware, rate=60, window=60)
+if _ERROR_METRICS_MIDDLEWARE_AVAILABLE and ErrorMetricsMiddleware is not None:
+    app.add_middleware(ErrorMetricsMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_get_allowed_origins(),
@@ -82,8 +91,8 @@ app.include_router(agente.router)
 app.include_router(chat.router)
 app.include_router(batch.router)
 
-# Routers opcionais — carregados individualmente para que falha em um
-# não derrube os demais.
+# Routers opcionais â carregados individualmente para que falha em um
+# nÃ£o derrube os demais.
 for _nome in ("metrics", "nfa_ai_parser", "prometheus"):
     try:
         _mod = __import__(f"api.routes.{_nome}", fromlist=["router"])
@@ -120,7 +129,7 @@ def get_stats():
 
 @app.get("/tokens")
 async def get_token_stats():
-    """Relatório de uso e custo de tokens — agente foi arquivado em cleanup.
+    """RelatÃ³rio de uso e custo de tokens â agente foi arquivado em cleanup.
 
     Retorna status indicando que o agente de tokens foi arquivado.
     """
