@@ -1,528 +1,284 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  LayoutDashboard, Users, Search, Brain, LogOut, Shield,
-  Send, Loader2, Plus, Trash2, TrendingUp, FileText,
-  AlertTriangle, CheckCircle, X, ChevronRight, Activity,
-  BarChart3, UserCheck, Zap,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import AuditoriaModule from './AuditoriaModule';
-import MatrixBackground from '../components/MatrixBackground';
-import api from '../services/api';
+import { getStats, getRelatorioPdf } from '../services/api';
 
-// ── Layout Principal ─────────────────────────────────────────────────────────
+// Sub-módulos carregados via lazy
+const AuditoriaModule = lazy(() => import('./AuditoriaModule'));
+const UploadNFA       = lazy(() => import('./UploadNFA'));
 
+// ── Ícones inline simples (sem dependência externa) ──────────────────────────
+const Icon = ({ d, size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d={d} />
+  </svg>
+);
+
+const ICONS = {
+  dashboard: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z',
+  upload:    'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12',
+  list:      'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+  agents:    'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75',
+  shield:    'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+  hash:      'M4 9h16M4 15h16M10 3L8 21M16 3l-2 18',
+  logout:    'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9',
+  alert:     'M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01',
+};
+
+// ── Navegação do sidebar ─────────────────────────────────────────────────────
+const NAV_SECTIONS = [
+  {
+    label: 'OPERAÇÃO',
+    items: [
+      { icon: 'dashboard', label: 'Centro de Comando', to: '/dashboard' },
+      { icon: 'upload',    label: 'Nova Auditoria',    to: '/dashboard/upload' },
+      { icon: 'list',      label: 'Auditorias',        to: '/dashboard/auditorias' },
+    ],
+  },
+  {
+    label: 'INTELIGÊNCIA',
+    items: [
+      { icon: 'agents', label: 'Squad A-07 / A-08',    to: '/dashboard/squad' },
+      { icon: 'shield', label: 'Detectores forenses',  to: '/dashboard/detectores' },
+      { icon: 'list',   label: 'Laudos técnicos',      to: '/dashboard/laudos' },
+      { icon: 'hash',   label: 'Trilha SHA-256',        to: '/dashboard/trilha' },
+    ],
+  },
+];
+
+// ── Dashboard principal ──────────────────────────────────────────────────────
 const Dashboard = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
+  const [stats, setStats]     = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro]       = useState('');
+
+  useEffect(() => {
+    getStats()
+      .then(res => setStats(res.data))
+      .catch(() => setErro('Falha ao carregar estatísticas — modo offline'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('orgatec_token');
-    window.location.href = '/login';
+    navigate('/login');
   };
 
-  const navItems = [
-    { icon: <LayoutDashboard size={18} />, label: 'Comando',   to: '/dashboard' },
-    { icon: <Users size={18} />,           label: 'Clientes',  to: '/dashboard/clientes' },
-    { icon: <Search size={18} />,          label: 'Auditoria', to: '/dashboard/auditoria' },
-    { icon: <Brain size={18} />,           label: 'Agente',    to: '/dashboard/agente' },
-  ];
-
   return (
-    <div className="flex h-screen overflow-hidden bg-sovereign-950 relative">
-      <MatrixBackground />
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#020c18', fontFamily: 'IBM Plex Sans, sans-serif' }}>
 
-      {/* Sidebar */}
-      <aside className="w-64 bg-sovereign-950/90 backdrop-blur-md border-r border-sovereign-800 flex flex-col p-6 z-20 shrink-0">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-8 h-8 rounded-lg bg-sovereign-cyan/20 border border-sovereign-cyan/40 flex items-center justify-center">
-            <Shield className="text-sovereign-cyan" size={16} />
-          </div>
+      {/* ── Sidebar ────────────────────────────────────────────────────────── */}
+      <aside style={{
+        width: 240, background: '#020f1e', borderRight: '1px solid rgba(0,196,255,0.1)',
+        display: 'flex', flexDirection: 'column', padding: '1.5rem 1rem', flexShrink: 0,
+      }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', padding: '0 0.5rem' }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+            background: 'radial-gradient(circle at 35% 35%, #4fc3f7, #0277bd, #002f6c)',
+            boxShadow: '0 0 12px rgba(0,196,255,0.3)',
+          }} />
           <div>
-            <h2 className="text-sm font-black tracking-widest text-white">ORGATEC</h2>
-            <p className="text-[9px] text-sovereign-600 tracking-[0.3em] font-bold">SOVEREIGN v6.4</p>
+            <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff', letterSpacing: '0.15em' }}>ORGATEC</div>
+            <div style={{ fontSize: '0.55rem', color: '#00c4ff', letterSpacing: '0.3em', fontFamily: 'IBM Plex Mono, monospace' }}>SOVEREIGN v8.0</div>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1">
-          {navItems.map(item => {
-            const active = location.pathname === item.to ||
-              (item.to !== '/dashboard' && location.pathname.startsWith(item.to));
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-bold
-                  ${active
-                    ? 'bg-sovereign-cyan/15 text-sovereign-cyan border border-sovereign-cyan/20'
-                    : 'text-sovereign-500 hover:bg-sovereign-900 hover:text-sovereign-300'}`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-                {active && <ChevronRight size={14} className="ml-auto" />}
-              </Link>
-            );
-          })}
+        {/* Nav sections */}
+        <nav style={{ flex: 1, overflowY: 'auto' }}>
+          {NAV_SECTIONS.map(section => (
+            <div key={section.label} style={{ marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: '0.55rem', color: '#2a4a5e', letterSpacing: '0.3em', fontFamily: 'IBM Plex Mono, monospace', padding: '0 0.5rem', marginBottom: '0.5rem' }}>
+                {section.label}
+              </div>
+              {section.items.map(item => {
+                const active = location.pathname === item.to || (item.to !== '/dashboard' && location.pathname.startsWith(item.to));
+                return (
+                  <Link key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: '0.6rem',
+                      padding: '0.6rem 0.75rem', borderRadius: 6, marginBottom: '0.15rem',
+                      background: active ? 'rgba(0,196,255,0.1)' : 'transparent',
+                      border: active ? '1px solid rgba(0,196,255,0.2)' : '1px solid transparent',
+                      color: active ? '#00c4ff' : '#4a6b8a',
+                      fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.15s',
+                    }}>
+                      <Icon d={ICONS[item.icon]} size={14} />
+                      <span>{item.label}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 text-sovereign-700 hover:text-red-400 transition-colors px-3 py-2.5 mt-auto rounded-xl hover:bg-red-900/10"
-        >
-          <LogOut size={18} />
-          <span className="font-bold text-xs uppercase tracking-widest">Sair</span>
+        {/* Logout */}
+        <button onClick={handleLogout} style={{
+          display: 'flex', alignItems: 'center', gap: '0.6rem',
+          padding: '0.6rem 0.75rem', background: 'none', border: 'none',
+          color: '#2a4a5e', fontSize: '0.8rem', cursor: 'pointer',
+          width: '100%', borderRadius: 6,
+        }}>
+          <Icon d={ICONS.logout} size={14} />
+          <span>Sair do Sistema</span>
         </button>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto z-10">
-        <Routes>
-          <Route path="/"          element={<HomeModule />} />
-          <Route path="/clientes"  element={<ClientesModule />} />
-          <Route path="/auditoria" element={<AuditoriaModule />} />
-          <Route path="/agente"    element={<AgenteModule />} />
-        </Routes>
+      {/* ── Conteúdo principal ────────────────────────────────────────────── */}
+      <main style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
+        <Suspense fallback={<div style={{ color: '#4a6b8a', fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.8rem' }}>CARREGANDO MÓDULO...</div>}>
+          <Routes>
+            <Route path="/"           element={<HomeModule stats={stats} loading={loading} erro={erro} />} />
+            <Route path="/upload"     element={<UploadNFA />} />
+            <Route path="/auditorias" element={<AuditoriaModule />} />
+            <Route path="/squad"      element={<SquadModule />} />
+            <Route path="/detectores" element={<DetectoresModule />} />
+            <Route path="/laudos"     element={<AuditoriaModule />} />
+            <Route path="/trilha"     element={<TrilhaModule />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );
 };
 
-// ── Componentes utilitários ──────────────────────────────────────────────────
+// ── Centro de Comando ────────────────────────────────────────────────────────
+const HomeModule = ({ stats, loading, erro }) => {
+  const kpis = [
+    { label: 'LAUDOS EMITIDOS', value: stats?.total_laudos ?? stats?.laudos_emitidos ?? '—', color: '#00c4ff', sub: 'total acumulado' },
+    { label: 'EM CURSO',        value: stats?.em_curso ?? stats?.auditorias_ativas ?? '—',   color: '#00c47a', sub: 'aguardando resultado' },
+    { label: 'VOLUME APURADO',  value: stats?.volume_funrural ? `R$ ${(stats.volume_funrural/1e6).toFixed(1)}M` : '—', color: '#ffb703', sub: 'FUNRURAL apurado' },
+    { label: 'ALERTAS CRÍTICOS',value: stats?.alertas_criticos ?? stats?.alertas ?? '—',     color: '#ff4757', sub: 'A-07 detectados' },
+  ];
 
-const PageHeader = ({ title, subtitle, action }) => (
-  <div className="flex items-start justify-between mb-8">
+  return (
     <div>
-      <h1 className="text-3xl font-black tracking-tight text-white">{title}</h1>
-      {subtitle && <p className="text-sovereign-500 mt-1 text-sm">{subtitle}</p>}
+      <div style={{ marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', margin: 0 }}>Centro de Comando.</h1>
+        <p style={{ fontSize: '0.8rem', color: '#4a6b8a', marginTop: '0.25rem', fontFamily: 'IBM Plex Mono, monospace' }}>
+          {loading ? 'Sincronizando com a API...' : erro ? erro : `Pipeline HORIZON-BLUE ONE · ${new Date().toLocaleDateString('pt-BR')}`}
+        </p>
+      </div>
+
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+        {kpis.map(kpi => (
+          <div key={kpi.label} style={{
+            padding: '1.25rem', background: '#020f1e', border: '1px solid rgba(0,196,255,0.1)',
+            borderRadius: 8, borderTop: `2px solid ${kpi.color}`,
+          }}>
+            <div style={{ fontSize: '0.6rem', color: '#4a6b8a', letterSpacing: '0.2em', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '0.5rem' }}>{kpi.label}</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff' }}>{loading ? '···' : kpi.value}</div>
+            <div style={{ fontSize: '0.65rem', color: '#2a4a5e', marginTop: '0.25rem' }}>{kpi.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pipeline status */}
+      <div style={{ background: '#020f1e', border: '1px solid rgba(0,196,255,0.1)', borderRadius: 8, padding: '1.25rem' }}>
+        <div style={{ fontSize: '0.65rem', color: '#4a6b8a', letterSpacing: '0.2em', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '1rem' }}>
+          PIPELINE · HORIZON-BLUE ONE
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {['RE-1', 'XGBoost', 'F1-F6', 'A-07', 'A-08'].map((step, i) => (
+            <React.Fragment key={step}>
+              <div style={{
+                padding: '0.4rem 0.75rem', background: 'rgba(0,196,255,0.08)',
+                border: '1px solid rgba(0,196,255,0.2)', borderRadius: 4,
+                color: '#00c4ff', fontSize: '0.75rem', fontFamily: 'IBM Plex Mono, monospace',
+              }}>
+                {step}
+              </div>
+              {i < 4 && <div style={{ color: '#2a4a5e', fontSize: '0.8rem' }}>→</div>}
+            </React.Fragment>
+          ))}
+          <div style={{ marginLeft: 'auto', fontSize: '0.65rem', color: '#4a6b8a', fontFamily: 'IBM Plex Mono, monospace' }}>
+            @Delta ATIVO · SHA-256 · v8.0.0
+          </div>
+        </div>
+      </div>
     </div>
-    {action}
+  );
+};
+
+// ── Squad A-07 / A-08 ────────────────────────────────────────────────────────
+const SquadModule = () => (
+  <div>
+    <h2 style={{ color: '#fff', marginBottom: '1.5rem' }}>Squad A-07 / A-08</h2>
+    {[
+      { id: 'A-07', name: 'Auditoria Assurance', type: 'Determinístico', status: 'ATIVO', desc: '5 detectores forenses: CARROSSEL, SMURFING, FANTASMA, DEVOLUÇÃO, TEMPORAL' },
+      { id: 'A-08', name: 'Auditor NFA-e',       type: 'Claude Sonnet',  status: 'ATIVO', desc: 'Análise qualitativa LLM + Protocolo @Delta anonimização + fallback determinístico' },
+    ].map(agent => (
+      <div key={agent.id} style={{
+        background: '#020f1e', border: '1px solid rgba(0,196,255,0.15)', borderRadius: 8,
+        padding: '1.25rem', marginBottom: '1rem', display: 'flex', alignItems: 'flex-start', gap: '1rem',
+      }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+          background: 'rgba(0,196,255,0.1)', border: '1px solid rgba(0,196,255,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#00c4ff', fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.65rem', fontWeight: 700,
+        }}>
+          {agent.id}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+            <span style={{ color: '#fff', fontWeight: 600 }}>{agent.name}</span>
+            <span style={{ padding: '0.15rem 0.5rem', background: 'rgba(0,196,127,0.1)', border: '1px solid rgba(0,196,127,0.3)', borderRadius: 3, color: '#00c47a', fontSize: '0.6rem', fontFamily: 'IBM Plex Mono, monospace' }}>{agent.status}</span>
+            <span style={{ color: '#4a6b8a', fontSize: '0.7rem' }}>{agent.type}</span>
+          </div>
+          <p style={{ color: '#7bafc4', fontSize: '0.8rem', margin: 0 }}>{agent.desc}</p>
+        </div>
+      </div>
+    ))}
+    <div style={{ padding: '1rem', background: 'rgba(0,196,255,0.04)', border: '1px solid rgba(0,196,255,0.1)', borderRadius: 6, color: '#4a6b8a', fontSize: '0.7rem', fontFamily: 'IBM Plex Mono, monospace' }}>
+      26 agentes em standby (a00–a27) · Pipeline: RE-1 → XGBoost → F1-F6 → A-07 → A-08
+    </div>
   </div>
 );
 
-const StatCard = ({ icon, label, value, sub, color = 'cyan' }) => {
-  const colors = {
-    cyan:   'from-sovereign-cyan/10 to-transparent border-sovereign-cyan/20 text-sovereign-cyan',
-    green:  'from-green-500/10  to-transparent border-green-500/20  text-green-400',
-    orange: 'from-orange-500/10 to-transparent border-orange-500/20 text-orange-400',
-    purple: 'from-purple-500/10 to-transparent border-purple-500/20 text-purple-400',
-  };
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`sovereign-card p-6 bg-gradient-to-br ${colors[color]}`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-2 rounded-lg bg-current/10 ${colors[color].split(' ').pop()}`}>{icon}</div>
-        <span className="text-xs text-sovereign-600 font-bold uppercase tracking-widest">{label}</span>
+// ── Detectores Forenses ──────────────────────────────────────────────────────
+const DetectoresModule = () => (
+  <div>
+    <h2 style={{ color: '#fff', marginBottom: '1.5rem' }}>Detectores Forenses A-07</h2>
+    {[
+      { id: 'CARROSSEL_FISCAL',    desc: 'Mesmo CNPJ como emitente E destinatário na mesma operação' },
+      { id: 'SMURFING_RURAL',      desc: 'Múltiplas notas abaixo do limiar de tributação no mesmo dia' },
+      { id: 'FORNECEDOR_FANTASMA', desc: 'Fornecedor com volume alto sem histórico recorrente' },
+      { id: 'DEVOLUCAO_POSTERIOR', desc: 'Nota de devolução emitida muito depois da original' },
+      { id: 'ANOMALIA_TEMPORAL',   desc: 'Concentração de emissões em finais de semana ou feriados' },
+    ].map(d => (
+      <div key={d.id} style={{
+        background: '#020f1e', border: '1px solid rgba(0,196,255,0.1)', borderRadius: 6,
+        padding: '1rem', marginBottom: '0.75rem', display: 'flex', gap: '1rem', alignItems: 'center',
+      }}>
+        <div style={{ color: '#00c4ff', fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.7rem', minWidth: 180 }}>{d.id}</div>
+        <div style={{ color: '#7bafc4', fontSize: '0.8rem' }}>{d.desc}</div>
+        <div style={{ marginLeft: 'auto', color: '#00c47a', fontSize: '0.65rem', fontFamily: 'IBM Plex Mono, monospace' }}>DETERMINÍSTICO</div>
       </div>
-      <p className="text-3xl font-black text-white">{value ?? '—'}</p>
-      {sub && <p className="text-xs text-sovereign-500 mt-1">{sub}</p>}
-    </motion.div>
-  );
-};
-
-const Modal = ({ open, title, onClose, children }) => (
-  <AnimatePresence>
-    {open && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.92, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.92, opacity: 0 }}
-          onClick={e => e.stopPropagation()}
-          className="sovereign-card w-full max-w-md p-8"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-black">{title}</h2>
-            <button onClick={onClose} className="text-sovereign-600 hover:text-white transition-colors">
-              <X size={20} />
-            </button>
-          </div>
-          {children}
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
+    ))}
+  </div>
 );
 
-// ── Home / Comando ───────────────────────────────────────────────────────────
-
-const HomeModule = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get('/stats')
-      .then(r => setStats(r.data))
-      .catch(() => setStats({ total_clientes: 0, total_laudos: 0, total_auditorias_nfae: 0, total_notas_processadas: 0, score_medio: 0 }))
-      .finally(() => setLoading(false));
-  }, []);
-
-  return (
-    <div className="p-10 max-w-6xl">
-      <PageHeader
-        title="Centro de Comando"
-        subtitle="Monitoramento em tempo real do sistema ORGATEC Sovereign Audit"
-      />
-
-      {loading ? (
-        <div className="flex items-center gap-3 text-sovereign-500">
-          <Loader2 size={20} className="animate-spin" />
-          <span className="text-sm">Carregando telemetria...</span>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-          <StatCard
-            icon={<Users size={20} />}
-            label="Clientes"
-            value={stats?.total_clientes}
-            sub="cadastrados na malha"
-            color="cyan"
-          />
-          <StatCard
-            icon={<FileText size={20} />}
-            label="Auditorias PDF"
-            value={stats?.total_laudos}
-            sub="laudos gerados"
-            color="purple"
-          />
-          <StatCard
-            icon={<Zap size={20} />}
-            label="NFA-e Analisadas"
-            value={stats?.total_auditorias_nfae}
-            sub={`${stats?.total_notas_processadas} notas processadas`}
-            color="orange"
-          />
-          <StatCard
-            icon={<BarChart3 size={20} />}
-            label="Score Médio"
-            value={stats?.score_medio ? `${stats.score_medio}` : '—'}
-            sub="risco fiscal médio (0–100)"
-            color="green"
-          />
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="sovereign-card p-7">
-          <h3 className="text-xs font-bold text-sovereign-500 uppercase tracking-widest mb-5">Status do Sistema</h3>
-          <div className="space-y-3">
-            {[
-              { label: 'Motor OrgAudi v4 (RE-1 + F1-F6)', ok: true },
-              { label: 'XGBoost Scorer (heurístico)', ok: true },
-              { label: 'Detectores Forenses (5/5)', ok: true },
-              { label: 'Claude API (A-07 / A-08)', ok: false },
-              { label: 'SQLite (banco local)', ok: true },
-            ].map(({ label, ok }) => (
-              <div key={label} className="flex items-center gap-3 text-sm">
-                {ok
-                  ? <CheckCircle size={16} className="text-green-400 shrink-0" />
-                  : <AlertTriangle size={16} className="text-orange-400 shrink-0" />}
-                <span className={ok ? 'text-sovereign-300' : 'text-sovereign-500'}>{label}</span>
-                <span className={`ml-auto text-xs font-bold ${ok ? 'text-green-400' : 'text-orange-400'}`}>
-                  {ok ? 'ATIVO' : 'DEGRADADO'}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="sovereign-card p-7">
-          <h3 className="text-xs font-bold text-sovereign-500 uppercase tracking-widest mb-5">Pipeline HORIZON-BLUE</h3>
-          <div className="space-y-2">
-            {[
-              { step: 'RE-1', desc: 'Reclassificação VENDA → COMPRA rural', color: 'bg-sovereign-cyan' },
-              { step: 'XGBoost', desc: 'Score 0–100 com 8 features SEFAZ-GO', color: 'bg-purple-500' },
-              { step: 'F1-F6', desc: 'Apuração fiscal FUNRURAL 2026', color: 'bg-blue-500' },
-              { step: 'A-07', desc: 'Detectores forenses determinísticos', color: 'bg-orange-500' },
-              { step: 'A-08', desc: 'Análise qualitativa + @Delta', color: 'bg-green-500' },
-            ].map(({ step, desc, color }, i) => (
-              <div key={step} className="flex items-center gap-3">
-                <div className={`w-6 h-6 ${color} rounded-md flex items-center justify-center text-[10px] font-black text-white shrink-0`}>{i + 1}</div>
-                <div>
-                  <span className="text-xs font-bold text-white">{step}</span>
-                  <span className="text-xs text-sovereign-500 ml-2">{desc}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+// ── Trilha SHA-256 ────────────────────────────────────────────────────────────
+const TrilhaModule = () => (
+  <div>
+    <h2 style={{ color: '#fff', marginBottom: '0.5rem' }}>Trilha de Auditoria SHA-256</h2>
+    <p style={{ color: '#4a6b8a', fontSize: '0.8rem', marginBottom: '1.5rem', fontFamily: 'IBM Plex Mono, monospace' }}>
+      Cada AgentResult possui audit_hash SHA-256 calculado em tempo real. Imutável e verificável.
+    </p>
+    <div style={{ background: '#020f1e', border: '1px solid rgba(0,196,255,0.1)', borderRadius: 8, padding: '1.25rem' }}>
+      <div style={{ color: '#4a6b8a', fontSize: '0.65rem', letterSpacing: '0.2em', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '0.75rem' }}>
+        ALGORITMO · SHA-256 · PROTOCOLO @DELTA ATIVO
       </div>
+      <p style={{ color: '#7bafc4', fontSize: '0.8rem', lineHeight: 1.6 }}>
+        Antes de enviar dados ao LLM, <code style={{ color: '#00c4ff', background: 'rgba(0,196,255,0.1)', padding: '0.1rem 0.3rem', borderRadius: 3 }}>privacy.py</code> substitui CPF/CNPJ/nomes por tokens @DELTA-001, @PESSOA-001, @EMPRESA-001. O mapa de reversão é aplicado na resposta. Nenhum dado pessoal trafega para LLMs externos.
+      </p>
     </div>
-  );
-};
-
-// ── Clientes ─────────────────────────────────────────────────────────────────
-
-const ClientesModule = () => {
-  const [clientes, setClientes]   = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [confirmId, setConfirmId] = useState(null);
-  const [form, setForm]           = useState({ nome: '', cpf_cnpj: '' });
-  const [saving, setSaving]       = useState(false);
-  const [erro, setErro]           = useState('');
-
-  const carregar = () => {
-    setLoading(true);
-    api.get('/clientes/')
-      .then(r => setClientes(r.data))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => { carregar(); }, []);
-
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    if (!form.nome.trim() || !form.cpf_cnpj.trim()) return;
-    setSaving(true);
-    setErro('');
-    try {
-      await api.post('/clientes/', form);
-      setShowModal(false);
-      setForm({ nome: '', cpf_cnpj: '' });
-      carregar();
-    } catch (err) {
-      setErro(err.response?.data?.detail || 'Erro ao cadastrar cliente');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await api.delete(`/clientes/${id}`);
-      setConfirmId(null);
-      carregar();
-    } catch {
-      alert('Erro ao remover cliente');
-    }
-  };
-
-  return (
-    <div className="p-10 max-w-5xl">
-      <PageHeader
-        title="Gestão de Clientes"
-        subtitle="Base de contribuintes cadastrados para auditoria fiscal"
-        action={
-          <button
-            onClick={() => { setShowModal(true); setErro(''); }}
-            className="flex items-center gap-2 bg-sovereign-cyan/20 hover:bg-sovereign-cyan border border-sovereign-cyan/40 text-sovereign-cyan hover:text-white font-bold px-5 py-2.5 rounded-xl transition-all text-sm"
-          >
-            <Plus size={16} />
-            Novo Cliente
-          </button>
-        }
-      />
-
-      {loading ? (
-        <div className="flex items-center gap-3 text-sovereign-500 py-12 justify-center">
-          <Loader2 size={24} className="animate-spin" />
-        </div>
-      ) : clientes.length === 0 ? (
-        <div className="sovereign-card p-16 flex flex-col items-center justify-center text-center">
-          <UserCheck size={48} className="text-sovereign-700 mb-4" />
-          <p className="text-sovereign-500 font-bold">Nenhum cliente cadastrado</p>
-          <p className="text-sovereign-700 text-sm mt-1">Clique em "Novo Cliente" para iniciar</p>
-        </div>
-      ) : (
-        <div className="sovereign-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-sovereign-800 bg-sovereign-900/50">
-                <th className="text-left px-6 py-4 text-xs font-bold text-sovereign-500 uppercase tracking-widest">ID</th>
-                <th className="text-left px-6 py-4 text-xs font-bold text-sovereign-500 uppercase tracking-widest">Nome</th>
-                <th className="text-left px-6 py-4 text-xs font-bold text-sovereign-500 uppercase tracking-widest">CPF / CNPJ</th>
-                <th className="text-left px-6 py-4 text-xs font-bold text-sovereign-500 uppercase tracking-widest">Cadastro</th>
-                <th className="px-6 py-4"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientes.map((c, i) => (
-                <motion.tr
-                  key={c.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="border-b border-sovereign-800/50 hover:bg-sovereign-900/30 transition-colors"
-                >
-                  <td className="px-6 py-4 text-sovereign-600 font-mono">#{c.id}</td>
-                  <td className="px-6 py-4 font-bold text-white">{c.nome}</td>
-                  <td className="px-6 py-4 font-mono text-sovereign-400">{c.cpf_cnpj}</td>
-                  <td className="px-6 py-4 text-sovereign-500">
-                    {c.data_cadastro ? new Date(c.data_cadastro).toLocaleDateString('pt-BR') : '—'}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => setConfirmId(c.id)}
-                      className="p-2 text-sovereign-700 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Modal Novo Cliente */}
-      <Modal open={showModal} title="Novo Cliente" onClose={() => setShowModal(false)}>
-        <form onSubmit={handleAdd} className="space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-sovereign-500 uppercase tracking-widest mb-2">Nome / Razão Social</label>
-            <input
-              value={form.nome}
-              onChange={e => setForm(p => ({ ...p, nome: e.target.value }))}
-              placeholder="João da Silva"
-              required
-              className="w-full bg-sovereign-900 border border-sovereign-700 rounded-xl px-4 py-3 text-white outline-none focus:border-sovereign-cyan transition-all text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-sovereign-500 uppercase tracking-widest mb-2">CPF / CNPJ</label>
-            <input
-              value={form.cpf_cnpj}
-              onChange={e => setForm(p => ({ ...p, cpf_cnpj: e.target.value }))}
-              placeholder="000.000.000-00"
-              required
-              className="w-full bg-sovereign-900 border border-sovereign-700 rounded-xl px-4 py-3 text-white outline-none focus:border-sovereign-cyan transition-all text-sm font-mono"
-            />
-          </div>
-          {erro && <p className="text-red-400 text-xs font-bold">{erro}</p>}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowModal(false)}
-              className="flex-1 border border-sovereign-700 text-sovereign-400 hover:text-white py-3 rounded-xl font-bold text-sm transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 bg-sovereign-cyan text-white py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-              {saving ? 'Salvando...' : 'Cadastrar'}
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal Confirmar Exclusão */}
-      <Modal open={!!confirmId} title="Confirmar Remoção" onClose={() => setConfirmId(null)}>
-        <p className="text-sovereign-400 text-sm mb-6">
-          Esta ação irá remover o cliente e todos os dados vinculados. Deseja continuar?
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setConfirmId(null)}
-            className="flex-1 border border-sovereign-700 text-sovereign-400 hover:text-white py-3 rounded-xl font-bold text-sm transition-all"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => handleDelete(confirmId)}
-            className="flex-1 bg-red-600 hover:bg-red-500 text-white py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
-          >
-            <Trash2 size={16} />
-            Remover
-          </button>
-        </div>
-      </Modal>
-    </div>
-  );
-};
-
-// ── Agente Chat ──────────────────────────────────────────────────────────────
-
-const AgenteModule = () => {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Protocolo ORGATEC iniciado. Como posso auxiliar na investigação fiscal?' }
-  ]);
-  const [input, setInput]   = useState('');
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setLoading(true);
-    try {
-      const res = await api.post('/agente/chat', { pergunta: input });
-      setMessages(prev => [...prev, { role: 'assistant', content: res.data.response }]);
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Erro de conexão com o Núcleo de Inteligência.' }]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="flex flex-col h-full p-10 max-w-4xl">
-      <PageHeader
-        title="Agente ORGATEC"
-        subtitle="Consulte o núcleo de inteligência fiscal em linguagem natural"
-      />
-      <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2">
-        {messages.map((m, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className={`px-5 py-3.5 rounded-2xl max-w-[80%] text-sm leading-relaxed
-              ${m.role === 'user'
-                ? 'bg-sovereign-cyan/20 border border-sovereign-cyan/30 text-white'
-                : 'bg-sovereign-900/70 border border-sovereign-800 text-sovereign-300'}`}>
-              {m.content}
-            </div>
-          </motion.div>
-        ))}
-        {loading && (
-          <div className="flex justify-start">
-            <div className="bg-sovereign-900/70 border border-sovereign-800 px-5 py-4 rounded-2xl">
-              <Loader2 size={16} className="animate-spin text-sovereign-cyan" />
-            </div>
-          </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
-      <div className="relative">
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-          placeholder="Digite sua consulta fiscal..."
-          className="w-full bg-sovereign-900 border border-sovereign-800 rounded-2xl py-4 pl-6 pr-14 outline-none focus:border-sovereign-cyan transition-all text-sm"
-        />
-        <button
-          onClick={sendMessage}
-          disabled={loading || !input.trim()}
-          className="absolute right-4 top-3.5 text-sovereign-cyan hover:text-white transition-colors disabled:opacity-40"
-        >
-          <Send size={22} />
-        </button>
-      </div>
-    </div>
-  );
-};
+  </div>
+);
 
 export default Dashboard;
