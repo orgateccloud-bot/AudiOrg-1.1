@@ -71,9 +71,10 @@ Todos herdam de `base_agent.py::AgentResult` (Pydantic v2, com `audit_hash` SHA-
 `horizon_blue_one/core/model_adapter.py` lê `SQUAD_MODEL`, `AUDITORIA_MODEL`, `AUDITORIA_MODEL_SIMPLES` do ambiente. Tem `tenacity` retry (3x, backoff 1–8s) e prompt caching. **Nunca** hardcode `claude-sonnet-4-6` ou similares no código — sempre via env.
 
 ### 7. Banco de dados — dev vs prod
-- **Dev default**: SQLite em `orgatec_sovereign.db` (raiz). Auto-criado via `Base.metadata.create_all` no lifespan.
-- **Prod/docker**: Postgres 16 em `:5433`. Schema controlado por `alembic/versions/` (já há 3 migrations: initial, ledger_entries, claude_stats).
-- O `DATABASE_URL` controla qual backend é usado; SQLAlchemy é cross-DB.
+- **Dev default**: SQLite em `orgatec_sovereign.db` (raiz). Auto-criado via `Base.metadata.create_all` no lifespan. Usado quando `ENV != production` e `DATABASE_URL` ausente.
+- **Prod**: Supabase Postgres (sa-east-1). `DATABASE_URL` aponta para Transaction Pooler `:6543`; `DATABASE_URL_DIRECT` (porta `:5432`) é usado apenas para `alembic upgrade head`.
+- Schema controlado por `alembic/versions/` (4 migrations: initial, audit_results_and_pdf_hash, ledger_entries, claude_stats).
+- O `DATABASE_URL` controla qual backend é usado; SQLAlchemy é cross-DB. Em produção (`ENV=production`), Postgres é obrigatório — falha de conexão gera `RuntimeError` no startup.
 
 ### 8. Auth — duas gerações de hash convivem
 `api/auth/security` usa **argon2id** como padrão atual mas mantém `bcrypt` para verificar hashes legados. Login é transparente: ao acertar com bcrypt, o hash é re-emitido em argon2 silenciosamente. Não remova `bcrypt` do `requirements.txt`.
