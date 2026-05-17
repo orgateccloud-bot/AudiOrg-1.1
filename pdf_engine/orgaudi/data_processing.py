@@ -18,7 +18,6 @@ Dependências internas: orgaudi.domain, orgaudi.validators
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
 import re
 from collections import Counter, defaultdict
@@ -72,14 +71,11 @@ class ResumoFiscal:
     qtd_vendas: int = 0
     qtd_remessas: int = 0
     qtd_compras: int = 0
-    qtd_outras_remessas: int = 0        # Remessas/leilão recebidas (dest=contrib)
     qtd_total_saidas: int = 0           # F1+F2 (vendas + remessas)
     valor_bruto_saidas: Decimal = Decimal("0")  # F1+F2
-    outras_remessas_recebidas: Decimal = Decimal("0")  # Trânsito de entrada
     cabecas_vendas: int = 0
     cabecas_remessas: int = 0
     cabecas_compras: int = 0
-    cabecas_outras_remessas: int = 0    # Cabeças de remessas recebidas
 
     # Data de referência para escolher a alíquota correta de Funrural
     # (default = última data conhecida do período auditado, injetada por apurar_resumo)
@@ -159,21 +155,6 @@ class ResumoFiscal:
             return "LC 224/2025; Lei 8.870/94" if majorou else "Lei 8.870/94"
         # PF Patronal
         return "LC 224/2025; Lei 8.212/91" if majorou else "Lei 8.212/91"
-
-    @property
-    def volume_total(self) -> Decimal:
-        """Soma de todos os valores movimentados (saídas + compras + remessas recebidas)."""
-        return self.valor_bruto_saidas + self.F6_despesa + self.outras_remessas_recebidas
-
-    @property
-    def cabecas_entradas(self) -> int:
-        """Cabeças que entraram no plantel (compras + remessas recebidas)."""
-        return self.cabecas_compras + self.cabecas_outras_remessas
-
-    @property
-    def cabecas_saidas(self) -> int:
-        """Cabeças que saíram do plantel (vendas + remessas para leilão)."""
-        return self.cabecas_vendas + self.cabecas_remessas
 
     @property
     def irpf_estimado(self) -> Decimal:
@@ -277,7 +258,6 @@ def apurar_resumo(
         eh_segurado_especial = False
 
     r = ResumoFiscal(eh_pj=eh_pj, eh_segurado_especial=eh_segurado_especial)
-    cpf_doc_clean = re.sub(r"\D", "", contribuinte_doc or "")
     for n in notas:
         cat = classificar_nota(n, contribuinte_doc)
         if cat == CategoriaContabil.RECEITA:
@@ -285,18 +265,9 @@ def apurar_resumo(
             r.qtd_vendas += 1
             r.cabecas_vendas += n.cabecas
         elif cat == CategoriaContabil.TRANSITO:
-            # Distingue trânsito de saída (F2) de trânsito de entrada
-            rem_clean = re.sub(r"\D", "", n.remetente_cpf or "")
-            if rem_clean == cpf_doc_clean:
-                # Contribuinte é REMETENTE: remessa/leilão saindo → F2
-                r.F2_transito += n.valor
-                r.qtd_remessas += 1
-                r.cabecas_remessas += n.cabecas
-            else:
-                # Contribuinte é DESTINATÁRIO: remessa recebida → outras_remessas
-                r.outras_remessas_recebidas += n.valor
-                r.qtd_outras_remessas += 1
-                r.cabecas_outras_remessas += n.cabecas
+            r.F2_transito += n.valor
+            r.qtd_remessas += 1
+            r.cabecas_remessas += n.cabecas
         elif cat == CategoriaContabil.DESPESA:
             r.F6_despesa += n.valor
             r.qtd_compras += 1
@@ -522,45 +493,6 @@ def hash_laudo(contribuinte: Contribuinte, periodo: Periodo,
     h.update(f"|F6={resumo.F6_despesa}".encode())
     h.update(f"|N={len(notas)}".encode())
     return h.hexdigest()  # 64 chars — SHA-256 completo
-
-
-def hash_laudo_json(
-    contribuinte: Contribuinte,
-    periodo: Periodo,
-    resumo: ResumoFiscal,
-    notas: list[NotaFiscal],
-) -> tuple[str, str]:
-    """
-    SHA-256 sobre payload JSON canônico — formato do modelo GENIS.
-
-    Retorna (hash_hex: str, payload_json: str) para exibição na página de
-    assinatura. O auditor externo pode reproduzir o hash aplicando sha256
-    sobre o payload JSON em UTF-8.
-
-    Formato do payload (mesma ordem do modelo):
-      F1, F2, F4, F5, F6, cpf, data_auditoria, n_notas, periodo
-    """
-    def _d(v: Decimal) -> str:
-        return str(v.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
-    # Formatar datas em dd/mm/yyyy (compatível com modelo GENIS)
-    def _dt(d: date) -> str:
-        return d.strftime("%d/%m/%Y")
-
-    payload: dict = {
-        "F1":              _d(resumo.F1_receita_imediata),
-        "F2":              _d(resumo.F2_transito),
-        "F4":              _d(resumo.F4_receita_bruta),
-        "F5":              _d(resumo.F5_resultado_rural),
-        "F6":              _d(resumo.F6_despesa),
-        "cpf":             contribuinte.cpf,
-        "data_auditoria":  _dt(periodo.data_auditoria),
-        "n_notas":         len(notas),
-        "periodo":         f"{_dt(periodo.inicio)} a {_dt(periodo.fim)}",
-    }
-    payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True)
-    hash_hex = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
-    return hash_hex, payload_json
 
 
 def hash_laudo_completo(contribuinte: Contribuinte, periodo: Periodo,

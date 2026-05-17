@@ -34,7 +34,6 @@ from .data_processing import (
     apurar_resumo,
     construir_planilha_mensal,
     hash_laudo,
-    hash_laudo_json,
     teste_t01_concentracao,
     teste_t02_smurfing,
     teste_t04_concentracao_pf,
@@ -105,7 +104,6 @@ class LaudoOrgAudi:
     t04: Optional[ResultadoT04] = None
     t07: Optional[ResultadoT07] = None
     hash_doc: str = ""
-    payload_doc: str = ""   # JSON canônico que gerou o hash (para verificação externa)
 
     def processar(self) -> "LaudoOrgAudi":
         """
@@ -149,11 +147,11 @@ class LaudoOrgAudi:
         # populadas se o chamador fornecê-las explicitamente (modo 2).
         # A função _etapas_padrao() permanece disponível como helper opcional.
 
-        # Hash JSON canônico — formato modelo GENIS (F1-F6, CPF, período, n_notas)
-        # Retorna (hash_hex, payload_json) para exibição na verificação de integridade
-        self.hash_doc, self.payload_doc = hash_laudo_json(
+        # Hash expandido cobrindo achados narrativos (64 chars, SHA-256 completo)
+        from .data_processing import hash_laudo_completo
+        self.hash_doc = hash_laudo_completo(
             self.contribuinte, self.periodo, self.resumo,
-            self.notas if self.notas else [])
+            self.notas if self.notas else [], self.achados)
         return self
 
     def _sugerir_achados(self) -> list[Achado]:
@@ -416,10 +414,8 @@ class LaudoOrgAudi:
 
         def montar_story():
             s = []
-            n_pf = len(self.t04.pfs_recorrentes) if self.t04 else 0
             s += construir_pagina_1_capa(
-                self.contribuinte, self.periodo, self.resumo, self.achados,
-                n_pf_recorrentes=n_pf)
+                self.contribuinte, self.periodo, self.resumo, self.achados)
             s += construir_pagina_2_resumo_executivo(
                 self.resumo,
                 self.periodo,
@@ -438,8 +434,7 @@ class LaudoOrgAudi:
             # [v2.4.2: 4 páginas de relatório técnico antes da assinatura]
             s += construir_paginas_relatorio_tecnico_4p(self.resumo, self.achados)
             s += construir_pagina_11_assinatura(
-                self.contribuinte, self.periodo, self.hash_doc,
-                payload_json=self.payload_doc)
+                self.contribuinte, self.periodo, self.hash_doc)
             return s
 
         kwargs = dict(

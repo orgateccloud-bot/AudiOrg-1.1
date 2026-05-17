@@ -117,21 +117,13 @@ def _logo_path(nome: str) -> str:
 
 
 def _get_logo_t() -> str:
-    """Resolve logo transparente — tenta variantes em ordem de preferência."""
-    for nome in ("logo_oficial_transp.png", "logo_orgatec.png"):
-        p = _logo_path(nome)
-        if p:
-            return p
-    return ""
+    """Resolve logo transparente (fundo transparente) — lazy."""
+    return _logo_path("logo_oficial_transp.png")
 
 
 def _get_logo_h() -> str:
-    """Resolve logo para header — tenta variantes em ordem de preferência."""
-    for nome in ("logo_oficial_header.png", "logo_orgatec.png"):
-        p = _logo_path(nome)
-        if p:
-            return p
-    return ""
+    """Resolve logo para header (fundo #003365) — lazy."""
+    return _logo_path("logo_oficial_header.png")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
