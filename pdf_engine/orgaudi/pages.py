@@ -112,6 +112,7 @@ def construir_pagina_1_capa(
     periodo: Periodo,
     resumo: ResumoFiscal,
     achados: list[Achado],
+    n_pf_recorrentes: int = 0,
 ) -> list:
     """
     Página 1 — Capa com 3 seções:
@@ -233,78 +234,114 @@ def construir_pagina_1_capa(
     I.append(sp(1.5))
 
     # ──────────────────────────────────────────────────────────
-    #  SEÇÃO 2 — SÍNTESE QUANTITATIVA CRUZADA
+    #  SEÇÃO 2 — SÍNTESE QUANTITATIVA (modelo GENIS: 3 colunas)
     # ──────────────────────────────────────────────────────────
-    I.append(section_header("SÍNTESE QUANTITATIVA CRUZADA", AZUL_M))
+    I.append(section_header("SÍNTESE QUANTITATIVA", AZUL_M))
     I.append(sp(1))
 
-    # Cabeçalho
+    # Volume total para cálculo de %
+    vol_total = resumo.volume_total
+    if vol_total == 0:
+        vol_total = Decimal("1")  # Evitar divisão por zero
+
+    def _pct(valor: Decimal) -> str:
+        pct = (valor / vol_total * 100).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
+        return f"{pct:.1f}%".replace(".", ",")
+
+    def _dash():
+        return td("—", align=TA_CENTER, size=8, color=CTXT)
+
+    # Cabeçalho — 3 colunas: Indicador / Valor / %
     sq_header = [
         th("Indicador"),
-        th("Planilha IR v5", align=TA_RIGHT),
-        th("PDF GIEF", align=TA_RIGHT),
-        th("Status", align=TA_CENTER),
+        th("Valor", align=TA_RIGHT),
+        th("%", align=TA_CENTER),
     ]
 
-    # Status badge inline
-    def _status_td(status: str):
-        """Cria a célula de status com cor semântica."""
-        if status.upper() == "CONFORME":
-            return td(status, bold=True, color=CONFORME, align=TA_CENTER, size=7.5)
-        elif status.upper() == "DADO NOVO":
-            return td(status, bold=True, color=ATENCAO, align=TA_CENTER, size=7.5)
-        elif status.upper() == "DIVERGENTE":
-            return td(status, bold=True, color=CRITICO, align=TA_CENTER, size=7.5)
-        return td(status, bold=True, color=CTXT, align=TA_CENTER, size=7.5)
-
-    # Cabecas totais = vendas + remessas + compras
-    cabecas_totais = resumo.cabecas_vendas + resumo.cabecas_remessas + resumo.cabecas_compras
-
+    # Linhas alinhadas com o modelo GENIS
     sq_rows = [sq_header]
+
+    # Volume bruto movimentado (total: saídas + compras + outras remessas)
     sq_rows.append([
-        td("Volume bruto total"),
-        td(fmt_brl(resumo.valor_bruto_saidas, sinal=True), align=TA_RIGHT, size=8),
-        td(fmt_brl(resumo.valor_bruto_saidas, sinal=True), align=TA_RIGHT, size=8),
-        _status_td("Conforme"),
-    ])
-    sq_rows.append([
-        td(f"Receita imediata ({resumo.qtd_vendas} vendas diretas)"),
-        td(fmt_brl(resumo.F1_receita_imediata), align=TA_RIGHT, size=8),
-        td(fmt_brl(resumo.F1_receita_imediata), align=TA_RIGHT, size=8),
-        _status_td("Conforme"),
-    ])
-    sq_rows.append([
-        td(f"Trânsito — remessas para leilão ({resumo.qtd_remessas})"),
-        td(fmt_brl(resumo.F2_transito), align=TA_RIGHT, size=8),
-        td(fmt_brl(resumo.F2_transito), align=TA_RIGHT, size=8),
-        _status_td("Conforme"),
-    ])
-    sq_rows.append([
-        td("Cabeças totais movimentadas"),
-        td(f"{cabecas_totais:,}".replace(",", "."), align=TA_RIGHT, size=8),
-        td(f"{cabecas_totais:,}".replace(",", "."), align=TA_RIGHT, size=8),
-        _status_td("Conforme"),
-    ])
-    if resumo.qtd_compras > 0:
-        sq_rows.append([
-            td(f"Compras de gado ({resumo.qtd_compras} notas)"),
-            td(fmt_brl(resumo.F6_despesa), align=TA_RIGHT, size=8),
-            td(f"{resumo.cabecas_compras:,}".replace(",", "."), align=TA_RIGHT, size=8),
-            _status_td("Dado novo"),
-        ])
-    sq_rows.append([
-        td(f"Funrural estimado ({resumo.aliquota_funrural_pct} × vendas)"),
-        td(fmt_brl(resumo.funrural), align=TA_RIGHT, size=8),
-        td(fmt_brl(resumo.funrural), align=TA_RIGHT, size=8),
-        _status_td("Conforme"),
+        td("Volume bruto movimentado"),
+        td(fmt_brl(resumo.volume_total), align=TA_RIGHT, size=8, bold=True),
+        td("100,0%", align=TA_CENTER, size=8, bold=True),
     ])
 
-    # Col widths para 4 colunas
-    SQ_C1 = W * 0.38
-    SQ_C2 = W * 0.22
-    SQ_C3 = W * 0.22
-    SQ_C4 = W * 0.18
-    t_sq = Table(sq_rows, colWidths=[SQ_C1, SQ_C2, SQ_C3, SQ_C4])
+    # F1 — Receita imediata
+    sq_rows.append([
+        td(f"F1 — Receita imediata (vendas diretas)"),
+        td(fmt_brl(resumo.F1_receita_imediata), align=TA_RIGHT, size=8),
+        td(_pct(resumo.F1_receita_imediata), align=TA_CENTER, size=8),
+    ])
+
+    # F2 — Trânsito (remessas de saída)
+    sq_rows.append([
+        td(f"F2 — Trânsito (remessa/leilão)"),
+        td(fmt_brl(resumo.F2_transito), align=TA_RIGHT, size=8),
+        td(_pct(resumo.F2_transito), align=TA_CENTER, size=8),
+    ])
+
+    # F6 — Despesa (compras de gado)
+    if resumo.F6_despesa > 0:
+        sq_rows.append([
+            td("F6 — Despesa (compra de gado)"),
+            td(fmt_brl(resumo.F6_despesa), align=TA_RIGHT, size=8),
+            td(_pct(resumo.F6_despesa), align=TA_CENTER, size=8),
+        ])
+
+    # Outras remessas recebidas (trânsito de entrada)
+    if resumo.outras_remessas_recebidas > 0:
+        sq_rows.append([
+            td("Outras remessas recebidas"),
+            td(fmt_brl(resumo.outras_remessas_recebidas), align=TA_RIGHT, size=8),
+            td(_pct(resumo.outras_remessas_recebidas), align=TA_CENTER, size=8),
+        ])
+
+    # F5 — Resultado rural
+    sq_rows.append([
+        td("F5 — Resultado rural (F4−F6)"),
+        td(fmt_brl(resumo.F5_resultado_rural), align=TA_RIGHT, size=8),
+        _dash(),
+    ])
+
+    # Cabeças entradas / saídas
+    cab_ent = resumo.cabecas_entradas
+    cab_sai = resumo.cabecas_saidas
+    if cab_ent > 0 or cab_sai > 0:
+        sq_rows.append([
+            td("Cabeças entradas / saídas"),
+            td(f"{cab_ent:,} / {cab_sai:,}".replace(",", "."), align=TA_RIGHT, size=8),
+            _dash(),
+        ])
+
+    # Destinatários PF com ≥3 aquisições
+    if n_pf_recorrentes > 0:
+        sq_rows.append([
+            td("Destinatários PF com ≥3 aquisições"),
+            td(str(n_pf_recorrentes), align=TA_RIGHT, size=8),
+            _dash(),
+        ])
+
+    # Funrural estimado
+    sq_rows.append([
+        td(f"Funrural estimado ({resumo.aliquota_funrural_pct} × F1)"),
+        td(fmt_brl(resumo.funrural), align=TA_RIGHT, size=8),
+        _dash(),
+    ])
+
+    # IRPF Rural estimado
+    sq_rows.append([
+        td(f"IRPF Rural estimado (20% × F5)"),
+        td(fmt_brl(resumo.irpf_estimado), align=TA_RIGHT, size=8),
+        _dash(),
+    ])
+
+    # Col widths: indicador ocupa ~60%, valor 25%, % 15%
+    SQ_C1 = W * 0.60
+    SQ_C2 = W * 0.25
+    SQ_C3 = W * 0.15
+    t_sq = Table(sq_rows, colWidths=[SQ_C1, SQ_C2, SQ_C3])
     t_sq.setStyle(TableStyle([
         # Header
         ("BACKGROUND",     (0, 0), (-1, 0),  AZUL),
@@ -313,6 +350,9 @@ def construir_pagina_1_capa(
         ("FONTSIZE",       (0, 0), (-1, -1), 8),
         # Zebra
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [BRANCO, CBG_LIGHT]),
+        # Linha de volume bruto em destaque
+        ("BACKGROUND",     (0, 1), (-1, 1),  colors.HexColor("#E0EDFB")),
+        ("FONTNAME",       (0, 1), (-1, 1),  "Helvetica-Bold"),
         # Grid
         ("GRID",           (0, 0), (-1, -1), 0.25, CBORD),
         ("BOX",            (0, 0), (-1, -1), 0.5, AZUL_CL),

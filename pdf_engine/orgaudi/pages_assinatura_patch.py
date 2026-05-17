@@ -1,18 +1,14 @@
 """
 pdf_engine.orgaudi.pages  — PATCH parcial (apenas funções alteradas)
-Alterações:
-  - construir_pagina_11_assinatura: CRC via credenciais.py, hash SHA-256 completo (64 chars)
-  - Strings hardcoded de nome/CRC removidas
-  - Algoritmo declarado como SHA-256 (64 hex) — era SHA-256 (16 hex), enganoso
-  - Bloco de assinatura usa RESPONSAVEL.linha_assinatura()
-
-ATENÇÃO: este arquivo substitui APENAS a função construir_pagina_11_assinatura.
-         As demais funções de pages.py permanecem inalteradas.
-         Copiar apenas essa função para o pages.py original.
+Alterações v2:
+  - construir_pagina_11_assinatura: CRC via credenciais.py, hash SHA-256 64 chars
+  - Tabela VERIFICAÇÃO DE INTEGRIDADE: Algoritmo / Payload / Hash (modelo GENIS)
+  - Payload JSON exibido para verificação externa
+  - CRC correto: lido de credenciais.py (não mais placeholder)
 """
 from __future__ import annotations
 
-# Imports necessários para essa função (já presentes em pages.py)
+# Imports necessários para essa função
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.units import mm
 from reportlab.platypus import (
@@ -23,7 +19,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-# CRC via fonte única
+# CRC via fonte única — sem placeholder
 try:
     from horizon_blue_one.orgaudi.credenciais import RESPONSAVEL
     _NOME_COMPLETO = RESPONSAVEL.nome
@@ -41,14 +37,16 @@ def construir_pagina_11_assinatura(
     contribuinte,
     periodo,
     hash_doc: str,
+    payload_json: str = "",
 ) -> list:
     """
-    Página final — Declarações + assinatura + carimbo de hash.
+    Página final — Declarações + assinatura + verificação de integridade.
 
-    Usa CondPageBreak: se sobrarem ≥110mm na página anterior, a assinatura
-    se acomoda sem quebrar página.
+    Parâmetros:
+      hash_doc:     SHA-256 (64 chars) do laudo
+      payload_json: JSON canônico usado para gerar o hash (exibido na tabela)
+                    Se vazio, exibe só o hash sem o payload completo.
     """
-    # Imports locais (já importados em pages.py — repetidos aqui só para patch isolado)
     from .styles import (
         AZUL, AZUL_CL, AZUL_M, ALTO, ALTO_BG,
         BRANCO, CBG_LIGHT, CBORD, CTXT, CTXT_DARK,
@@ -92,6 +90,37 @@ def construir_pagina_11_assinatura(
         border_color=ALTO,
         bg=ALTO_BG,
     ))
+    I.append(sp(1))
+
+    # ── Base legal aplicada ────────────────────────────────────────────────────
+    base_legal_txt = (
+        "CTN art. 138 (denúncia espontânea) · CTN art. 150 (lançamento por "
+        "homologação) · Lei 8.023/90 + RIR/2018 art. 62 (IRPF Rural) · "
+        "Lei 8.212/91 (Funrural PF Patronal) · LC 224/2025 (Funrural — "
+        "vigência 01/04/2026) · LC 214/2025 (Reforma Tributária) · "
+        "IN RFB 1.903/2019 (LCDPR — limite R$ 4,8M) · "
+        "RCTE-GO Anx. IX art. 6º, XLIII (ICMS gado isento)"
+    )
+    # Tabela de chips de base legal (2 × 4)
+    chips = [
+        "CTN art. 138", "CTN art. 150", "Lei 8.023/90", "Lei 8.212/91",
+        "IN RFB 1.903/19", "LC 214/2025", "LC 224/2025", "RCTE-GO Anx.IX",
+    ]
+    chip_rows = [chips[:4], chips[4:]]
+    chip_style = S("chip", fontName="Helvetica-Bold", fontSize=7,
+                   textColor=BRANCO, alignment=TA_CENTER, leading=9)
+    chip_data = [[Paragraph(c, chip_style) for c in row] for row in chip_rows]
+    t_chips = Table(chip_data, colWidths=[W / 4] * 4)
+    t_chips.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), AZUL_M),
+        ("GRID",          (0, 0), (-1, -1), 0.5, AZUL_CL),
+        ("TOPPADDING",    (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 4),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 4),
+        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+    I.append(t_chips)
     I.append(sp(2))
 
     # ── Responsável Técnico ───────────────────────────────────────────────────
@@ -99,7 +128,7 @@ def construir_pagina_11_assinatura(
     I.append(hr(AZUL, 1.0))
     I.append(sp(2))
 
-    # Nome, formação, CRC — lidos de credenciais.py, não hardcoded
+    # Nome, formação, CRC — lidos de credenciais.py, NÃO hardcoded
     I.append(Paragraph(_NOME_COMPLETO, ST["an"]))
     I.append(Paragraph(_FORMACAO, ST["as"]))
     I.append(Paragraph(_CRC, ST["as"]))
@@ -111,76 +140,66 @@ def construir_pagina_11_assinatura(
     I.append(sp(1))
     I.append(HRFlowable(width="55%", thickness=0.4, color=CBORD, spaceAfter=2))
     I.append(Paragraph("Sistema de auditoria contábil-fiscal", ST["small"]))
-    I.append(Paragraph(
-        f"OrgAudi 1.0 — {_EMPRESA}",
-        ST["sys"],
-    ))
+    I.append(Paragraph(f"OrgAudi 1.0 — {_EMPRESA}", ST["sys"]))
     I.append(sp(2))
 
-    # ── Carimbo de Hash ───────────────────────────────────────────────────────
-    # hash_doc: SHA-256 completo (64 chars) — não mais truncado em 16
-    # Cobre: CPF, nome, F1-F6, período, total de notas
-    # TODO próximo sprint: expandir para cobrir texto dos achados (Patch A)
-    carimbo = Table(
-        [[
+    # ── Verificação de Integridade (modelo GENIS) ─────────────────────────────
+    I.append(Paragraph("VERIFICAÇÃO DE INTEGRIDADE", ST["sec"]))
+    I.append(hr(AZUL_M, 0.6))
+    I.append(sp(0.5))
+
+    # Linhas: Algoritmo / Payload / Hash
+    _lbl = S("vi_lbl", fontName="Helvetica-Bold", fontSize=7.5,
+              textColor=AZUL_M, alignment=TA_LEFT, leading=10)
+    _val = S("vi_val", fontName="Helvetica", fontSize=7.5,
+              textColor=CTXT_DARK, alignment=TA_LEFT, leading=10)
+    _cod = S("vi_cod", fontName="Courier", fontSize=7,
+              textColor=AZUL, alignment=TA_LEFT, leading=10)
+    _cod_sm = S("vi_cod_sm", fontName="Courier-Bold", fontSize=8,
+                textColor=AZUL, alignment=TA_LEFT, leading=11)
+
+    vi_rows = [
+        [
+            Paragraph("Algoritmo", _lbl),
             Paragraph(
-                "<b>HASH DE VALIDAÇÃO</b>",
-                S("ch1", fontName="Helvetica-Bold", fontSize=7,
-                  textColor=CTXT, alignment=TA_LEFT, leading=9),
-            ),
-            Paragraph(
-                f"<b>{hash_doc}</b>",
-                S("ch2", fontName="Courier-Bold", fontSize=8,
-                  textColor=AZUL, alignment=TA_LEFT, leading=11),
-            ),
-        ], [
-            Paragraph(
-                "ALGORITMO",
-                S("ch3", fontName="Helvetica", fontSize=7,
-                  textColor=CTXT, alignment=TA_LEFT, leading=9),
-            ),
-            Paragraph(
-                "SHA-256 · 64 hex chars · payload: CPF + F1-F6 + período + n_notas",
-                S("ch4", fontName="Helvetica", fontSize=7.5,
-                  textColor=CTXT_DARK, alignment=TA_LEFT, leading=10),
-            ),
-        ], [
-            Paragraph(
-                "EMITIDO EM",
-                S("ch5", fontName="Helvetica", fontSize=7,
-                  textColor=CTXT, alignment=TA_LEFT, leading=9),
-            ),
-            Paragraph(
-                fmt_data(periodo.data_auditoria),
-                S("ch6", fontName="Helvetica-Bold", fontSize=8,
-                  textColor=CTXT_DARK, alignment=TA_LEFT, leading=10),
-            ),
-        ], [
-            Paragraph(
-                "SISTEMA",
-                S("ch7", fontName="Helvetica", fontSize=7,
-                  textColor=CTXT, alignment=TA_LEFT, leading=9),
-            ),
-            Paragraph(
-                "OrgAudi 1.0 · horizon_blue_one · SKILL_RURAL v1.1.0",
-                S("ch8", fontName="Helvetica", fontSize=7.5,
-                  textColor=CTXT_DARK, alignment=TA_LEFT, leading=10),
-            ),
-        ]],
-        colWidths=[35 * mm, W - 35 * mm],
-    )
-    carimbo.setStyle(TableStyle([
+                "SHA-256 (hashlib Python 3.12) sobre payload JSON canônico",
+                _val),
+        ],
+    ]
+    if payload_json:
+        vi_rows.append([
+            Paragraph("Payload", _lbl),
+            Paragraph(payload_json, _cod),
+        ])
+
+    vi_rows.append([
+        Paragraph("Hash", _lbl),
+        Paragraph(f"<b>{hash_doc}</b>", _cod_sm),
+    ])
+
+    vi_rows.append([
+        Paragraph("", _lbl),
+        Paragraph(
+            "<i>Para validar: aplicar sha256 sobre o Payload em UTF-8 "
+            "e comparar com o Hash.</i>",
+            S("vi_note", fontName="Helvetica-Oblique", fontSize=6.5,
+              textColor=CTXT, leading=9),
+        ),
+    ])
+
+    t_vi = Table(vi_rows, colWidths=[28 * mm, W - 28 * mm])
+    t_vi.setStyle(TableStyle([
         ("BACKGROUND",    (0, 0), (-1, -1), CBG_LIGHT),
         ("LINEBEFORE",    (0, 0), (0, -1),  3, AZUL),
         ("LINEABOVE",     (0, 0), (-1, 0),  0.4, CBORD),
         ("LINEBELOW",     (0, -1), (-1, -1), 0.4, CBORD),
-        ("TOPPADDING",    (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING",    (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
         ("LEFTPADDING",   (0, 0), (-1, -1), 8),
         ("RIGHTPADDING",  (0, 0), (-1, -1), 8),
-        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+        ("VALIGN",        (0, 0), (-1, -1), "TOP"),
     ]))
-    I.append(carimbo)
+    I.append(t_vi)
     I.append(sp(1))
 
     # ── Disclaimer final ──────────────────────────────────────────────────────
