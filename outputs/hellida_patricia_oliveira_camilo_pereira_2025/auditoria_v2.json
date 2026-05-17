@@ -1,0 +1,320 @@
+{
+  "contribuinte": {
+    "cpf": "024.979.491-82",
+    "nome": "HELLIDA PATRICIA OLIVEIRA CAMILO PEREIRA",
+    "ie": "",
+    "municipio": "",
+    "estado": "GO"
+  },
+  "periodo": {
+    "inicio": "2025-01-01",
+    "fim": "2025-12-31",
+    "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026"
+  },
+  "sintese_quantitativa": [
+    {
+      "indicador": "Volume bruto total",
+      "valor_planilha": "R$ 0,00",
+      "valor_pdf_gief": "R$ 0,00",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Receita imediata (vendas)",
+      "valor_planilha": "R$ 0,00",
+      "valor_pdf_gief": "R$ 0,00",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Trânsito (remessas para leilão)",
+      "valor_planilha": "R$ 0,00",
+      "valor_pdf_gief": "R$ 0,00",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Cabeças totais movimentadas",
+      "valor_planilha": "0",
+      "valor_pdf_gief": "0",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de venda",
+      "valor_planilha": "0",
+      "valor_pdf_gief": "0",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de remessa",
+      "valor_planilha": "0",
+      "valor_pdf_gief": "0",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de compra",
+      "valor_planilha": "0",
+      "valor_pdf_gief": "—",
+      "status": "Dado novo",
+      "delta": "—",
+      "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 0 / referência única)."
+    },
+    {
+      "indicador": "Valor total de compras",
+      "valor_planilha": "R$ 0,00",
+      "valor_pdf_gief": "—",
+      "status": "Dado novo",
+      "delta": "—",
+      "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 0.00 / referência única)."
+    }
+  ],
+  "teste_t08": {
+    "total_indicadores_comparados": 8,
+    "qtd_divergencias": 0,
+    "qtd_atencoes": 2,
+    "detectado": false,
+    "itens": [
+      {
+        "indicador": "Volume bruto total",
+        "valor_planilha": "0.00",
+        "valor_pdf_gief": "0.00",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Receita imediata (vendas)",
+        "valor_planilha": "0.00",
+        "valor_pdf_gief": "0.00",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Trânsito (remessas para leilão)",
+        "valor_planilha": "0.00",
+        "valor_pdf_gief": "0.00",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Cabeças totais movimentadas",
+        "valor_planilha": "0",
+        "valor_pdf_gief": "0",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de venda",
+        "valor_planilha": "0",
+        "valor_pdf_gief": "0",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de remessa",
+        "valor_planilha": "0",
+        "valor_pdf_gief": "0",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de compra",
+        "valor_planilha": "0",
+        "valor_pdf_gief": null,
+        "delta": null,
+        "status": "DADO_NOVO",
+        "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 0 / referência única)."
+      },
+      {
+        "indicador": "Valor total de compras",
+        "valor_planilha": "0.00",
+        "valor_pdf_gief": null,
+        "delta": null,
+        "status": "DADO_NOVO",
+        "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 0.00 / referência única)."
+      }
+    ]
+  },
+  "severidades": {
+    "CRITICO": 0,
+    "ALTO": 0,
+    "MEDIO": 0,
+    "ATENCAO": 2,
+    "CONFORME": 7
+  },
+  "indicadores_principais": {
+    "VOLUME_BRUTO": {
+      "valor": "0",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "0 saídas",
+      "valor_completo": "R$ 0,00"
+    },
+    "F1_RECEITA_IMEDIATA": {
+      "valor": "0",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "0 vendas · base IRPF",
+      "valor_completo": "R$ 0,00"
+    },
+    "F2_TRANSITO": {
+      "valor": "0",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "0 remessas · não soma",
+      "valor_completo": "R$ 0,00"
+    },
+    "F6_COMPRAS": {
+      "valor": "0",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "0 notas · despesa",
+      "valor_completo": "R$ 0,00"
+    },
+    "F4_RECEITA_BRUTA": {
+      "valor": "0",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "F1 + F3",
+      "valor_completo": "R$ 0,00"
+    },
+    "F5_RESULTADO_RURAL": {
+      "valor": "0",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "F4 − F6 · base IRPF",
+      "valor_completo": "R$ 0,00"
+    },
+    "IRPF_ESTIMADO": {
+      "valor": "0.00",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "20% × F5 · Lei 8.023/90",
+      "valor_completo": "R$ 0,00"
+    },
+    "FUNRURAL": {
+      "valor": "0.00",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "1,50% × F1 · PF Patronal",
+      "valor_completo": "R$ 0,00"
+    }
+  },
+  "achados_criticos": [
+    {
+      "codigo": "CF-00",
+      "titulo": "Sem movimentação fiscal no período auditado",
+      "descricao": "Os relatórios GIEF/SEFAZ-GO para o contribuinte (tanto como REMETENTE quanto como DESTINATÁRIO) informam: \"Não existe NFA para o período informado\". Nenhuma NFA-e foi emitida ou recebida pelo contribuinte em 2025-01-01 a 2025-12-31.",
+      "severidade": "CONFORME",
+      "porque_critico": "Nenhuma operação fiscal a auditar nesse exercício. Recomendado: (i) confirmar com o contribuinte se houve atividade rural sem emissão fiscal (risco de caixa-2); (ii) verificar consistência com declaração de IRPF do exercício; (iii) checar se houve operações fora do estado de GO (não constam nesta base).",
+      "cruzamentos": [
+        "Declaração de IRPF do exercício (verificar consistência com receita rural zerada)",
+        "Extratos bancários (depósitos compatíveis com atividade?)",
+        "GTAs AGRODEFESA-GO no período (movimentação de animais?)",
+        "Bases SEFAZ de outros estados (operações interestaduais?)"
+      ],
+      "tabela_cabecalhos": [],
+      "tabela_linhas": [],
+      "tabela_totais": []
+    }
+  ],
+  "achados_medios": [],
+  "pontos_atencao": [],
+  "etapas_recomendacoes": [
+    {
+      "numero": 1,
+      "titulo": "Aprofundar achados críticos",
+      "prazo": "30 DIAS",
+      "accent": "CRITICO",
+      "itens": [
+        "Solicitar ao contribuinte documentação primária dos achados críticos: GTAs (AGRODEFESA-GO), extratos bancários, comprovantes de pagamento, ACTs dos leiloeiros e relação completa de NF-e modelo 55 emitidas pelos leiloeiros em seu nome.",
+        "Cruzar com sistemas externos: AGRODEFESA-GO (GTAs e SIDAGRO), Receita Federal (CAEPF dos PFs recorrentes), SiCAR (capacidade do imóvel), JUCEG (vínculos societários)."
+      ]
+    },
+    {
+      "numero": 2,
+      "titulo": "Conformidade fiscal",
+      "prazo": "60 DIAS",
+      "accent": "ALTO",
+      "itens": [
+        "Reconstituir o LCDPR do período com base no relatório auditado, incorporando as notas de compra (R$ 0,00) e separando rigorosamente receita de trânsito.",
+        "Apurar o IRPF Rural (ano-base). Base parcial atual: R$ 0,00 (sem arremates). IRPF estimado: R$ 0,00.",
+        "Conferir Funrural recolhido contra a estimativa R$ 0,00 deste relatório."
+      ]
+    },
+    {
+      "numero": 3,
+      "titulo": "Mitigação prospectiva",
+      "prazo": "90 DIAS",
+      "accent": "MEDIO",
+      "itens": [
+        "Implantar segregação de fluxos nos sistemas internos: rotina específica para vendas a PF (com checagem de CAEPF) e outra para remessas a leilão (com cobrança formal das notas de venda do leiloeiro).",
+        "Adequar à Reforma Tributária (LC 214/2025): a partir de 2027, CBS substitui PIS/COFINS na cadeia agro. Atualizar emissão de NFA-e/NF-e com IBS/CBS conforme Nota Técnica 2025.002 RTC."
+      ]
+    }
+  ],
+  "planilha_gado_ir": {
+    "vendas": [],
+    "remessas": [],
+    "compras": [],
+    "totais": {
+      "vendas": {
+        "qtd_notas": 0,
+        "cabecas": 0,
+        "valor": "0"
+      },
+      "remessas": {
+        "qtd_notas": 0,
+        "cabecas": 0,
+        "valor": "0"
+      },
+      "compras": {
+        "qtd_notas": 0,
+        "cabecas": 0,
+        "valor": "0"
+      },
+      "saidas_consolidadas": {
+        "qtd_notas": 0,
+        "cabecas": 0,
+        "valor": "0"
+      }
+    },
+    "formula_regra_2": {
+      "F1": {
+        "descricao": "Receita imediata (vendas diretas)",
+        "valor": "0"
+      },
+      "F2": {
+        "descricao": "Trânsito potencial (remessas — NÃO base IRPF)",
+        "valor": "0"
+      },
+      "F3": {
+        "descricao": "Receita realizada de leilão (NF-e mod. 55)",
+        "valor": "0"
+      },
+      "F4": {
+        "descricao": "Receita bruta total DIRPF Rural (F1 + F3)",
+        "valor": "0"
+      },
+      "F6": {
+        "descricao": "Despesa / Investimento dedutível (compras)",
+        "valor": "0"
+      },
+      "F5": {
+        "descricao": "Resultado da atividade rural (F4 − F6)",
+        "valor": "0"
+      }
+    }
+  },
+  "declaracao_alcance": "Este relatório foi produzido com base no PDF GIEF/SEFAZ-GO e na Planilha de Gado para IR v5 do sistema OrgAudi 1.1. Os achados constituem indícios objetivos derivados de cruzamentos lógicos internos, não confirmados com documentação primária externa (extratos bancários, GTAs, ACTs, contratos). A confirmação depende de etapa subsequente de coleta de evidências.\n\nO presente documento NÃO formula acusações, NÃO imputa dolo e NÃO substitui procedimento de fiscalização tributária formal. Os elementos aqui mapeados constituem subsídios técnicos para tomada de decisão do contribuinte e de seus assessores, e para eventual regularização espontânea nos termos do art. 138 do CTN.",
+  "audit_hash": "1f4a2ba0232a97523859da92f6ef3387ac17607555f9abc6048ead4404f5c0d9",
+  "sistema": "OrgAudi 1.1",
+  "timestamp": "2026-05-17T02:45:15.351439+00:00",
+  "payload_hash": "{\"F1\":\"0\",\"F2\":\"0\",\"F4\":\"0\",\"F5\":\"0\",\"F6\":\"0\",\"cpf\":\"024.979.491-82\",\"data_audit\":\"2026-05-17\",\"fim\":\"2025-12-31\",\"inicio\":\"2025-01-01\",\"nome\":\"HELLIDA PATRICIA OLIVEIRA CAMILO PEREIRA\"}"
+}

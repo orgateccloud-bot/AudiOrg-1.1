@@ -1,0 +1,163 @@
+{
+  "_meta": {
+    "slug": "genis_2025",
+    "descricao": "Caso GENIS CARLOS LUIZ DE OLIVEIRA — auditoria cruzada 2025",
+    "documento_referencia": "RELATORIO_AUDITORIA_FORENSE_GENIS_2025_v3.pdf"
+  },
+
+  "contribuinte_cpf":      "019.925.771-02",
+  "contribuinte_nome":     "GENIS CARLOS LUIZ DE OLIVEIRA",
+  "contribuinte_ie":       "113064292",
+  "municipio":             "CAMPINORTE",
+  "estado":                "GO",
+  "periodo_inicio":        "2025-01-01",
+  "periodo_fim":           "2025-12-31",
+  "documento_base":        "Relatório GIEF/SEFAZ-GO de 17/04/2026",
+  "is_pj":                 false,
+  "is_segurado_especial":  false,
+
+  "totais_planilha": {
+    "volume_bruto_saidas": "3748933.91",
+    "receita_imediata":    "2315990.03",
+    "transito_remessas":   "1432943.88",
+    "cabecas_totais":      1344,
+    "qtd_vendas":          138,
+    "qtd_remessas":        37,
+    "qtd_compras":         23,
+    "valor_compras":       "1664513.14"
+  },
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "3748933.91",
+    "receita_imediata":    "2315990.03",
+    "transito_remessas":   "1432943.88",
+    "cabecas_totais":      1344,
+    "qtd_vendas":          138,
+    "qtd_remessas":        37
+  },
+
+  "vendas_mensais": [
+    {"mes": "Fevereiro", "qtd_notas":  5, "cabecas":  30, "valor": "75000.00"},
+    {"mes": "Março",     "qtd_notas":  8, "cabecas":  48, "valor": "118500.00"},
+    {"mes": "Abril",     "qtd_notas": 10, "cabecas":  60, "valor": "152000.00"},
+    {"mes": "Maio",      "qtd_notas": 12, "cabecas":  72, "valor": "185300.00"},
+    {"mes": "Junho",     "qtd_notas": 11, "cabecas":  66, "valor": "168500.00"},
+    {"mes": "Julho",     "qtd_notas": 13, "cabecas":  78, "valor": "192800.00"},
+    {"mes": "Agosto",    "qtd_notas":  9, "cabecas":  54, "valor": "138600.00"},
+    {"mes": "Setembro",  "qtd_notas": 10, "cabecas":  60, "valor": "152950.00"},
+    {"mes": "Outubro",   "qtd_notas": 25, "cabecas": 146, "valor": "442170.00"},
+    {"mes": "Novembro",  "qtd_notas": 18, "cabecas": 108, "valor": "365720.03"},
+    {"mes": "Dezembro",  "qtd_notas": 17, "cabecas": 118, "valor": "324450.00"}
+  ],
+
+  "remessas_mensais": [
+    {"mes": "Março",     "qtd_notas": 3, "cabecas":  40, "valor": "110000.00"},
+    {"mes": "Maio",      "qtd_notas": 4, "cabecas":  55, "valor": "155000.00"},
+    {"mes": "Julho",     "qtd_notas": 5, "cabecas":  70, "valor": "195000.00"},
+    {"mes": "Agosto",    "qtd_notas": 4, "cabecas":  60, "valor": "172000.00"},
+    {"mes": "Setembro",  "qtd_notas": 5, "cabecas":  65, "valor": "188000.00"},
+    {"mes": "Outubro",   "qtd_notas": 8, "cabecas":  92, "valor": "265000.00"},
+    {"mes": "Novembro",  "qtd_notas": 5, "cabecas":  68, "valor": "195500.00"},
+    {"mes": "Dezembro",  "qtd_notas": 3, "cabecas":  54, "valor": "152443.88"}
+  ],
+
+  "compras_mensais": [
+    {"mes": "Março",     "qtd_notas": 2, "cabecas":  50, "valor": "148000.00"},
+    {"mes": "Abril",     "qtd_notas": 3, "cabecas":  72, "valor": "212000.00"},
+    {"mes": "Junho",     "qtd_notas": 4, "cabecas":  98, "valor": "289000.00"},
+    {"mes": "Agosto",    "qtd_notas": 3, "cabecas":  75, "valor": "221500.00"},
+    {"mes": "Setembro",  "qtd_notas": 2, "cabecas":  48, "valor": "141000.00"},
+    {"mes": "Outubro",   "qtd_notas": 4, "cabecas":  95, "valor": "281000.00"},
+    {"mes": "Novembro",  "qtd_notas": 3, "cabecas":  72, "valor": "212513.14"},
+    {"mes": "Dezembro",  "qtd_notas": 2, "cabecas":  55, "valor": "159500.00"}
+  ],
+
+  "funrural_estimado":     "34739.85",
+  "aliquota_funrural_pct": "1,50%",
+
+  "achados_criticos": [
+    {
+      "codigo": "C-01",
+      "titulo": "Operação singular de valor extraordinário",
+      "descricao": "NFA-e nº 26.409.264 concentra 12,77% da receita anual em uma única operação. Valor unitário compatível com pauta deve ser verificado para descartar subfaturamento; volume desta magnitude requer comprovação de capacidade do imóvel rural do destinatário (SiCAR/CAR) e cruzamento com extrato bancário.",
+      "severidade": "CRITICO",
+      "porque_critico": "Volume desta magnitude de matrizes caracteriza descapitalização do plantel, não comercialização rotineira.",
+      "tabela_cabecalhos": ["NFA-e", "Data", "Cab.", "Valor unit.", "Valor total", "% receita", "Destinatário", "CPF"],
+      "tabela_linhas": [
+        ["26.409.264", "24/10/2025", "91", "R$ 3.250,00", "R$ 295.750,00", "12,77%", "GUSTAVO ALVES ROCHA", "022.047.861-95"]
+      ],
+      "cruzamentos": [
+        "GTA AGRODEFESA-GO",
+        "Extrato bancário (R$ 295.750,00)",
+        "Vínculo familiar/societário (JUCEG/RFB)",
+        "Capacidade do imóvel rural de Trombas para 91 matrizes (SiCAR/CAR)"
+      ]
+    },
+    {
+      "codigo": "C-10",
+      "titulo": "Fragmentação fiscal (smurfing) em data singular — 09/11/2025",
+      "descricao": "Em 09/11/2025 foram emitidas 9 NFA-e ao mesmo destinatário VALDEMIR MAURICIO DE SIQUEIRA (CPF 048.129.751-07), totalizando R$ 119.990,00. 7 notas com valor exatamente idêntico (R$ 13.210,00) — padrão clássico de fragmentação fiscal.",
+      "severidade": "CRITICO",
+      "porque_critico": "Hipóteses: (i) manter cada nota abaixo de limiar de triagem; (ii) uso de 'laranja'; (iii) lavagem de gado.",
+      "tabela_cabecalhos": ["NFA-e", "Data", "Valor (R$)", "Cab."],
+      "tabela_linhas": [
+        ["26.485.950", "09/11/2025", "13.430,00", "3"],
+        ["26.485.952", "09/11/2025", "13.210,00", "3"],
+        ["26.485.956", "09/11/2025", "13.210,00", "3"],
+        ["26.485.963", "09/11/2025", "13.210,00", "3"],
+        ["26.485.966", "09/11/2025", "13.210,00", "3"],
+        ["26.486.001", "09/11/2025", "13.210,00", "3"],
+        ["26.486.005", "09/11/2025", "13.210,00", "3"],
+        ["26.486.133", "09/11/2025", "13.210,00", "3"],
+        ["26.486.154", "09/11/2025", "14.090,00", "3"]
+      ],
+      "tabela_totais": ["TOTAL EM UM ÚNICO DIA", "", "119.990,00", "27"],
+      "cruzamentos": [
+        "GTAs AGRODEFESA-GO das 9 notas",
+        "Extrato bancário do dia (PIX/depósitos casados)",
+        "CAEPF do destinatário",
+        "Vínculo familiar/societário (JUCEG/RFB)"
+      ]
+    },
+    {
+      "codigo": "C-03",
+      "titulo": "Trânsito de leilão sem cruzamento documental — R$ 1.432.943,88",
+      "descricao": "Sob a regra OrgAudi 1.1, REMESSA/LEILÃO não constitui receita — é apenas trânsito até arremate. Sem NF-e modelo 55 emitida pelo leiloeiro em nome do produtor, é impossível confirmar (a) se a receita foi efetivamente percebida; (b) se Funrural foi retido pelo leiloeiro; (c) se houve retorno de gado não arrematado.",
+      "severidade": "CRITICO",
+      "tabela_cabecalhos": ["Leiloeiro", "CNPJ", "Notas", "Valor (R$)"],
+      "tabela_linhas": [
+        ["LEILÕES TROMBAS LTDA-ME", "27.372.042/0001-00", "23", "1.068.712,68"],
+        ["BOI FORTE LEILÕES LTDA",  "33.442.191/0001-09", "14", "364.231,20"]
+      ],
+      "tabela_totais": ["TOTAL EM TRÂNSITO", "", "37", "1.432.943,88"],
+      "cruzamentos": [
+        "ACTs (Atos de Comissão de Trabalho) dos leiloeiros",
+        "NF-e modelo 55 em nome do produtor",
+        "Extratos bancários cruzados com repasses dos leiloeiros"
+      ]
+    },
+    {
+      "codigo": "A-01",
+      "titulo": "Concentração em PFs com perfil de revenda — R$ 1,16M",
+      "descricao": "137 das 138 vendas diretas foram para pessoa física (99,3%) — atípico para pecuária. 13 PFs aparecem com 3+ aquisições no período.",
+      "severidade": "ALTO",
+      "porque_critico": "Verificar CAEPF (Receita Federal) para cada CPF recorrente. PF sem CAEPF + 3+ compras = intermediação não declarada (atividade comercial sem CNPJ).",
+      "tabela_cabecalhos": ["Destinatário", "CPF", "Notas", "Valor (R$)"],
+      "tabela_linhas": [
+        ["WEMERSON RONNOTT LOPES DA CUNHA", "048.122.871-38", "5", "258.255,13"],
+        ["VALDEMIR MAURICIO DE SIQUEIRA",   "048.129.751-07", "9", "119.990,00"],
+        ["VASCO BARBOSA DA COSTA",          "076.654.581-49", "9", "113.494,00"],
+        ["MARIOZAN GARCIA DA SILVA",        "359.926.201-25", "6", "106.030,69"],
+        ["JOAO BATISTA GOMES",              "577.708.241-68", "8",  "94.589,00"],
+        ["ANTONIO CARLOS PEREIRA",          "817.280.569-18", "5",  "73.500,00"],
+        ["FRANCISCO XAVIER LIMA",           "316.610.136-51", "5",  "71.350,00"],
+        ["MANOEL DOS SANTOS NETO",          "160.908.813-17", "5",  "68.900,00"],
+        ["JOSE MARIA DA SILVA",             "303.675.809-77", "4",  "58.200,00"],
+        ["CARLOS EDUARDO ROCHA",            "183.313.901-13", "4",  "53.420,00"],
+        ["PEDRO HENRIQUE GOMES",            "285.197.479-30", "4",  "52.800,00"],
+        ["SEBASTIAO RIBEIRO COSTA",         "258.787.619-20", "3",  "42.150,00"],
+        ["RAIMUNDO ALVES MOREIRA",          "690.593.538-70", "5",  "42.815,33"]
+      ],
+      "tabela_totais": ["TOTAL — 13 PFs RECORRENTES", "", "72", "1.155.494,15"]
+    }
+  ]
+}

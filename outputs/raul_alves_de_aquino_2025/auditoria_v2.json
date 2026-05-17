@@ -1,0 +1,386 @@
+{
+  "contribuinte": {
+    "cpf": "793.042.061-20",
+    "nome": "RAUL ALVES DE AQUINO",
+    "ie": "",
+    "municipio": "",
+    "estado": "GO"
+  },
+  "periodo": {
+    "inicio": "2025-01-01",
+    "fim": "2025-12-31",
+    "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026"
+  },
+  "sintese_quantitativa": [
+    {
+      "indicador": "Volume bruto total",
+      "valor_planilha": "R$ 1.195.876,34",
+      "valor_pdf_gief": "R$ 1.195.876,34",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Receita imediata (vendas)",
+      "valor_planilha": "R$ 1.174.774,02",
+      "valor_pdf_gief": "R$ 1.174.774,02",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Trânsito (remessas para leilão)",
+      "valor_planilha": "R$ 21.102,32",
+      "valor_pdf_gief": "R$ 21.102,32",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Cabeças totais movimentadas",
+      "valor_planilha": "411",
+      "valor_pdf_gief": "411",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de venda",
+      "valor_planilha": "16",
+      "valor_pdf_gief": "16",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de remessa",
+      "valor_planilha": "3",
+      "valor_pdf_gief": "3",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de compra",
+      "valor_planilha": "0",
+      "valor_pdf_gief": "—",
+      "status": "Dado novo",
+      "delta": "—",
+      "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 0 / referência única)."
+    },
+    {
+      "indicador": "Valor total de compras",
+      "valor_planilha": "R$ 0,00",
+      "valor_pdf_gief": "—",
+      "status": "Dado novo",
+      "delta": "—",
+      "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 0.00 / referência única)."
+    }
+  ],
+  "teste_t08": {
+    "total_indicadores_comparados": 8,
+    "qtd_divergencias": 0,
+    "qtd_atencoes": 2,
+    "detectado": false,
+    "itens": [
+      {
+        "indicador": "Volume bruto total",
+        "valor_planilha": "1195876.34",
+        "valor_pdf_gief": "1195876.34",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Receita imediata (vendas)",
+        "valor_planilha": "1174774.02",
+        "valor_pdf_gief": "1174774.02",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Trânsito (remessas para leilão)",
+        "valor_planilha": "21102.32",
+        "valor_pdf_gief": "21102.32",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Cabeças totais movimentadas",
+        "valor_planilha": "411",
+        "valor_pdf_gief": "411",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de venda",
+        "valor_planilha": "16",
+        "valor_pdf_gief": "16",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de remessa",
+        "valor_planilha": "3",
+        "valor_pdf_gief": "3",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de compra",
+        "valor_planilha": "0",
+        "valor_pdf_gief": null,
+        "delta": null,
+        "status": "DADO_NOVO",
+        "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 0 / referência única)."
+      },
+      {
+        "indicador": "Valor total de compras",
+        "valor_planilha": "0.00",
+        "valor_pdf_gief": null,
+        "delta": null,
+        "status": "DADO_NOVO",
+        "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 0.00 / referência única)."
+      }
+    ]
+  },
+  "severidades": {
+    "CRITICO": 0,
+    "ALTO": 0,
+    "MEDIO": 2,
+    "ATENCAO": 2,
+    "CONFORME": 6
+  },
+  "indicadores_principais": {
+    "VOLUME_BRUTO": {
+      "valor": "1195876.34",
+      "rotulo": "R$ 1,20M",
+      "subtitulo": "19 saídas",
+      "valor_completo": "R$ 1.195.876,34"
+    },
+    "F1_RECEITA_IMEDIATA": {
+      "valor": "1174774.02",
+      "rotulo": "R$ 1,17M",
+      "subtitulo": "16 vendas · base IRPF",
+      "valor_completo": "R$ 1.174.774,02"
+    },
+    "F2_TRANSITO": {
+      "valor": "21102.32",
+      "rotulo": "R$ 21K",
+      "subtitulo": "3 remessas · não soma",
+      "valor_completo": "R$ 21.102,32"
+    },
+    "F6_COMPRAS": {
+      "valor": "0",
+      "rotulo": "R$ 0,00",
+      "subtitulo": "0 notas · despesa",
+      "valor_completo": "R$ 0,00"
+    },
+    "F4_RECEITA_BRUTA": {
+      "valor": "1174774.02",
+      "rotulo": "R$ 1,17M",
+      "subtitulo": "F1 + F3",
+      "valor_completo": "R$ 1.174.774,02"
+    },
+    "F5_RESULTADO_RURAL": {
+      "valor": "1174774.02",
+      "rotulo": "R$ 1,17M",
+      "subtitulo": "F4 − F6 · base IRPF",
+      "valor_completo": "R$ 1.174.774,02"
+    },
+    "IRPF_ESTIMADO": {
+      "valor": "234954.80",
+      "rotulo": "R$ 235K",
+      "subtitulo": "20% × F5 · Lei 8.023/90",
+      "valor_completo": "R$ 234.954,80"
+    },
+    "FUNRURAL": {
+      "valor": "17621.61",
+      "rotulo": "R$ 18K",
+      "subtitulo": "1,50% × F1 · PF Patronal",
+      "valor_completo": "R$ 17.621,61"
+    }
+  },
+  "achados_criticos": [],
+  "achados_medios": [
+    {
+      "codigo": "M-01",
+      "titulo": "Obrigações acessórias derivadas do volume",
+      "descricao": "Volume bruto de R$ 1.195.876,34 obriga, para a DIRPF Rural: (a) manutenção do LCDPR — Livro Caixa Digital do Produtor Rural (IN RFB 1.848/2018); (b) apuração do resultado da atividade rural no anexo correspondente da DIRPF; (c) controle de comprovantes para contraprova fiscal (5 anos de retenção).",
+      "severidade": "MEDIO",
+      "porque_critico": "Ausência do LCDPR sujeita o contribuinte a multa de 0,25% por mês-calendário ou fração, sobre o total da receita bruta da atividade rural (limite de 10%) — art. 8º-A da Lei 9.430/96.",
+      "cruzamentos": []
+    },
+    {
+      "codigo": "M-02",
+      "titulo": "Funrural a recolher",
+      "descricao": "Funrural sobre vendas diretas (R$ 1.174.774,02) à alíquota de 1,50% (PF Patronal): R$ 17.621,61. Cruzar com guias GPS/DARF efetivamente recolhidas — quando adquirente é PJ, retenção é dele; quando PF, do próprio produtor. As remessas a leilão gerarão Funrural adicional pela responsabilidade do leiloeiro.",
+      "severidade": "MEDIO",
+      "porque_critico": "Base legal: Lei 8.212/91.",
+      "cruzamentos": [
+        "Conferir guias GPS/DARF recolhidas no período contra a estimativa.",
+        "Para adquirentes PJ, validar retenção realizada pelo comprador.",
+        "Para leilões, validar repasse do Funrural pelo leiloeiro (ACT)."
+      ]
+    }
+  ],
+  "pontos_atencao": [],
+  "etapas_recomendacoes": [
+    {
+      "numero": 1,
+      "titulo": "Aprofundar achados críticos",
+      "prazo": "30 DIAS",
+      "accent": "CRITICO",
+      "itens": [
+        "Solicitar ao contribuinte documentação primária dos achados críticos: GTAs (AGRODEFESA-GO), extratos bancários, comprovantes de pagamento, ACTs dos leiloeiros e relação completa de NF-e modelo 55 emitidas pelos leiloeiros em seu nome.",
+        "Cruzar com sistemas externos: AGRODEFESA-GO (GTAs e SIDAGRO), Receita Federal (CAEPF dos PFs recorrentes), SiCAR (capacidade do imóvel), JUCEG (vínculos societários)."
+      ]
+    },
+    {
+      "numero": 2,
+      "titulo": "Conformidade fiscal",
+      "prazo": "60 DIAS",
+      "accent": "ALTO",
+      "itens": [
+        "Reconstituir o LCDPR do período com base no relatório auditado, incorporando as notas de compra (R$ 0,00) e separando rigorosamente receita de trânsito.",
+        "Apurar o IRPF Rural (ano-base). Base parcial atual: R$ 1.174.774,02 (sem arremates). IRPF estimado: R$ 234.954,80.",
+        "Conferir Funrural recolhido contra a estimativa R$ 17.621,61 deste relatório."
+      ]
+    },
+    {
+      "numero": 3,
+      "titulo": "Mitigação prospectiva",
+      "prazo": "90 DIAS",
+      "accent": "MEDIO",
+      "itens": [
+        "Implantar segregação de fluxos nos sistemas internos: rotina específica para vendas a PF (com checagem de CAEPF) e outra para remessas a leilão (com cobrança formal das notas de venda do leiloeiro).",
+        "Adequar à Reforma Tributária (LC 214/2025): a partir de 2027, CBS substitui PIS/COFINS na cadeia agro. Atualizar emissão de NFA-e/NF-e com IBS/CBS conforme Nota Técnica 2025.002 RTC."
+      ]
+    }
+  ],
+  "planilha_gado_ir": {
+    "vendas": [
+      {
+        "mes": "Janeiro",
+        "qtd_notas": 2,
+        "cabecas": 43,
+        "valor": "110080.00"
+      },
+      {
+        "mes": "Fevereiro",
+        "qtd_notas": 1,
+        "cabecas": 62,
+        "valor": "148488.14"
+      },
+      {
+        "mes": "Março",
+        "qtd_notas": 1,
+        "cabecas": 20,
+        "valor": "61762.23"
+      },
+      {
+        "mes": "Abril",
+        "qtd_notas": 3,
+        "cabecas": 3,
+        "valor": "12137.15"
+      },
+      {
+        "mes": "Julho",
+        "qtd_notas": 1,
+        "cabecas": 19,
+        "valor": "67260.00"
+      },
+      {
+        "mes": "Agosto",
+        "qtd_notas": 3,
+        "cabecas": 87,
+        "valor": "196400.00"
+      },
+      {
+        "mes": "Outubro",
+        "qtd_notas": 2,
+        "cabecas": 144,
+        "valor": "499460.00"
+      },
+      {
+        "mes": "Novembro",
+        "qtd_notas": 3,
+        "cabecas": 27,
+        "valor": "79186.50"
+      }
+    ],
+    "remessas": [
+      {
+        "mes": "Abril",
+        "qtd_notas": 2,
+        "cabecas": 3,
+        "valor": "12002.32"
+      },
+      {
+        "mes": "Novembro",
+        "qtd_notas": 1,
+        "cabecas": 3,
+        "valor": "9100.00"
+      }
+    ],
+    "compras": [],
+    "totais": {
+      "vendas": {
+        "qtd_notas": 16,
+        "cabecas": 405,
+        "valor": "1174774.02"
+      },
+      "remessas": {
+        "qtd_notas": 3,
+        "cabecas": 6,
+        "valor": "21102.32"
+      },
+      "compras": {
+        "qtd_notas": 0,
+        "cabecas": 0,
+        "valor": "0"
+      },
+      "saidas_consolidadas": {
+        "qtd_notas": 19,
+        "cabecas": 411,
+        "valor": "1195876.34"
+      }
+    },
+    "formula_regra_2": {
+      "F1": {
+        "descricao": "Receita imediata (vendas diretas)",
+        "valor": "1174774.02"
+      },
+      "F2": {
+        "descricao": "Trânsito potencial (remessas — NÃO base IRPF)",
+        "valor": "21102.32"
+      },
+      "F3": {
+        "descricao": "Receita realizada de leilão (NF-e mod. 55)",
+        "valor": "0"
+      },
+      "F4": {
+        "descricao": "Receita bruta total DIRPF Rural (F1 + F3)",
+        "valor": "1174774.02"
+      },
+      "F6": {
+        "descricao": "Despesa / Investimento dedutível (compras)",
+        "valor": "0"
+      },
+      "F5": {
+        "descricao": "Resultado da atividade rural (F4 − F6)",
+        "valor": "1174774.02"
+      }
+    }
+  },
+  "declaracao_alcance": "Este relatório foi produzido com base no PDF GIEF/SEFAZ-GO e na Planilha de Gado para IR v5 do sistema OrgAudi 1.1. Os achados constituem indícios objetivos derivados de cruzamentos lógicos internos, não confirmados com documentação primária externa (extratos bancários, GTAs, ACTs, contratos). A confirmação depende de etapa subsequente de coleta de evidências.\n\nO presente documento NÃO formula acusações, NÃO imputa dolo e NÃO substitui procedimento de fiscalização tributária formal. Os elementos aqui mapeados constituem subsídios técnicos para tomada de decisão do contribuinte e de seus assessores, e para eventual regularização espontânea nos termos do art. 138 do CTN.",
+  "audit_hash": "7115e9b6e46ba53d7ff6ee2b62b20803d9758bcd4dd1d04419a2847604e3fd56",
+  "sistema": "OrgAudi 1.1",
+  "timestamp": "2026-05-17T02:45:18.777788+00:00",
+  "payload_hash": "{\"F1\":\"1174774.02\",\"F2\":\"21102.32\",\"F4\":\"1174774.02\",\"F5\":\"1174774.02\",\"F6\":\"0\",\"cpf\":\"793.042.061-20\",\"data_audit\":\"2026-05-17\",\"fim\":\"2025-12-31\",\"inicio\":\"2025-01-01\",\"nome\":\"RAUL ALVES DE AQUINO\"}"
+}

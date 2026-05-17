@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "slug": "ricardo_de_souza_lobo_2025",
+    "descricao": "Auditoria cruzada RICARDO DE SOUZA LOBO — período 2025",
+    "documento_referencia": "RICARDO LOBO (REM/DEST).pdf"
+  },
+  "contribuinte_cpf": "470.774.761-20",
+  "contribuinte_nome": "RICARDO DE SOUZA LOBO",
+  "contribuinte_ie": "",
+  "municipio": "",
+  "estado": "GO",
+  "periodo_inicio": "2025-01-01",
+  "periodo_fim": "2025-12-31",
+  "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026",
+  "is_pj": false,
+  "is_segurado_especial": false,
+  "totais_planilha": {
+    "volume_bruto_saidas": "0.00",
+    "receita_imediata": "0.00",
+    "transito_remessas": "0.00",
+    "cabecas_totais": 0,
+    "qtd_vendas": 0,
+    "qtd_remessas": 0,
+    "qtd_compras": 0,
+    "valor_compras": "0.00"
+  },
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "0.00",
+    "receita_imediata": "0.00",
+    "transito_remessas": "0.00",
+    "cabecas_totais": 0,
+    "qtd_vendas": 0,
+    "qtd_remessas": 0
+  },
+  "vendas_mensais": [],
+  "remessas_mensais": [],
+  "compras_mensais": [],
+  "funrural_estimado": "0.00",
+  "aliquota_funrural_pct": "1,50%",
+  "achados_criticos": [
+    {
+      "codigo": "CF-00",
+      "titulo": "Sem movimentação fiscal no período auditado",
+      "descricao": "Os relatórios GIEF/SEFAZ-GO para o contribuinte (tanto como REMETENTE quanto como DESTINATÁRIO) informam: \"Não existe NFA para o período informado\". Nenhuma NFA-e foi emitida ou recebida pelo contribuinte em 2025-01-01 a 2025-12-31.",
+      "severidade": "CONFORME",
+      "porque_critico": "Nenhuma operação fiscal a auditar nesse exercício. Recomendado: (i) confirmar com o contribuinte se houve atividade rural sem emissão fiscal (risco de caixa-2); (ii) verificar consistência com declaração de IRPF do exercício; (iii) checar se houve operações fora do estado de GO (não constam nesta base).",
+      "cruzamentos": [
+        "Declaração de IRPF do exercício (verificar consistência com receita rural zerada)",
+        "Extratos bancários (depósitos compatíveis com atividade?)",
+        "GTAs AGRODEFESA-GO no período (movimentação de animais?)",
+        "Bases SEFAZ de outros estados (operações interestaduais?)"
+      ]
+    }
+  ]
+}

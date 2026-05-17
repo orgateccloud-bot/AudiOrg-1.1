@@ -1,0 +1,128 @@
+{
+  "_meta": {
+    "slug": "fabio_humberto_ribeiro_santos_2025",
+    "descricao": "Auditoria cruzada FABIO HUMBERTO RIBEIRO SANTOS — período 2025",
+    "documento_referencia": "FABIO (REM/DEST).pdf"
+  },
+  "contribuinte_cpf": "463.935.521-15",
+  "contribuinte_nome": "FABIO HUMBERTO RIBEIRO SANTOS",
+  "contribuinte_ie": "",
+  "municipio": "",
+  "estado": "GO",
+  "periodo_inicio": "2025-01-01",
+  "periodo_fim": "2025-12-31",
+  "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026",
+  "is_pj": false,
+  "is_segurado_especial": false,
+  "totais_planilha": {
+    "volume_bruto_saidas": "748198.59",
+    "receita_imediata": "738334.35",
+    "transito_remessas": "9864.24",
+    "cabecas_totais": 238,
+    "qtd_vendas": 7,
+    "qtd_remessas": 1,
+    "qtd_compras": 38,
+    "valor_compras": "1980445.19"
+  },
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "748198.59",
+    "receita_imediata": "738334.35",
+    "transito_remessas": "9864.24",
+    "cabecas_totais": 238,
+    "qtd_vendas": 7,
+    "qtd_remessas": 1
+  },
+  "vendas_mensais": [
+    {
+      "mes": "Janeiro",
+      "qtd_notas": 1,
+      "cabecas": 11,
+      "valor": "32615.76"
+    },
+    {
+      "mes": "Fevereiro",
+      "qtd_notas": 1,
+      "cabecas": 3,
+      "valor": "9864.24"
+    },
+    {
+      "mes": "Maio",
+      "qtd_notas": 1,
+      "cabecas": 39,
+      "valor": "87424.35"
+    },
+    {
+      "mes": "Novembro",
+      "qtd_notas": 3,
+      "cabecas": 164,
+      "valor": "547230.00"
+    },
+    {
+      "mes": "Dezembro",
+      "qtd_notas": 1,
+      "cabecas": 18,
+      "valor": "61200.00"
+    }
+  ],
+  "remessas_mensais": [
+    {
+      "mes": "Fevereiro",
+      "qtd_notas": 1,
+      "cabecas": 3,
+      "valor": "9864.24"
+    }
+  ],
+  "compras_mensais": [
+    {
+      "mes": "Janeiro",
+      "qtd_notas": 9,
+      "cabecas": 103,
+      "valor": "197608.83"
+    },
+    {
+      "mes": "Fevereiro",
+      "qtd_notas": 4,
+      "cabecas": 61,
+      "valor": "152997.85"
+    },
+    {
+      "mes": "Março",
+      "qtd_notas": 2,
+      "cabecas": 21,
+      "valor": "49860.38"
+    },
+    {
+      "mes": "Abril",
+      "qtd_notas": 1,
+      "cabecas": 31,
+      "valor": "71300.00"
+    },
+    {
+      "mes": "Maio",
+      "qtd_notas": 11,
+      "cabecas": 254,
+      "valor": "648435.30"
+    },
+    {
+      "mes": "Junho",
+      "qtd_notas": 6,
+      "cabecas": 91,
+      "valor": "229012.83"
+    },
+    {
+      "mes": "Agosto",
+      "qtd_notas": 1,
+      "cabecas": 3,
+      "valor": "6000.00"
+    },
+    {
+      "mes": "Novembro",
+      "qtd_notas": 4,
+      "cabecas": 194,
+      "valor": "625230.00"
+    }
+  ],
+  "funrural_estimado": "11075.02",
+  "aliquota_funrural_pct": "1,50%",
+  "achados_criticos": []
+}

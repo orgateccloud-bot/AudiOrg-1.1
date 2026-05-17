@@ -1,0 +1,372 @@
+{
+  "contribuinte": {
+    "cpf": "111.222.333-44",
+    "nome": "JOSE EXEMPLO DA SILVA",
+    "ie": "100200300",
+    "municipio": "GOIANIA",
+    "estado": "GO"
+  },
+  "periodo": {
+    "inicio": "2025-01-01",
+    "fim": "2025-12-31",
+    "documento_base": "Relatório GIEF/SEFAZ-GO — exemplo"
+  },
+  "sintese_quantitativa": [
+    {
+      "indicador": "Volume bruto total",
+      "valor_planilha": "R$ 500.000,00",
+      "valor_pdf_gief": "R$ 500.000,00",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Receita imediata (vendas)",
+      "valor_planilha": "R$ 400.000,00",
+      "valor_pdf_gief": "R$ 400.000,00",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Trânsito (remessas para leilão)",
+      "valor_planilha": "R$ 100.000,00",
+      "valor_pdf_gief": "R$ 100.000,00",
+      "status": "Conforme",
+      "delta": "R$ 0,00",
+      "observacao": ""
+    },
+    {
+      "indicador": "Cabeças totais movimentadas",
+      "valor_planilha": "200",
+      "valor_pdf_gief": "200",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de venda",
+      "valor_planilha": "25",
+      "valor_pdf_gief": "25",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de remessa",
+      "valor_planilha": "5",
+      "valor_pdf_gief": "5",
+      "status": "Conforme",
+      "delta": "0",
+      "observacao": ""
+    },
+    {
+      "indicador": "Qtd notas de compra",
+      "valor_planilha": "3",
+      "valor_pdf_gief": "—",
+      "status": "Dado novo",
+      "delta": "—",
+      "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 3 / referência única)."
+    },
+    {
+      "indicador": "Valor total de compras",
+      "valor_planilha": "R$ 120.000,00",
+      "valor_pdf_gief": "—",
+      "status": "Dado novo",
+      "delta": "—",
+      "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 120000.00 / referência única)."
+    }
+  ],
+  "teste_t08": {
+    "total_indicadores_comparados": 8,
+    "qtd_divergencias": 0,
+    "qtd_atencoes": 2,
+    "detectado": false,
+    "itens": [
+      {
+        "indicador": "Volume bruto total",
+        "valor_planilha": "500000.00",
+        "valor_pdf_gief": "500000.00",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Receita imediata (vendas)",
+        "valor_planilha": "400000.00",
+        "valor_pdf_gief": "400000.00",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Trânsito (remessas para leilão)",
+        "valor_planilha": "100000.00",
+        "valor_pdf_gief": "100000.00",
+        "delta": "0.00",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Cabeças totais movimentadas",
+        "valor_planilha": "200",
+        "valor_pdf_gief": "200",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de venda",
+        "valor_planilha": "25",
+        "valor_pdf_gief": "25",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de remessa",
+        "valor_planilha": "5",
+        "valor_pdf_gief": "5",
+        "delta": "0",
+        "status": "CONFORME",
+        "observacao": ""
+      },
+      {
+        "indicador": "Qtd notas de compra",
+        "valor_planilha": "3",
+        "valor_pdf_gief": null,
+        "delta": null,
+        "status": "DADO_NOVO",
+        "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 3 / referência única)."
+      },
+      {
+        "indicador": "Valor total de compras",
+        "valor_planilha": "120000.00",
+        "valor_pdf_gief": null,
+        "delta": null,
+        "status": "DADO_NOVO",
+        "observacao": "Indicador presente apenas em Planilha IR v5 (R$ 120000.00 / referência única)."
+      }
+    ]
+  },
+  "severidades": {
+    "CRITICO": 0,
+    "ALTO": 0,
+    "MEDIO": 2,
+    "ATENCAO": 3,
+    "CONFORME": 6
+  },
+  "indicadores_principais": {
+    "VOLUME_BRUTO": {
+      "valor": "500000.00",
+      "rotulo": "R$ 500K",
+      "subtitulo": "30 saídas",
+      "valor_completo": "R$ 500.000,00"
+    },
+    "F1_RECEITA_IMEDIATA": {
+      "valor": "400000.00",
+      "rotulo": "R$ 400K",
+      "subtitulo": "25 vendas · base IRPF",
+      "valor_completo": "R$ 400.000,00"
+    },
+    "F2_TRANSITO": {
+      "valor": "100000.00",
+      "rotulo": "R$ 100K",
+      "subtitulo": "5 remessas · não soma",
+      "valor_completo": "R$ 100.000,00"
+    },
+    "F6_COMPRAS": {
+      "valor": "120000.00",
+      "rotulo": "R$ 120K",
+      "subtitulo": "3 notas · despesa",
+      "valor_completo": "R$ 120.000,00"
+    },
+    "F4_RECEITA_BRUTA": {
+      "valor": "400000.00",
+      "rotulo": "R$ 400K",
+      "subtitulo": "F1 + F3",
+      "valor_completo": "R$ 400.000,00"
+    },
+    "F5_RESULTADO_RURAL": {
+      "valor": "280000.00",
+      "rotulo": "R$ 280K",
+      "subtitulo": "F4 − F6 · base IRPF",
+      "valor_completo": "R$ 280.000,00"
+    },
+    "IRPF_ESTIMADO": {
+      "valor": "56000.00",
+      "rotulo": "R$ 56K",
+      "subtitulo": "20% × F5 · Lei 8.023/90",
+      "valor_completo": "R$ 56.000,00"
+    },
+    "FUNRURAL": {
+      "valor": "6000.00",
+      "rotulo": "R$ 6K",
+      "subtitulo": "1,50% × F1 · PF Patronal",
+      "valor_completo": "R$ 6.000,00"
+    }
+  },
+  "achados_criticos": [],
+  "achados_medios": [
+    {
+      "codigo": "M-01",
+      "titulo": "Obrigações acessórias derivadas do volume",
+      "descricao": "Volume bruto de R$ 500.000,00 obriga, para a DIRPF Rural: (a) manutenção do LCDPR — Livro Caixa Digital do Produtor Rural (IN RFB 1.848/2018); (b) apuração do resultado da atividade rural no anexo correspondente da DIRPF; (c) controle de comprovantes para contraprova fiscal (5 anos de retenção).",
+      "severidade": "MEDIO",
+      "porque_critico": "Ausência do LCDPR sujeita o contribuinte a multa de 0,25% por mês-calendário ou fração, sobre o total da receita bruta da atividade rural (limite de 10%) — art. 8º-A da Lei 9.430/96.",
+      "cruzamentos": []
+    },
+    {
+      "codigo": "M-02",
+      "titulo": "Funrural a recolher",
+      "descricao": "Funrural sobre vendas diretas (R$ 400.000,00) à alíquota de 1,50% (PF Patronal): R$ 6.000,00. Cruzar com guias GPS/DARF efetivamente recolhidas — quando adquirente é PJ, retenção é dele; quando PF, do próprio produtor. As remessas a leilão gerarão Funrural adicional pela responsabilidade do leiloeiro.",
+      "severidade": "MEDIO",
+      "porque_critico": "Base legal: Lei 8.212/91.",
+      "cruzamentos": [
+        "Conferir guias GPS/DARF recolhidas no período contra a estimativa.",
+        "Para adquirentes PJ, validar retenção realizada pelo comprador.",
+        "Para leilões, validar repasse do Funrural pelo leiloeiro (ACT)."
+      ]
+    }
+  ],
+  "pontos_atencao": [
+    {
+      "codigo": "AT-01",
+      "titulo": "Compras de gado relevantes — Regra Especial 1 aplicada",
+      "descricao": "R$ 120.000,00 em 3 notas de compra. Sob a Regra 1 OrgAudi 1.1 (Cliente=Destinatário → DESPESA/INVEST.), reduz a base de cálculo do IRPF Rural ou ativa investimento dedutível, conforme finalidade: reposição de plantel = despesa imediata; matriz reprodutora = ativo amortizável ao longo da vida útil.",
+      "severidade": "ATENCAO",
+      "porque_critico": "Regra Especial 1 (RE-1) aplicada: NFA-e com contribuinte como DESTINATÁRIO em atividade rural são reclassificadas de VENDA → COMPRA. Animal vivo é INSUMO/MATÉRIA-PRIMA, não receita. Conta débito 1.1.2.01 (Gado em Rebanho); conta crédito 2.1.1.1.01 (Fornecedores). Confiança 0,99. Base legal: NBC TG 16 + NBC TG 25 + Lei 9.250/1995.",
+      "cruzamentos": [
+        "GTA AGRODEFESA-GO correspondente a cada nota de compra",
+        "Extrato bancário (PIX/débito) casado com os valores das notas",
+        "Decisão contábil (despesa imediata vs ativo amortizável) por finalidade declarada do gado adquirido",
+        "Validação secundária: notas > R$ 500.000 → revisão manual (confiança reduzida para 0,75)",
+        "Validação secundária: notas < R$ 100 → suspeita de teste (confiança reduzida para 0,75)"
+      ]
+    }
+  ],
+  "etapas_recomendacoes": [
+    {
+      "numero": 1,
+      "titulo": "Aprofundar achados críticos",
+      "prazo": "30 DIAS",
+      "accent": "CRITICO",
+      "itens": [
+        "Solicitar ao contribuinte documentação primária dos achados críticos: GTAs (AGRODEFESA-GO), extratos bancários, comprovantes de pagamento, ACTs dos leiloeiros e relação completa de NF-e modelo 55 emitidas pelos leiloeiros em seu nome.",
+        "Cruzar com sistemas externos: AGRODEFESA-GO (GTAs e SIDAGRO), Receita Federal (CAEPF dos PFs recorrentes), SiCAR (capacidade do imóvel), JUCEG (vínculos societários)."
+      ]
+    },
+    {
+      "numero": 2,
+      "titulo": "Conformidade fiscal",
+      "prazo": "60 DIAS",
+      "accent": "ALTO",
+      "itens": [
+        "Reconstituir o LCDPR do período com base no relatório auditado, incorporando as notas de compra (R$ 120.000,00) e separando rigorosamente receita de trânsito.",
+        "Apurar o IRPF Rural (ano-base). Base parcial atual: R$ 280.000,00 (sem arremates). IRPF estimado: R$ 56.000,00.",
+        "Conferir Funrural recolhido contra a estimativa R$ 6.000,00 deste relatório."
+      ]
+    },
+    {
+      "numero": 3,
+      "titulo": "Mitigação prospectiva",
+      "prazo": "90 DIAS",
+      "accent": "MEDIO",
+      "itens": [
+        "Implantar segregação de fluxos nos sistemas internos: rotina específica para vendas a PF (com checagem de CAEPF) e outra para remessas a leilão (com cobrança formal das notas de venda do leiloeiro).",
+        "Adequar à Reforma Tributária (LC 214/2025): a partir de 2027, CBS substitui PIS/COFINS na cadeia agro. Atualizar emissão de NFA-e/NF-e com IBS/CBS conforme Nota Técnica 2025.002 RTC."
+      ]
+    }
+  ],
+  "planilha_gado_ir": {
+    "vendas": [
+      {
+        "mes": "Janeiro",
+        "qtd_notas": 5,
+        "cabecas": 30,
+        "valor": "60000.00"
+      },
+      {
+        "mes": "Junho",
+        "qtd_notas": 10,
+        "cabecas": 80,
+        "valor": "160000.00"
+      },
+      {
+        "mes": "Outubro",
+        "qtd_notas": 10,
+        "cabecas": 60,
+        "valor": "180000.00"
+      }
+    ],
+    "remessas": [
+      {
+        "mes": "Setembro",
+        "qtd_notas": 5,
+        "cabecas": 40,
+        "valor": "100000.00"
+      }
+    ],
+    "compras": [
+      {
+        "mes": "Março",
+        "qtd_notas": 3,
+        "cabecas": 50,
+        "valor": "120000.00"
+      }
+    ],
+    "totais": {
+      "vendas": {
+        "qtd_notas": 25,
+        "cabecas": 170,
+        "valor": "400000.00"
+      },
+      "remessas": {
+        "qtd_notas": 5,
+        "cabecas": 40,
+        "valor": "100000.00"
+      },
+      "compras": {
+        "qtd_notas": 3,
+        "cabecas": 50,
+        "valor": "120000.00"
+      },
+      "saidas_consolidadas": {
+        "qtd_notas": 30,
+        "cabecas": 210,
+        "valor": "500000.00"
+      }
+    },
+    "formula_regra_2": {
+      "F1": {
+        "descricao": "Receita imediata (vendas diretas)",
+        "valor": "400000.00"
+      },
+      "F2": {
+        "descricao": "Trânsito potencial (remessas — NÃO base IRPF)",
+        "valor": "100000.00"
+      },
+      "F3": {
+        "descricao": "Receita realizada de leilão (NF-e mod. 55)",
+        "valor": "0"
+      },
+      "F4": {
+        "descricao": "Receita bruta total DIRPF Rural (F1 + F3)",
+        "valor": "400000.00"
+      },
+      "F6": {
+        "descricao": "Despesa / Investimento dedutível (compras)",
+        "valor": "120000.00"
+      },
+      "F5": {
+        "descricao": "Resultado da atividade rural (F4 − F6)",
+        "valor": "280000.00"
+      }
+    }
+  },
+  "declaracao_alcance": "Este relatório foi produzido com base no PDF GIEF/SEFAZ-GO e na Planilha de Gado para IR v5 do sistema OrgAudi 1.1. Os achados constituem indícios objetivos derivados de cruzamentos lógicos internos, não confirmados com documentação primária externa (extratos bancários, GTAs, ACTs, contratos). A confirmação depende de etapa subsequente de coleta de evidências.\n\nO presente documento NÃO formula acusações, NÃO imputa dolo e NÃO substitui procedimento de fiscalização tributária formal. Os elementos aqui mapeados constituem subsídios técnicos para tomada de decisão do contribuinte e de seus assessores, e para eventual regularização espontânea nos termos do art. 138 do CTN.",
+  "audit_hash": "2c1965f1e3a40d5529d57410d3500d35387daf452d7ddd74cdbd7e570d3f7f4b",
+  "sistema": "OrgAudi 1.1",
+  "timestamp": "2026-05-17T02:45:11.329298+00:00",
+  "payload_hash": "{\"F1\":\"400000.00\",\"F2\":\"100000.00\",\"F4\":\"400000.00\",\"F5\":\"280000.00\",\"F6\":\"120000.00\",\"cpf\":\"111.222.333-44\",\"data_audit\":\"2026-05-17\",\"fim\":\"2025-12-31\",\"inicio\":\"2025-01-01\",\"nome\":\"JOSE EXEMPLO DA SILVA\"}"
+}

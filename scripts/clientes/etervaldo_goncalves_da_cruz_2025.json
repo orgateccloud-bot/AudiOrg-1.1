@@ -1,0 +1,66 @@
+{
+  "_meta": {
+    "slug": "etervaldo_goncalves_da_cruz_2025",
+    "descricao": "Auditoria cruzada ETERVALDO GONCALVES DA CRUZ — período 2025",
+    "documento_referencia": "ETERVALDO (REM/DEST).pdf"
+  },
+  "contribuinte_cpf": "070.967.711-15",
+  "contribuinte_nome": "ETERVALDO GONCALVES DA CRUZ",
+  "contribuinte_ie": "",
+  "municipio": "",
+  "estado": "GO",
+  "periodo_inicio": "2025-01-01",
+  "periodo_fim": "2025-12-31",
+  "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026",
+  "is_pj": false,
+  "is_segurado_especial": false,
+  "totais_planilha": {
+    "volume_bruto_saidas": "0.00",
+    "receita_imediata": "0.00",
+    "transito_remessas": "0.00",
+    "cabecas_totais": 0,
+    "qtd_vendas": 0,
+    "qtd_remessas": 0,
+    "qtd_compras": 6,
+    "valor_compras": "733194.80"
+  },
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "0.00",
+    "receita_imediata": "0.00",
+    "transito_remessas": "0.00",
+    "cabecas_totais": 0,
+    "qtd_vendas": 0,
+    "qtd_remessas": 0
+  },
+  "vendas_mensais": [],
+  "remessas_mensais": [],
+  "compras_mensais": [
+    {
+      "mes": "Fevereiro",
+      "qtd_notas": 1,
+      "cabecas": 115,
+      "valor": "275898.80"
+    },
+    {
+      "mes": "Junho",
+      "qtd_notas": 1,
+      "cabecas": 15,
+      "valor": "46200.00"
+    },
+    {
+      "mes": "Setembro",
+      "qtd_notas": 3,
+      "cabecas": 85,
+      "valor": "237000.00"
+    },
+    {
+      "mes": "Dezembro",
+      "qtd_notas": 1,
+      "cabecas": 78,
+      "valor": "174096.00"
+    }
+  ],
+  "funrural_estimado": "0.00",
+  "aliquota_funrural_pct": "1,50%",
+  "achados_criticos": []
+}

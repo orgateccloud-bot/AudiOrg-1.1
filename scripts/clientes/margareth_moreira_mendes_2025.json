@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "slug": "margareth_moreira_mendes_2025",
+    "descricao": "Auditoria cruzada MARGARETH MOREIRA MENDES — período 2025",
+    "documento_referencia": "MARGARETH (REM/DEST).pdf"
+  },
+  "contribuinte_cpf": "548.382.581-00",
+  "contribuinte_nome": "MARGARETH MOREIRA MENDES",
+  "contribuinte_ie": "",
+  "municipio": "",
+  "estado": "GO",
+  "periodo_inicio": "2025-01-01",
+  "periodo_fim": "2025-12-31",
+  "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026",
+  "is_pj": false,
+  "is_segurado_especial": false,
+  "totais_planilha": {
+    "volume_bruto_saidas": "1206779.16",
+    "receita_imediata": "1108461.58",
+    "transito_remessas": "98317.58",
+    "cabecas_totais": 1336,
+    "qtd_vendas": 22,
+    "qtd_remessas": 1,
+    "qtd_compras": 2,
+    "valor_compras": "139174.95"
+  },
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "1206779.16",
+    "receita_imediata": "1108461.58",
+    "transito_remessas": "98317.58",
+    "cabecas_totais": 1336,
+    "qtd_vendas": 22,
+    "qtd_remessas": 1
+  },
+  "vendas_mensais": [
+    {
+      "mes": "Fevereiro",
+      "qtd_notas": 2,
+      "cabecas": 46,
+      "valor": "98317.58"
+    },
+    {
+      "mes": "Abril",
+      "qtd_notas": 2,
+      "cabecas": 60,
+      "valor": "123266.01"
+    },
+    {
+      "mes": "Junho",
+      "qtd_notas": 11,
+      "cabecas": 962,
+      "valor": "165028.00"
+    },
+    {
+      "mes": "Setembro",
+      "qtd_notas": 1,
+      "cabecas": 21,
+      "valor": "57750.00"
+    },
+    {
+      "mes": "Outubro",
+      "qtd_notas": 3,
+      "cabecas": 120,
+      "valor": "420360.00"
+    },
+    {
+      "mes": "Novembro",
+      "qtd_notas": 2,
+      "cabecas": 51,
+      "valor": "139159.99"
+    },
+    {
+      "mes": "Dezembro",
+      "qtd_notas": 1,
+      "cabecas": 30,
+      "valor": "104580.00"
+    }
+  ],
+  "remessas_mensais": [
+    {
+      "mes": "Fevereiro",
+      "qtd_notas": 1,
+      "cabecas": 46,
+      "valor": "98317.58"
+    }
+  ],
+  "compras_mensais": [
+    {
+      "mes": "Maio",
+      "qtd_notas": 2,
+      "cabecas": 68,
+      "valor": "139174.95"
+    }
+  ],
+  "funrural_estimado": "16626.92",
+  "aliquota_funrural_pct": "1,50%",
+  "achados_criticos": []
+}

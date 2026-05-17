@@ -1,0 +1,67 @@
+{
+  "_meta": {
+    "slug": "matheus_bernardes_silva_mendes_2025",
+    "descricao": "Auditoria cruzada MATHEUS BERNARDES SILVA MENDES — período 2025",
+    "documento_referencia": "MATHEUS (REM/DEST).pdf"
+  },
+  "contribuinte_cpf": "052.713.671-93",
+  "contribuinte_nome": "MATHEUS BERNARDES SILVA MENDES",
+  "contribuinte_ie": "",
+  "municipio": "",
+  "estado": "GO",
+  "periodo_inicio": "2025-01-01",
+  "periodo_fim": "2025-12-31",
+  "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026",
+  "is_pj": false,
+  "is_segurado_especial": false,
+  "totais_planilha": {
+    "volume_bruto_saidas": "285910.00",
+    "receita_imediata": "285910.00",
+    "transito_remessas": "0.00",
+    "cabecas_totais": 79,
+    "qtd_vendas": 5,
+    "qtd_remessas": 0,
+    "qtd_compras": 2,
+    "valor_compras": "223320.00"
+  },
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "285910.00",
+    "receita_imediata": "285910.00",
+    "transito_remessas": "0.00",
+    "cabecas_totais": 79,
+    "qtd_vendas": 5,
+    "qtd_remessas": 0
+  },
+  "vendas_mensais": [
+    {
+      "mes": "Julho",
+      "qtd_notas": 1,
+      "cabecas": 10,
+      "valor": "23160.00"
+    },
+    {
+      "mes": "Outubro",
+      "qtd_notas": 3,
+      "cabecas": 63,
+      "valor": "244750.00"
+    },
+    {
+      "mes": "Novembro",
+      "qtd_notas": 1,
+      "cabecas": 6,
+      "valor": "18000.00"
+    }
+  ],
+  "remessas_mensais": [],
+  "compras_mensais": [
+    {
+      "mes": "Junho",
+      "qtd_notas": 2,
+      "cabecas": 84,
+      "valor": "223320.00"
+    }
+  ],
+  "funrural_estimado": "4288.65",
+  "aliquota_funrural_pct": "1,50%",
+  "achados_criticos": []
+}

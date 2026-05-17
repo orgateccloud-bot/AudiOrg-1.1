@@ -1,0 +1,146 @@
+{
+  "_meta": {
+    "slug": "cleuzenir_rodrigues_de_almeida_2025",
+    "descricao": "Auditoria cruzada CLEUZENIR RODRIGUES DE ALMEIDA — período 2025",
+    "documento_referencia": "CLEUZENIR (REM/DEST).pdf"
+  },
+  "contribuinte_cpf": "021.093.761-04",
+  "contribuinte_nome": "CLEUZENIR RODRIGUES DE ALMEIDA",
+  "contribuinte_ie": "",
+  "municipio": "",
+  "estado": "GO",
+  "periodo_inicio": "2025-01-01",
+  "periodo_fim": "2025-12-31",
+  "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026",
+  "is_pj": false,
+  "is_segurado_especial": false,
+  "totais_planilha": {
+    "volume_bruto_saidas": "1908967.44",
+    "receita_imediata": "1552562.86",
+    "transito_remessas": "356404.58",
+    "cabecas_totais": 697,
+    "qtd_vendas": 28,
+    "qtd_remessas": 9,
+    "qtd_compras": 17,
+    "valor_compras": "1155131.67"
+  },
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "1908967.44",
+    "receita_imediata": "1552562.86",
+    "transito_remessas": "356404.58",
+    "cabecas_totais": 697,
+    "qtd_vendas": 28,
+    "qtd_remessas": 9
+  },
+  "vendas_mensais": [
+    {
+      "mes": "Fevereiro",
+      "qtd_notas": 6,
+      "cabecas": 223,
+      "valor": "579582.49"
+    },
+    {
+      "mes": "Abril",
+      "qtd_notas": 7,
+      "cabecas": 50,
+      "valor": "143441.37"
+    },
+    {
+      "mes": "Agosto",
+      "qtd_notas": 3,
+      "cabecas": 88,
+      "valor": "290980.00"
+    },
+    {
+      "mes": "Outubro",
+      "qtd_notas": 5,
+      "cabecas": 37,
+      "valor": "115350.00"
+    },
+    {
+      "mes": "Novembro",
+      "qtd_notas": 3,
+      "cabecas": 20,
+      "valor": "75459.00"
+    },
+    {
+      "mes": "Dezembro",
+      "qtd_notas": 4,
+      "cabecas": 158,
+      "valor": "347750.00"
+    }
+  ],
+  "remessas_mensais": [
+    {
+      "mes": "Fevereiro",
+      "qtd_notas": 1,
+      "cabecas": 11,
+      "valor": "20767.71"
+    },
+    {
+      "mes": "Abril",
+      "qtd_notas": 1,
+      "cabecas": 28,
+      "valor": "75246.87"
+    },
+    {
+      "mes": "Agosto",
+      "qtd_notas": 1,
+      "cabecas": 13,
+      "valor": "44980.00"
+    },
+    {
+      "mes": "Outubro",
+      "qtd_notas": 4,
+      "cabecas": 39,
+      "valor": "121570.00"
+    },
+    {
+      "mes": "Novembro",
+      "qtd_notas": 1,
+      "cabecas": 15,
+      "valor": "41490.00"
+    },
+    {
+      "mes": "Dezembro",
+      "qtd_notas": 1,
+      "cabecas": 15,
+      "valor": "52350.00"
+    }
+  ],
+  "compras_mensais": [
+    {
+      "mes": "Abril",
+      "qtd_notas": 2,
+      "cabecas": 16,
+      "valor": "34633.93"
+    },
+    {
+      "mes": "Junho",
+      "qtd_notas": 4,
+      "cabecas": 18,
+      "valor": "37567.74"
+    },
+    {
+      "mes": "Julho",
+      "qtd_notas": 2,
+      "cabecas": 18,
+      "valor": "61860.00"
+    },
+    {
+      "mes": "Novembro",
+      "qtd_notas": 4,
+      "cabecas": 126,
+      "valor": "385860.00"
+    },
+    {
+      "mes": "Dezembro",
+      "qtd_notas": 5,
+      "cabecas": 222,
+      "valor": "635210.00"
+    }
+  ],
+  "funrural_estimado": "23288.44",
+  "aliquota_funrural_pct": "1,50%",
+  "achados_criticos": []
+}

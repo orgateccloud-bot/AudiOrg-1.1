@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "slug": "glauber_tassi_de_souza_2025",
+    "descricao": "Auditoria cruzada GLAUBER TASSI DE SOUZA — período 2025",
+    "documento_referencia": "GLAUBER (REM/DEST).pdf"
+  },
+  "contribuinte_cpf": "401.301.001-10",
+  "contribuinte_nome": "GLAUBER TASSI DE SOUZA",
+  "contribuinte_ie": "",
+  "municipio": "",
+  "estado": "GO",
+  "periodo_inicio": "2025-01-01",
+  "periodo_fim": "2025-12-31",
+  "documento_base": "Relatório GIEF/SEFAZ-GO de 17/04/2026",
+  "is_pj": false,
+  "is_segurado_especial": false,
+  "totais_planilha": {
+    "volume_bruto_saidas": "196600.10",
+    "receita_imediata": "196600.10",
+    "transito_remessas": "0.00",
+    "cabecas_totais": 87,
+    "qtd_vendas": 4,
+    "qtd_remessas": 0,
+    "qtd_compras": 8,
+    "valor_compras": "294975.70"
+  },
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "196600.10",
+    "receita_imediata": "196600.10",
+    "transito_remessas": "0.00",
+    "cabecas_totais": 87,
+    "qtd_vendas": 4,
+    "qtd_remessas": 0
+  },
+  "vendas_mensais": [
+    {
+      "mes": "Abril",
+      "qtd_notas": 1,
+      "cabecas": 6,
+      "valor": "21352.20"
+    },
+    {
+      "mes": "Maio",
+      "qtd_notas": 2,
+      "cabecas": 55,
+      "valor": "112847.90"
+    },
+    {
+      "mes": "Junho",
+      "qtd_notas": 1,
+      "cabecas": 26,
+      "valor": "62400.00"
+    }
+  ],
+  "remessas_mensais": [],
+  "compras_mensais": [
+    {
+      "mes": "Abril",
+      "qtd_notas": 1,
+      "cabecas": 44,
+      "valor": "72255.04"
+    },
+    {
+      "mes": "Maio",
+      "qtd_notas": 4,
+      "cabecas": 41,
+      "valor": "113680.66"
+    },
+    {
+      "mes": "Junho",
+      "qtd_notas": 3,
+      "cabecas": 59,
+      "valor": "109040.00"
+    }
+  ],
+  "funrural_estimado": "2949.00",
+  "aliquota_funrural_pct": "1,50%",
+  "achados_criticos": []
+}
