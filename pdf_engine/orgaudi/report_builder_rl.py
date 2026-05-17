@@ -60,9 +60,9 @@ from .pages import (
     construir_pagina_8_catalogo,
     construir_pagina_9_planilhas,
     construir_pagina_10_compras_formula,
-    construir_pagina_11_assinatura,
     construir_paginas_relatorio_tecnico_4p,
 )
+from .pages_assinatura_patch import construir_pagina_11_assinatura
 from .validators import fmt_brl, fmt_data, fmt_pct, validar_cpf
 
 
@@ -147,10 +147,11 @@ class LaudoOrgAudi:
         # populadas se o chamador fornecê-las explicitamente (modo 2).
         # A função _etapas_padrao() permanece disponível como helper opcional.
 
-        # Hash do laudo
-        self.hash_doc = hash_laudo(
+        # Hash expandido cobrindo achados narrativos (64 chars, SHA-256 completo)
+        from .data_processing import hash_laudo_completo
+        self.hash_doc = hash_laudo_completo(
             self.contribuinte, self.periodo, self.resumo,
-            self.notas if self.notas else [])
+            self.notas if self.notas else [], self.achados)
         return self
 
     def _sugerir_achados(self) -> list[Achado]:
@@ -440,9 +441,11 @@ class LaudoOrgAudi:
             pagesize=A4,
             leftMargin=14*mm, rightMargin=14*mm,
             topMargin=20*mm, bottomMargin=17*mm,
-            title="Relatório de Auditoria Forense — OrgAudi 1.0",
-            author="Robson Alain Veloso — ORGATEC",
+            title="Diagnóstico Forense NFA-e — OrgAudi 1.0",
+            author="Robson Alain Veloso · Ciências Contábeis · CRC TO-002032/O-5 T-GO",
             subject=f"Análise Fiscal NFA-e — {self.contribuinte.nome}",
+            keywords="auditoria fiscal NFA-e SEFAZ-GO ORGATEC OrgAudi",
+            creator="OrgAudi 1.0 / horizon_blue_one",
         )
 
         # Pass 1 — descobrir total real de páginas (incluindo quebras automáticas).
@@ -475,7 +478,9 @@ class LaudoOrgAudi:
             f"{fmt_brl(self.resumo.F1_receita_imediata)} (F1). Resultado rural "
             f"{fmt_brl(self.resumo.F5_resultado_rural)} (F5). IRPF estimado "
             f"{fmt_brl(self.resumo.irpf_estimado)}; Funrural {fmt_brl(self.resumo.funrural)}. "
-            f"{n_critico} achado(s) crítico(s), {n_alto} alto(s). Hash: {self.hash_doc}."
+            f"{n_critico} achado(s) crítico(s), {n_alto} alto(s). "
+            f"Responsável: Robson Alain Veloso · CRC TO-002032/O-5 T-GO. "
+            f"Hash SHA-256: {self.hash_doc}."
         )
 
 

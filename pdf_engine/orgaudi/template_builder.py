@@ -39,12 +39,12 @@ WHITE   = "#FFFFFF"
 NAVY_DK = "#072B46"
 NAVY_LT = "#1A5276"
 
-# Severidade
+# Severidade — cores alinhadas com MODELO ORGATEC v5
 SEV = {
     "CRITICO":  {"bg": "#FEF2F2", "border": "#DC2626", "badge": "#DC2626", "dark": "#7F1D1D", "label": "CRÍTICO"},
     "ALTO":     {"bg": "#FFF7ED", "border": "#EA580C", "badge": "#EA580C", "dark": "#7C2D12", "label": "ALTO"},
     "MEDIO":    {"bg": "#EFF6FF", "border": "#2563EB", "badge": "#2563EB", "dark": "#1E3A8A", "label": "MÉDIO"},
-    "ATENCAO":  {"bg": "#FFFBEB", "border": "#D97706", "badge": "#D97706", "dark": "#78350F", "label": "ATENÇÃO"},
+    "ATENCAO":  {"bg": "#F5F3FF", "border": "#7C3AED", "badge": "#7C3AED", "dark": "#4C1D95", "label": "ATENÇÃO"},
     "CONFORME": {"bg": "#F0FDF4", "border": "#16A34A", "badge": "#16A34A", "dark": "#14532D", "label": "CONFORME"},
 }
 
@@ -55,6 +55,15 @@ def _b64_font(nome: str) -> str:
     if p.exists():
         return base64.b64encode(p.read_bytes()).decode()
     logger.warning("Fonte não encontrada: %s", p)
+    return ""
+
+
+def _b64_logo() -> str:
+    """Retorna o logo ORGATEC como base64 ou '' se não encontrado."""
+    p = _FONTS_DIR.parent / "logo_orgatec.png"
+    if p.exists():
+        return base64.b64encode(p.read_bytes()).decode()
+    logger.warning("Logo não encontrado: %s", p)
     return ""
 
 
@@ -751,28 +760,31 @@ html, body {{
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _page_header(num: int, total: int) -> str:
+    logo_b64 = _b64_logo()
+    if logo_b64:
+        logo_el = f'<img src="data:image/png;base64,{logo_b64}" style="height:8mm;width:auto;margin-right:2mm">'
+    else:
+        logo_el = '<div class="brand-mark"><span>OA</span></div>'
     return f"""
 <div class="page-header">
   <div class="brand">
-    <div class="brand-mark"><span>OA</span></div>
+    {logo_el}
     <div>
       <div class="brand-name">ORGATEC</div>
       <div class="brand-sub">CONTABILIDADE E AUDITORIA</div>
     </div>
   </div>
-  <div class="page-num">Página {num} de {total}</div>
+  <div class="page-num">Página {num}</div>
 </div>
 <div class="page-header-line"></div>"""
 
 
 def _page_footer() -> str:
-    return """
+    return f"""
 <div class="page-footer">
-  <div class="footer-text">
-    ORGATEC CONTABILIDADE E AUDITORIA · Robson Alain Veloso — Ciências Contábeis<br>
-    <span style="font-size:5.5pt">Documento de uso restrito — para fins fiscais e contábeis exclusivamente · NBC TA · CPC 47/25/27</span>
+  <div class="footer-text" style="text-align:center;font-size:7pt;color:{SLATE_M}">
+    ORGATEC CONTABILIDADE E AUDITORIA &nbsp;·&nbsp; Robson Alain Veloso — Ciências Contábeis
   </div>
-  <div class="footer-badge">OrgAudi 1.0</div>
 </div>"""
 
 
@@ -896,170 +908,171 @@ def _planilha_table_html(titulo: str, linhas: list[dict], total: dict | None = N
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _pagina_capa(ctx: dict) -> str:
-    """Página 1 — Capa editorial com gradiente."""
-    contrib = ctx["contribuinte"]
-    periodo = ctx["periodo"]
-    resumo  = ctx["resumo"]
-    sev_key = ctx.get("sev_key", "CONFORME")
-    sev_label = ctx.get("sev_label", "CONFORME")
-    n_achados = ctx.get("n_achados", 0)
-    n_criticos = ctx.get("n_criticos", 0)
-    n_altos = ctx.get("n_altos", 0)
-    n_medios = ctx.get("n_medios", 0)
-    n_atencao = ctx.get("n_atencao", 0)
+    """Página 1 — Capa estruturada (estilo MODELO ORGATEC v5)."""
+    contrib     = ctx["contribuinte"]
+    resumo      = ctx["resumo"]
+    n_criticos  = ctx.get("n_criticos",  0)
+    n_altos     = ctx.get("n_altos",     0)
+    n_medios    = ctx.get("n_medios",    0)
+    n_atencao   = ctx.get("n_atencao",   0)
     n_conformes = ctx.get("n_conformes", 0)
-    hash_doc = ctx.get("hash_doc", "")
-    total_pages = ctx.get("total_pages", 6)
+    total_pages = ctx.get("total_pages", 7)
 
-    sev_colors = SEV.get(sev_key, SEV["CONFORME"])
+    # ── Logo para a capa ────────────────────────────────────────────────────
+    logo_b64 = _b64_logo()
+    if logo_b64:
+        logo_capa = f'<img src="data:image/png;base64,{logo_b64}" style="width:15mm;height:auto;display:block;margin:0 auto 1.5mm auto">'
+    else:
+        logo_capa = (f'<div style="display:inline-flex;align-items:center;justify-content:center;'
+                     f'width:12mm;height:12mm;background:{TEAL};border-radius:2mm;margin-bottom:1.5mm">'
+                     f'<span style="font-family:\'JetBrains Mono\',monospace;font-weight:800;font-size:8pt;color:white">OA</span></div><br>')
 
-    # Bloco de ID do contribuinte
-    cpf_fmt = contrib.get("cpf_fmt", "")
-    ie = contrib.get("ie", "—")
-    municipio = contrib.get("municipio", "")
-    estado = contrib.get("estado", "GO")
-    periodo_str = contrib.get("periodo_str", "")
-
-    # Mapa de achados
-    map_items = [
-        (n_criticos, "Crítico",  "#DC2626", "#7F1D1D"),
-        (n_altos,    "Alto",     "#EA580C", "#7C2D12"),
-        (n_medios,   "Médio",    "#2563EB", "#1E3A8A"),
-        (n_atencao,  "Atenção",  "#D97706", "#78350F"),
-        (n_conformes,"Conforme", "#16A34A", "#14532D"),
+    # ── Tabela de identificação — labels azul-escuro alternado ──────────────
+    td_value = f"background:white;color:{SLATE};font-size:8pt;padding:1.6mm 3mm;border:0.25mm solid #d0dde9"
+    ident_rows = [
+        ("Contribuinte",       contrib.get("nome", "")),
+        ("CPF",                contrib.get("cpf_fmt", "")),
+        ("Inscrição Estadual", contrib.get("ie", "—")),
+        ("Município",          f"{contrib.get('municipio','')} / {contrib.get('estado','GO')}"),
+        ("Período auditado",   contrib.get("periodo_str", "")),
+        ("Documento-base PDF", "Relatório GIEF/SEFAZ-GO"),
+        ("Total de notas",     f"{resumo.get('total_notas', 0)} NFA-e analisadas"),
+        ("Volume bruto (saídas)", resumo.get("volume_bruto_fmt", "—")),
+        ("Data da auditoria",  resumo.get("data_auditoria", "—")),
     ]
-    map_html = '<div class="achados-map">'
-    for cnt, lbl, bg, dark in map_items:
-        map_html += f"""
-<div class="achados-map-item" style="background:{bg}20;border:1px solid {bg}40">
-  <div class="achados-map-count" style="color:{dark}">{cnt}</div>
-  <div class="achados-map-label" style="color:{dark}">{lbl}</div>
-</div>"""
-    map_html += "</div>"
+    ident_html = ""
+    for i, (k, v) in enumerate(ident_rows):
+        bg = NAVY if i % 2 == 0 else NAVY_LT
+        td_lbl = f"background:{bg};color:white;font-weight:600;font-size:7.5pt;width:48mm;padding:1.6mm 3mm;border:0.25mm solid {bg}"
+        ident_html += f'<tr><td style="{td_lbl}">{k}</td><td style="{td_value}">{v}</td></tr>'
+
+    # ── Síntese quantitativa ─────────────────────────────────────────────────
+    th = f"background:{NAVY};color:white;padding:1.5mm 2.5mm;text-align:left;font-size:7pt;font-weight:600"
+    td_i  = f"padding:1.5mm 2.5mm;border-bottom:0.2mm solid {SLATE_BG};font-size:7.5pt;color:{SLATE}"
+    td_v  = f"padding:1.5mm 2.5mm;border-bottom:0.2mm solid {SLATE_BG};font-size:7.5pt;text-align:right;font-weight:600;color:{NAVY}"
+    td_p  = f"padding:1.5mm 2.5mm;border-bottom:0.2mm solid {SLATE_BG};font-size:7.5pt;text-align:center;color:{SLATE_M}"
+
+    vol   = resumo.get("volume_bruto_fmt", "—")
+    rec   = resumo.get("receita_fmt", "—")
+    rem   = resumo.get("remessas_fmt", "—")
+    cab   = resumo.get("cabecas_total", "—")
+    dest  = resumo.get("destinatarios_unicos", "—")
+    fun   = resumo.get("funrural_fmt", "—")
+    rpct  = resumo.get("receita_pct",  "—")
+    mpct  = resumo.get("remessas_pct", "—")
+    nv    = resumo.get("notas_vendas",   0)
+    nr    = resumo.get("notas_remessas", 0)
+    aliq  = resumo.get("aliq_funrural", "1,50%")
+
+    sintese_html = f"""
+<table style="width:100%;border-collapse:collapse;margin-bottom:3mm">
+  <thead>
+    <tr>
+      <th style="{th}">Indicador</th>
+      <th style="{th};width:38mm;text-align:right">Valor</th>
+      <th style="{th};width:15mm;text-align:center">%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:{SLATE_BG}">
+      <td style="{td_i}"><b>Volume bruto movimentado</b></td>
+      <td style="{td_v}"><b>{vol}</b></td>
+      <td style="{td_p}"><b>100,0%</b></td>
+    </tr>
+    <tr>
+      <td style="{td_i}">Receita imediata (vendas diretas — {nv} notas)</td>
+      <td style="{td_v}">{rec}</td>
+      <td style="{td_p}">{rpct}</td>
+    </tr>
+    <tr style="background:{SLATE_BG}">
+      <td style="{td_i}">Trânsito (remessa para leilão — {nr} notas)</td>
+      <td style="{td_v}">{rem}</td>
+      <td style="{td_p}">{mpct}</td>
+    </tr>
+    <tr>
+      <td style="{td_i}">Cabeças totais movimentadas</td>
+      <td style="{td_v}">{cab}</td>
+      <td style="{td_p}">—</td>
+    </tr>
+    <tr style="background:{SLATE_BG}">
+      <td style="{td_i}">Destinatários únicos (vendas diretas)</td>
+      <td style="{td_v}">{dest}</td>
+      <td style="{td_p}">—</td>
+    </tr>
+    <tr>
+      <td style="{td_i}">Funrural estimado ({aliq} × vendas diretas)</td>
+      <td style="{td_v}">{fun}</td>
+      <td style="{td_p}">—</td>
+    </tr>
+  </tbody>
+</table>"""
+
+    # ── Mapa de achados — todos os níveis sempre visíveis ────────────────────
+    sev_linhas = [
+        ("CRITICO",  "CRÍTICO",  "#DC2626", "#FEF2F2", n_criticos,
+         "Fragmentação fiscal, divergência crítica entre fontes"),
+        ("ALTO",     "ALTO",     "#EA580C", "#FFF7ED", n_altos,
+         "Concentração atípica, sazonalidade anômala"),
+        ("MEDIO",    "MÉDIO",    "#2563EB", "#EFF6FF", n_medios,
+         "Obrigações acessórias e conferência tributária"),
+        ("ATENCAO",  "ATENÇÃO",  "#7C3AED", "#F5F3FF", n_atencao,
+         "Indicadores presentes em apenas uma das fontes"),
+        ("CONFORME", "CONFORME", "#16A34A", "#F0FDF4", n_conformes,
+         "Totais conferidos, CPF/CNPJ válidos, coerência geográfica"),
+    ]
+    mapa_rows = ""
+    for _, lbl, cor, bg, cnt, conclusao in sev_linhas:
+        badge = (f'<span style="display:inline-block;background:{cor};color:white;'
+                 f'padding:1mm 3mm;border-radius:1mm;'
+                 f'font-weight:700;font-size:7.5pt;white-space:nowrap">{lbl}</span>')
+        mapa_rows += (
+            f'<tr><td style="{td_i};width:30mm">{badge}</td>'
+            f'<td style="{td_v};width:12mm;text-align:center">{cnt}</td>'
+            f'<td style="{td_i}">{conclusao}</td></tr>'
+        )
+
+    mapa_html = f"""
+<table style="width:100%;border-collapse:collapse">
+  <thead>
+    <tr>
+      <th style="{th};width:28mm">Severidade</th>
+      <th style="{th};width:12mm;text-align:center">Qtd</th>
+      <th style="{th}">Conclusão sintética</th>
+    </tr>
+  </thead>
+  <tbody>{mapa_rows}</tbody>
+</table>"""
 
     return f"""
-<div class="page" style="background:white;display:flex;flex-direction:column">
+<div class="page">
+  {_page_header(1, total_pages)}
+  <div class="page-body">
 
-  <!-- Capa gradiente (metade superior) -->
-  <div style="
-    background: linear-gradient(150deg, {NAVY_DK} 0%, {NAVY} 45%, {NAVY_LT} 100%);
-    padding: 10mm 14mm 8mm;
-    position: relative;
-    flex: 0 0 auto;
-  ">
-    <!-- Topo: logo + paginação -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8mm">
-      <div style="display:flex;align-items:center;gap:3mm">
-        <div style="
-          background:{TEAL};
-          border-radius:2mm;
-          width:9mm;height:9mm;
-          display:flex;align-items:center;justify-content:center;
-        ">
-          <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:7pt;color:white">OA</span>
-        </div>
-        <div>
-          <div style="font-size:11pt;font-weight:800;color:white;letter-spacing:1px">ORGATEC</div>
-          <div style="font-size:7pt;font-weight:400;color:rgba(255,255,255,0.60);letter-spacing:0.5px">CONTABILIDADE E AUDITORIA</div>
-        </div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:7pt;color:rgba(255,255,255,0.55)">Página 1 de {total_pages}</div>
-        <div style="font-size:6.5pt;color:rgba(255,255,255,0.40)">OrgAudi 1.0</div>
-      </div>
+    <!-- Logo + título centralizado -->
+    <div style="text-align:center;margin:1mm 0 2mm">
+      {logo_capa}
+      <div style="font-size:13pt;font-weight:800;color:{NAVY};letter-spacing:0.5px;margin-bottom:0.3mm">ORGATEC</div>
+      <div style="font-size:7pt;font-weight:400;color:{SLATE_M};letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2mm">CONTABILIDADE E AUDITORIA</div>
+      <div style="font-size:15pt;font-weight:800;color:{NAVY};letter-spacing:-0.3px">RELATÓRIO DE AUDITORIA FORENSE</div>
+      <div style="font-size:7.5pt;font-weight:400;color:{SLATE_M};font-style:italic;margin-top:0.5mm">Análise NFA-e GIEF/SEFAZ-GO · Pecuária Bovina</div>
     </div>
 
-    <!-- Título do laudo -->
-    <div style="margin-bottom:2mm">
-      <div style="
-        font-size:6.5pt;font-weight:600;
-        color:{TEAL};
-        text-transform:uppercase;letter-spacing:1.5px;
-        margin-bottom:2mm;
-      ">Relatório de Auditoria Fiscal</div>
-      <div style="
-        font-size:20pt;font-weight:800;
-        color:white;
-        line-height:1.15;
-        letter-spacing:-0.5px;
-      ">{contrib.get('nome', '')}</div>
-      <div style="
-        font-family:'JetBrains Mono',monospace;
-        font-size:9pt;font-weight:400;
-        color:rgba(255,255,255,0.70);
-        margin-top:1.5mm;
-      ">CPF {cpf_fmt}</div>
+    <!-- Tabela de identificação -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:2mm">{ident_html}</table>
+
+    <!-- Síntese Quantitativa -->
+    <div style="display:flex;align-items:center;gap:3mm;margin:2mm 0 1.5mm;border-left:3mm solid {NAVY};padding-left:3mm">
+      <span style="font-size:8.5pt;font-weight:700;color:{NAVY};text-transform:uppercase;letter-spacing:0.3px">SÍNTESE QUANTITATIVA</span>
     </div>
+    {sintese_html}
 
-    <!-- Linha teal separadora -->
-    <div style="
-      height:0.6mm;
-      background:linear-gradient(90deg,{TEAL} 0%, transparent 100%);
-      margin:4mm 0;
-    "></div>
-
-    <!-- Metadados -->
-    <div style="display:flex;gap:8mm;flex-wrap:wrap">
-      <div>
-        <div style="font-size:6pt;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5mm">Período auditado</div>
-        <div style="font-size:8pt;font-weight:600;color:white">{periodo_str}</div>
-      </div>
-      <div>
-        <div style="font-size:6pt;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5mm">Município / UF</div>
-        <div style="font-size:8pt;font-weight:600;color:white">{municipio} / {estado}</div>
-      </div>
-      <div>
-        <div style="font-size:6pt;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5mm">Insc. Estadual</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8pt;font-weight:600;color:white">{ie}</div>
-      </div>
-      <div style="margin-left:auto">
-        <div style="font-size:6pt;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5mm">Hash</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:6.5pt;color:rgba(255,255,255,0.50)">{hash_doc[:16]}…</div>
-      </div>
+    <!-- Mapa de Achados -->
+    <div style="display:flex;align-items:center;gap:3mm;margin:2mm 0 1.5mm;border-left:3mm solid {NAVY};padding-left:3mm">
+      <span style="font-size:8.5pt;font-weight:700;color:{NAVY};text-transform:uppercase;letter-spacing:0.3px">MAPA DE ACHADOS POR SEVERIDADE</span>
     </div>
-  </div>
-
-  <!-- Conteúdo branco inferior -->
-  <div style="padding:6mm 14mm 12mm;flex:1">
-
-    <!-- Risk strip -->
-    {_risk_strip(sev_label, sev_key, f"{n_achados} achado(s) · {n_criticos} crítico(s)")}
-
-    <!-- KPIs principais -->
-    {_section_header("Síntese Quantitativa", "teal")}
-    <div class="kpi-grid">
-      <div class="kpi-card {'danger' if float(str(resumo.get('valor_bruto_saidas','0')).replace('R$','').replace('.','').replace(',','.').strip() or '0') > 0 else 'info'}">
-        <div class="kpi-label">Receita Bruta</div>
-        <div class="kpi-value" style="font-size:9.5pt">{resumo.get('receita_fmt','R$ 0,00')}</div>
-        <div class="kpi-sub">{resumo.get('notas_vendas', 0)} NFA-e de venda</div>
-      </div>
-      <div class="kpi-card warn">
-        <div class="kpi-label">Remessas/Trânsito</div>
-        <div class="kpi-value" style="font-size:9.5pt">{resumo.get('remessas_fmt','R$ 0,00')}</div>
-        <div class="kpi-sub">{resumo.get('notas_remessas', 0)} NFA-e</div>
-      </div>
-      <div class="kpi-card info">
-        <div class="kpi-label">Compras / Despesas</div>
-        <div class="kpi-value" style="font-size:9.5pt">{resumo.get('compras_fmt','R$ 0,00')}</div>
-        <div class="kpi-sub">{resumo.get('notas_compras', 0)} NFA-e</div>
-      </div>
-      <div class="kpi-card ok">
-        <div class="kpi-label">Funrural Estimado</div>
-        <div class="kpi-value" style="font-size:9.5pt">{resumo.get('funrural_fmt','R$ 0,00')}</div>
-        <div class="kpi-sub">{resumo.get('aliq_funrural','1,5%')} s/ receita bruta</div>
-      </div>
-    </div>
-
-    <!-- Mapa de achados -->
-    {_section_header("Mapa de Achados por Severidade", "teal")}
-    {map_html}
-
-    <!-- Compliance -->
-    {_compliance_badges()}
+    {mapa_html}
 
   </div>
-
-  <!-- Rodapé -->
   {_page_footer()}
 </div>"""
 
@@ -1099,6 +1112,133 @@ def _pagina_resumo_executivo(ctx: dict, num: int) -> str:
 
     {_section_header("Ações Recomendadas", "teal")}
     {_recomendacoes(ctx.get('recomendacoes', []))}
+
+  </div>
+  {_page_footer()}
+</div>"""
+
+
+def _pagina_recomendacoes(etapas: list[dict], num: int, total_pages: int) -> str:
+    """Página de recomendações — 3 etapas (30/60/90 dias), estilo MODELO."""
+    etapas_html = ""
+    for etapa in etapas:
+        titulo = etapa.get("titulo", "")
+        prazo  = etapa.get("prazo", "")
+        itens  = etapa.get("itens", [])
+        itens_html = "".join(
+            f'<li style="margin-bottom:1.5mm;font-size:8pt;color:{SLATE};line-height:1.5">{item}</li>'
+            for item in itens
+        )
+        etapas_html += f"""
+<div style="margin-bottom:4mm;border:0.3mm solid #E2E8F0;border-radius:2mm;overflow:hidden">
+  <div style="background:{NAVY};padding:2.5mm 4mm;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:8.5pt;font-weight:700;color:white">{titulo}</span>
+    <span style="background:{TEAL};color:white;font-family:'JetBrains Mono',monospace;
+                 font-size:7pt;font-weight:700;padding:0.8mm 3mm;border-radius:1mm">{prazo}</span>
+  </div>
+  <div style="padding:3mm 4mm;background:white">
+    <ul style="margin:0;padding-left:5mm;line-height:1.6">{itens_html}</ul>
+  </div>
+</div>"""
+
+    return f"""
+<div class="page">
+  {_page_header(num, total_pages)}
+  <div class="page-body">
+    {_section_header("Recomendações e Próximas Etapas", "teal")}
+    {etapas_html}
+  </div>
+  {_page_footer()}
+</div>"""
+
+
+def _pagina_formulas(num: int, total_pages: int) -> str:
+    """Página de fórmulas e regras de cruzamento — estática, igual em todos os laudos."""
+    th = f"background:{NAVY};color:white;padding:1.5mm 2.5mm;text-align:left;font-size:7pt;font-weight:600"
+    td = f"padding:1.5mm 2.5mm;border-bottom:0.2mm solid {SLATE_BG};font-size:7.5pt;color:{SLATE}"
+
+    return f"""
+<div class="page">
+  {_page_header(num, total_pages)}
+  <div class="page-body">
+    {_section_header("Fórmulas e Regras de Cruzamento de Dados", "teal")}
+    <p style="font-size:7.5pt;color:{SLATE_M};margin-bottom:3mm;line-height:1.4">
+      Fórmulas matemáticas e regras de cruzamento aplicadas pelo OrgAudi 1.0 sobre o conjunto de NFA-e.
+      Cada regra foi executada nesta auditoria e pode ser reproduzida em qualquer outro caso.
+    </p>
+
+    <div style="font-size:8pt;font-weight:700;color:{NAVY};margin:2mm 0 1.5mm">Regra 1 — Classificação contábil das NFA-e</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:3mm">
+      <thead><tr>
+        <th style="{th}">Posição do contribuinte</th>
+        <th style="{th}">Natureza</th>
+        <th style="{th}">Categoria</th>
+        <th style="{th}">Efeito IRPF Rural</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="{td}">REMETENTE</td><td style="{td}">VENDA</td><td style="{td}"><b>RECEITA</b></td><td style="{td}">Soma à base de cálculo</td></tr>
+        <tr style="background:{SLATE_BG}"><td style="{td}">REMETENTE</td><td style="{td}">REMESSA/LEILÃO</td><td style="{td}"><b>TRÂNSITO</b></td><td style="{td}">Não soma (até arremate)</td></tr>
+        <tr><td style="{td}">REM = DEST (mesmo CPF)</td><td style="{td}">Qualquer</td><td style="{td}"><b>TRANSFERÊNCIA</b></td><td style="{td}">Neutra</td></tr>
+        <tr style="background:{SLATE_BG}"><td style="{td}">DESTINATÁRIO</td><td style="{td}">VENDA</td><td style="{td}"><b>DESPESA / INVEST.</b></td><td style="{td}">Subtrai da base ou ativa</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:8pt;font-weight:700;color:{NAVY};margin:2mm 0 1.5mm">Regra 2 — Fórmulas de apuração da receita rural</div>
+    <div style="background:{SLATE_BG};border-radius:2mm;padding:3mm 4mm;margin-bottom:3mm;font-size:7.5pt;line-height:1.8;color:{SLATE}">
+      <b>Receita imediata:</b> Σ Valor | Remetente = Contribuinte AND Natureza = VENDA<br>
+      <b>Receita em trânsito:</b> Σ Valor | Remetente = Contribuinte AND Natureza = REMESSA/LEILÃO<br>
+      <b>Receita de leilão:</b> Σ Valor das NF-e modelo 55 emitidas pelo leiloeiro<br>
+      <b>Receita bruta total (DIRPF Rural):</b> Receita imediata + Receita de leilão<br>
+      <span style="color:#DC2626"><b>NUNCA usar Receita em trânsito como base — superdimensiona o IRPF.</b></span>
+    </div>
+
+    <div style="font-size:8pt;font-weight:700;color:{NAVY};margin:2mm 0 1.5mm">Regra 3 — Fórmulas tributárias</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:3mm">
+      <thead><tr>
+        <th style="{th}">Tributo / Contribuição</th>
+        <th style="{th}">Fórmula</th>
+        <th style="{th}">Base legal</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="{td}">Funrural PF (até 03/2026)</td><td style="{td}">1,5% × Receita bruta</td><td style="{td}">Lei 8.212/91</td></tr>
+        <tr style="background:{SLATE_BG}"><td style="{td}">Funrural PF (a partir 04/2026)</td><td style="{td}">1,63% × Receita bruta</td><td style="{td}">LC 224/2025</td></tr>
+        <tr><td style="{td}">Funrural PJ (a partir 04/2026)</td><td style="{td}">2,23% × Receita bruta</td><td style="{td}">LC 224/2025</td></tr>
+        <tr style="background:{SLATE_BG}"><td style="{td}">ICMS gado entre produtores</td><td style="{td}">Isento (cria/recria/eng.)</td><td style="{td}">RCTE-GO Anx.IX art.6º XLIII</td></tr>
+        <tr><td style="{td}">IRPF Rural (PF)</td><td style="{td}">20% × Resultado rural</td><td style="{td}">Lei 8.023/90 + RIR/2018</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:8pt;font-weight:700;color:{NAVY};margin:2mm 0 1.5mm">Regra 4 — Cruzamentos forenses de detecção de anomalias</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:3mm">
+      <thead><tr>
+        <th style="{th};width:20mm">Teste</th>
+        <th style="{th}">Critério matemático</th>
+        <th style="{th};width:45mm">Detecta</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="{td}">T-01 Concentração</td><td style="{td}">1 nota / Receita anual &gt;= 10%</td><td style="{td}">Operações extraordinárias</td></tr>
+        <tr style="background:{SLATE_BG}"><td style="{td}">T-02 Smurfing</td><td style="{td}">&gt;=3 notas mesmo dest./dia c/ valores idênticos</td><td style="{td}">Fragmentação fiscal</td></tr>
+        <tr><td style="{td}">T-04 Concentração PF</td><td style="{td}">Vendas PF &gt;= 90% E PFs c/ 3+ aquisições</td><td style="{td}">Intermediação não declarada</td></tr>
+        <tr style="background:{SLATE_BG}"><td style="{td}">T-05 IE inconsistente</td><td style="{td}">Mesmo CPF/CNPJ vinculado a 2+ IEs</td><td style="{td}">Erro cadastral ou simulação</td></tr>
+        <tr><td style="{td}">T-07 Documental</td><td style="{td}">Validação dígito verificador CPF/CNPJ</td><td style="{td}">Documentos forjados</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:8pt;font-weight:700;color:{NAVY};margin:2mm 0 1.5mm">Regra 5 — Cruzamentos com bases externas</div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="{th}">Fonte externa</th>
+        <th style="{th}">O que confirmar</th>
+        <th style="{th}">Como cruzar</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="{td}">AGRODEFESA-GO</td><td style="{td}">GTA de cada NFA-e</td><td style="{td}">1 GTA para cada nota com gado em trânsito</td></tr>
+        <tr style="background:{SLATE_BG}"><td style="{td}">Banco do contribuinte</td><td style="{td}">Crédito do valor de cada venda</td><td style="{td}">Σ depósitos/PIX = Σ receita imediata</td></tr>
+        <tr><td style="{td}">Leiloeiros (ACTs)</td><td style="{td}">NF-e modelo 55 do leiloeiro</td><td style="{td}">Cada remessa deve gerar venda subsequente</td></tr>
+        <tr style="background:{SLATE_BG}"><td style="{td}">Receita Federal (CAEPF)</td><td style="{td}">Status produtor rural dos PFs</td><td style="{td}">PF sem CAEPF + 3+ compras = revenda informal</td></tr>
+        <tr><td style="{td}">SEFAZ-GO + SiCAR + JUCEG</td><td style="{td}">IEs ativas; imóvel; vínculos</td><td style="{td}">Cabeças/UA &lt;= Área CAR; vínculo + venda atípica</td></tr>
+      </tbody>
+    </table>
 
   </div>
   {_page_footer()}
@@ -1237,11 +1377,8 @@ def construir_html(ctx: dict) -> str:
     # Coletar páginas
     pages_html = []
 
-    # Página 1 — Capa
+    # Página 1 — Capa (estilo MODELO)
     pages_html.append(_pagina_capa(ctx))
-
-    # Página 2 — Resumo executivo
-    pages_html.append(_pagina_resumo_executivo(ctx, 2))
 
     # Páginas de achados — agrupados por severidade
     achados_all = ctx.get("achados", [])
@@ -1250,23 +1387,32 @@ def construir_html(ctx: dict) -> str:
     medios    = [a for a in achados_all if a.get("severidade_key") in ("MEDIO", "ATENCAO")]
     conformes = [a for a in achados_all if a.get("severidade_key") == "CONFORME"]
 
-    page_num = 3
+    page_num = 2
     if criticos:
         pages_html.append(_pagina_achados(criticos, page_num, ctx["total_pages"],
                                           "Achados Críticos", "CRITICO"))
         page_num += 1
     if altos:
         pages_html.append(_pagina_achados(altos, page_num, ctx["total_pages"],
-                                          "Achados de Nível Alto", "ALTO"))
+                                          "Achados de Alta Criticidade", "ALTO"))
         page_num += 1
     if medios:
         pages_html.append(_pagina_achados(medios, page_num, ctx["total_pages"],
-                                          "Achados Médios e Atenção", "MEDIO"))
+                                          "Achados de Criticidade Média", "MEDIO"))
         page_num += 1
     if conformes:
         pages_html.append(_pagina_achados(conformes, page_num, ctx["total_pages"],
-                                          "Conformidades", "CONFORME"))
+                                          "Conformidades Verificadas", "CONFORME"))
         page_num += 1
+
+    # Recomendações e Próximas Etapas
+    etapas = ctx.get("etapas", [])
+    pages_html.append(_pagina_recomendacoes(etapas, page_num, ctx["total_pages"]))
+    page_num += 1
+
+    # Fórmulas e Regras de Cruzamento
+    pages_html.append(_pagina_formulas(page_num, ctx["total_pages"]))
+    page_num += 1
 
     # Última página — Assinatura
     pages_html.append(_pagina_assinatura(ctx, ctx["total_pages"]))

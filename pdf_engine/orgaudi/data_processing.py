@@ -480,14 +480,42 @@ def teste_t07_documental(notas: list[NotaFiscal]) -> ResultadoT07:
 
 def hash_laudo(contribuinte: Contribuinte, periodo: Periodo,
                resumo: ResumoFiscal, notas: list[NotaFiscal]) -> str:
-    """SHA-256 dos dados financeiros — comprova que dois laudos são idênticos."""
+    """SHA-256 completo (64 chars) dos dados estruturados do laudo."""
     h = hashlib.sha256()
     h.update(f"{contribuinte.cpf}|{contribuinte.nome}".encode())
     h.update(f"|{periodo.inicio}|{periodo.fim}".encode())
+    h.update(f"|{periodo.data_auditoria}".encode())
     h.update(f"|F1={resumo.F1_receita_imediata}".encode())
     h.update(f"|F2={resumo.F2_transito}".encode())
+    h.update(f"|F3={resumo.F3_receita_realizada_leilao}".encode())
     h.update(f"|F4={resumo.F4_receita_bruta}".encode())
     h.update(f"|F5={resumo.F5_resultado_rural}".encode())
     h.update(f"|F6={resumo.F6_despesa}".encode())
     h.update(f"|N={len(notas)}".encode())
-    return h.hexdigest()[:16].upper()  # 16 chars são suficientes
+    return h.hexdigest()  # 64 chars — SHA-256 completo
+
+
+def hash_laudo_completo(contribuinte: Contribuinte, periodo: Periodo,
+                        resumo: ResumoFiscal, notas: list[NotaFiscal],
+                        achados: list) -> str:
+    """SHA-256 expandido — cobre dados estruturados + conteúdo narrativo dos achados."""
+    h = hashlib.sha256()
+    h.update(f"{contribuinte.cpf}|{contribuinte.nome}".encode())
+    h.update(f"|{periodo.inicio}|{periodo.fim}".encode())
+    h.update(f"|{periodo.data_auditoria}".encode())
+    h.update(f"|F1={resumo.F1_receita_imediata}".encode())
+    h.update(f"|F2={resumo.F2_transito}".encode())
+    h.update(f"|F3={resumo.F3_receita_realizada_leilao}".encode())
+    h.update(f"|F4={resumo.F4_receita_bruta}".encode())
+    h.update(f"|F5={resumo.F5_resultado_rural}".encode())
+    h.update(f"|F6={resumo.F6_despesa}".encode())
+    h.update(f"|N={len(notas)}".encode())
+    for a in sorted(achados, key=lambda x: x.codigo):
+        h.update(f"|ACHADO:{a.codigo}".encode())
+        h.update(f"|SEV:{a.severidade.value}".encode())
+        h.update(f"|TITULO:{a.titulo}".encode())
+        if a.descricao:
+            h.update(f"|DESC:{a.descricao}".encode())
+        for cruz in sorted(a.cruzamentos or []):
+            h.update(f"|CRUZ:{cruz}".encode())
+    return h.hexdigest()
