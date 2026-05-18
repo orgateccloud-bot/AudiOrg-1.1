@@ -71,3 +71,12 @@ reports_nfa/*.json
 reports_nfa/*.md
 reports_nfa/*.txt
 reports_nfa/laudos_pdf/
+
+# Laudos por cliente gerados pelo pipeline (auditoria_cruzada.json, laudos PDF, etc.)
+outputs/
+
+# PDFs e logs avulsos na raiz (artefatos de execução manual)
+/LAUDO_*.pdf
+/auditoria_log.txt
+*.log
+output_relatorios/
