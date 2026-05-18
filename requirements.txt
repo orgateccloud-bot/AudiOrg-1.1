@@ -14,7 +14,7 @@ alembic>=1.13.0            # migrations cross-DB (SQLite dev / Postgres prod)
 supabase>=2.0.0            # cliente Supabase para infra de categorias/transações
 
 # ── Auth / JWT ───────────────────────────────────────────────────────────────
-python-jose[cryptography]>=3.3.0   # JWT encode/decode em api/auth/security
+python-jose[cryptography]>=3.5.0   # JWT encode/decode em api/auth/security
 argon2-cffi>=25.1.0                # hash de senhas (argon2id) — padrão atual
 bcrypt>=4.0                        # verify de hashes legacy bcrypt (login transparente)
 
