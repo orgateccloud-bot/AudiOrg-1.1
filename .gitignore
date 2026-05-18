@@ -92,3 +92,6 @@ input_pdfs/
 # Relatórios PDF/HTML gerados em reports_nfa
 reports_nfa/*.pdf
 reports_nfa/*.html
+
+# Laudos forenses antigos com PII (nomes de cliente em filename)
+pdf_engine/_legacy/forense_individual_old/
