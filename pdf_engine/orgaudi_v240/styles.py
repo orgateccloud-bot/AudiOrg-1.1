@@ -35,10 +35,14 @@ from .domain import Severidade
 #  PALETA INSTITUCIONAL ORGATEC
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Azuis (identidade ORGATEC)
-AZUL          = colors.HexColor("#003365")
-AZUL_M        = colors.HexColor("#185FA5")
-AZUL_CL       = colors.HexColor("#3F88D5")
+# Azuis (identidade ORGATEC — alinhado ao modelo .docx Planilha de Gado v5)
+# O tom canônico AZUL #1E4A8A foi extraído do modelo PDF/DOCX da ORGATEC
+# (44 ocorrências no documento referência), portanto serve como cor principal
+# de cabeçalhos, achados e identidade visual.
+AZUL          = colors.HexColor("#1E4A8A")   # corporativo ORGATEC (modelo)
+AZUL_M        = colors.HexColor("#185FA5")   # médio (tabelas, linhas alternadas)
+AZUL_CL       = colors.HexColor("#3F88D5")   # claro (KPIs, sub-elementos)
+AZUL_LEGADO   = colors.HexColor("#003365")   # legado v2.3 — mantido para compat.
 BRANCO        = colors.white
 
 # ── Facelift v2.4.1 — Acento dourado ORGATEC ─────────────────────────────────

@@ -1,0 +1,141 @@
+Para:    warmove6@gmail.com
+Assunto: Horizon-Blue One - Lote completo NFE_GADO_2026 (22 produtores) + Plano de Reducao de Tokens
+
+------------------------------------------------------------------------------
+
+Ola,
+
+Segue o resultado do lote completo de auditoria executado em 10/05/2026 e o plano de reducao de consumo de tokens (ja parcialmente implementado).
+
+==============================================================================
+1. RESUMO DO LOTE
+==============================================================================
+
+- Pasta de entrada: C:\Users\Veloso\Desktop\NFE_GADO_2026\ARQUIVO_2026_RESUMO_DE_NFE_GADO_2026
+- Produtores identificados: 22
+- PDFs gerados: 20
+- Falhas de extracao: 2 (HELLIDA, RICARDO_LOBO - PDFs vazios na ingestao NFA)
+- Duracao total: 991,5 s (~16,5 min)
+- Custo total: USD 1,2164
+- Tokens totais: 42.874
+
+Distribuicao de chamadas/custo por modelo:
+- Opus     : 21 chamadas - USD 0,8872 (73%)
+- Sonnet   : 21 chamadas - USD 0,3249 (27%)
+- Haiku    :  3 chamadas - USD 0,0043 (<1%)
+- Upgrades automaticos por escalada: 2 casos
+
+Pipeline aplicado (S1..S7):
+- S1 @Sentinel   (LGPD/PII, Haiku)
+- S2 @Forense    (anomalias + grafo, Sonnet/Opus)
+- S3 @Fiscal     (CFOP/LCDPR/ITR, deterministico)
+- S4 @Contabil   (nao rodou - sem dados contabeis)
+- S5 @AuditorNFA (auditoria de notas, Opus -> sera movido p/ Sonnet)
+- S6 @RH         (nao rodou - sem dados de RH)
+- S7 @CEO        (governanca/juridico/MD&A, Sonnet)
+
+==============================================================================
+2. RELATORIOS DISPONIVEIS
+==============================================================================
+
+A pasta com os 20 laudos em PDF (template OrgAudi v2.5.0) esta em:
+  D:\01_Projetos_Ativos\OrgAudi\reports_nfa\laudos_pdf\
+
+Lista dos PDFs gerados:
+  Laudo_ADELA.pdf
+  Laudo_CLEITON.pdf
+  Laudo_CLEUZENIR.pdf
+  Laudo_ETERVALDO.pdf
+  Laudo_FABIO.pdf
+  Laudo_GEAN.pdf
+  Laudo_GENIS.pdf
+  Laudo_GEOVANE.pdf
+  Laudo_GERALDO.pdf
+  Laudo_GLAUBER.pdf
+  Laudo_HELIO_JOSE.pdf
+  Laudo_JOSE_AILTON.pdf
+  Laudo_JOSMAIR.pdf
+  Laudo_LAELSON.pdf
+  Laudo_LEANDRO.pdf
+  Laudo_MARGARETH.pdf
+  Laudo_MARILZA.pdf
+  Laudo_MATHEUS.pdf
+  Laudo_RAUL.pdf
+  Laudo_WANDERLINA.pdf
+
+Cada PDF acompanha um JSON com o parecer dos agentes (Laudo_<NOME>.json).
+
+Resumo consolidado do lote (JSON com stats por produtor + tokens/custo):
+  D:\01_Projetos_Ativos\OrgAudi\reports_nfa\lote_completo_1778420150.json
+
+Relatorio de tokens e plano de reducao (markdown):
+  D:\01_Projetos_Ativos\OrgAudi\reports_nfa\RELATORIO_TOKENS_2026-05-10.md
+
+==============================================================================
+3. DIAGNOSTICO E PLANO DE REDUCAO DE TOKENS
+==============================================================================
+
+ACHADO PRINCIPAL
+----------------
+73% do custo do lote vem do Opus em S5 (AuditorNFA), apesar de o comentario
+do codigo declarar a intencao de usar Sonnet. Em core/token_router.py:96 o
+mapeamento esta como `TipoTarefa.AUDITORIA: ModelType.OPUS`, divergindo do
+comentario em _AGENTE_TAREFA que aponta Sonnet para S3/S4/S5.
+
+JA IMPLEMENTADO NESTA SESSAO
+----------------------------
+1) horizon_blue_one/agents/s5_nfa.py
+   - max_tokens 1536 -> 768
+   - SYSTEM acrescido de "RESPOSTA CONCISA: liste no maximo 5 divergencias
+     e 3 riscos, sem comentarios extras."
+
+2) horizon_blue_one/agents/s7_ceo.py
+   - max_tokens 2048 -> 1280
+   - SYSTEM acrescido de "RESPOSTA CONCISA: parecer_juridico ate 4 linhas,
+     mda_executivo ate 6 linhas, max 5 acoes_imediatas e 5 riscos_residuais."
+
+3) horizon_blue_one/agents/s2_forense.py
+   - max_tokens 2048 -> 1700
+   - SYSTEM acrescido de "RESPOSTA CONCISA: narrativa em ate 8 linhas,
+     max 5 evidencias e 5 acoes."
+
+OBS.: O lote rodado nesta sessao usou os modulos antigos (Python ja tinha
+cache na memoria). Os cortes valem para a proxima execucao.
+
+PROXIMOS PASSOS - PRECISAM APROVACAO ANTES DE APLICAR
+------------------------------------------------------
+#1 (impacto ALTO - recomendado): mudar core/token_router.py:96 de
+   `TipoTarefa.AUDITORIA: ModelType.OPUS` -> `ModelType.SONNET`. Mantem
+   escalada automatica para Opus quando score>=85, >=3 tipologias criticas
+   ou prob_autuacao>=75% (ja implementada). Economia estimada: USD 0,82/lote
+   de 20 produtores (~50% do custo total).
+
+#2 (medio): habilitar prompt caching da Anthropic (cache_control: ephemeral)
+   nos system prompts de Sonnet/Opus. Economia: ~USD 0,05-0,10/lote.
+
+#3 (medio): subir PF_GATE_REDUZIDO de 0,65 -> 0,55. Mais produtores caem no
+   caminho REDUZIDO. Validar contra falsos negativos antes.
+
+#4 (baixo): S2 base -> Haiku quando score_risco<60 e sem detectores ativos.
+
+#5 (alto risco): mesclar S5+S7 numa chamada unica para casos REDUZIDOS.
+   Implementar so se #1-4 nao forem suficientes.
+
+PROJECAO DE CUSTO POR LOTE (20 PRODUTORES)
+-------------------------------------------
+- Atual (sem cortes desta sessao)        : ~USD 1,84
+- Com cortes desta sessao (#1-3)         : ~USD 1,30  (-29%)
+- + Item #1 (Opus->Sonnet AUDITORIA)     : ~USD 0,48  (-74%)
+- + Item #2 (prompt caching)             : ~USD 0,40  (-78%)
+- + Item #3 (PF_GATE 0,55)               : ~USD 0,32  (-83%)
+
+==============================================================================
+4. PROXIMA ACAO RECOMENDADA
+==============================================================================
+
+Aprovar Item #1 (mover AUDITORIA de Opus para Sonnet em token_router.py:96)
+e re-rodar o lote para validar a economia projetada (~50%) e comparar os
+pareceres dos 3 produtores fronteira (GERALDO, FABIO, ETERVALDO).
+
+Atenciosamente,
+Horizon-Blue One - pipeline de auditoria multi-agente

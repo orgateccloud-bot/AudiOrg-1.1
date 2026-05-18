@@ -1,0 +1,1888 @@
+{
+  "elapsed_s": 619.8,
+  "n_produtores": 22,
+  "produtores": [
+    {
+      "produtor": "ADELA",
+      "erros": [],
+      "cpf": "069.311.951-90",
+      "nome_real": "ADELA",
+      "n_notas": 26,
+      "score_precalc": 61.9,
+      "pf": 0.619,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 26,
+              "validos": 26,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 609690.29,
+              "receita_lcdpr": 609690.29,
+              "despesa_lcdpr": 986819.79,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -377129.5,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 609690.29,
+              "saidas": 655460.0,
+              "saldo": -45769.71
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 26,
+            "total_valor": 1596510.08,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 61.9,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 61.9
+          }
+        }
+      },
+      "tokens_consumidos": 1610,
+      "custo_usd_estimado": 0.0171,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_ADELA.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_ADELA.json",
+      "latencia_ms": 33942
+    },
+    {
+      "produtor": "CLEITON",
+      "erros": [],
+      "cpf": "660.621.521-87",
+      "nome_real": "CLEITON",
+      "n_notas": 73,
+      "score_precalc": 64.3,
+      "pf": 0.643,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 73,
+              "validos": 73,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 687741.46,
+              "receita_lcdpr": 687741.46,
+              "despesa_lcdpr": 529889.16,
+              "divergencia": 0.0,
+              "saldo_lcdpr": 157852.3,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 687741.46,
+              "saidas": 33284.33,
+              "saldo": 654457.13
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 73,
+            "total_valor": 1217630.62,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 64.3,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 64.3
+          }
+        }
+      },
+      "tokens_consumidos": 1545,
+      "custo_usd_estimado": 0.0162,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_CLEITON.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_CLEITON.json",
+      "latencia_ms": 30688
+    },
+    {
+      "produtor": "CLEUZENIR",
+      "erros": [],
+      "cpf": "021.093.761-04",
+      "nome_real": "CLEUZENIR",
+      "n_notas": 55,
+      "score_precalc": 57.3,
+      "pf": 0.573,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 55,
+              "validos": 55,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 1552562.86,
+              "receita_lcdpr": 1552562.86,
+              "despesa_lcdpr": 1584406.25,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -31843.39,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 1552562.86,
+              "saidas": 1155131.67,
+              "saldo": 397431.19
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 55,
+            "total_valor": 3136969.11,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 57.3,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 57.3
+          }
+        }
+      },
+      "tokens_consumidos": 1601,
+      "custo_usd_estimado": 0.017,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_CLEUZENIR.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_CLEUZENIR.json",
+      "latencia_ms": 34013
+    },
+    {
+      "produtor": "ETERVALDO",
+      "erros": [],
+      "cpf": "070.967.711-15",
+      "nome_real": "ETERVALDO",
+      "n_notas": 6,
+      "score_precalc": 65.0,
+      "pf": 0.65,
+      "agentes": {
+        "S1": {
+          "status": "APROVADO",
+          "confidence": 0.333,
+          "output": {
+            "lgpd_status": "ALERTA",
+            "documentos_status": "OK",
+            "recomendacoes": [],
+            "pii": {
+              "cpfs_detectados": 6,
+              "cnpjs_detectados": 0,
+              "contas_detectadas": 6,
+              "total_pii": 24
+            },
+            "documentos": {
+              "documentos_validos": 6,
+              "pendencias": [],
+              "ie_valida": true,
+              "total_pendencias": 0
+            }
+          }
+        },
+        "S2": {
+          "status": "ESCALADO",
+          "confidence": 0.5,
+          "output": {
+            "score_risco": 65.0,
+            "nivel": "ALTO",
+            "tipologias": [
+              "fornecedor_fantasma"
+            ],
+            "narrativa": "```json\n{\n  \"score_risco\": 65,\n  \"nivel\": \"MEDIO\",\n  \"tipologias\": [\"AN-11\"],\n  \"narrativa\": \"Identificado 1 fornecedor com características de empresa fantasma (detector fornecedor_fantasma=5), principal fator de risco nesta análise. O grafo de relacionamentos apresenta densidade baixa (0,17) com 6 nós e 5 arestas, sem ciclos detectados, sugerindo estrutura linear sem conluio complexo. Demais detectores (carrossel, smurfing, devolução, anomalia temporal) não acionados. Score XGBoost de 65,0 com ",
+            "evidencias": [],
+            "acoes": []
+          }
+        },
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 6,
+              "validos": 6,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 0,
+              "receita_lcdpr": 0.0,
+              "despesa_lcdpr": 733194.8,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -733194.8,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 0.0,
+              "saidas": 617034.8,
+              "saldo": -617034.8
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 6,
+            "total_valor": 733194.8,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "ESCALADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "REVISAR",
+            "score_final": 65.0,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S1: lgpd_status=ALERTA | documentos_status=OK\nS2: nivel=ALTO\nS3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 65.0
+          }
+        }
+      },
+      "tokens_consumidos": 2598,
+      "custo_usd_estimado": 0.0266,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_ETERVALDO.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_ETERVALDO.json",
+      "latencia_ms": 30126
+    },
+    {
+      "produtor": "FABIO",
+      "erros": [],
+      "cpf": "463.935.521-15",
+      "nome_real": "FABIO",
+      "n_notas": 50,
+      "score_precalc": 65.2,
+      "pf": 0.652,
+      "agentes": {
+        "S1": {
+          "status": "APROVADO",
+          "confidence": 0.333,
+          "output": {
+            "lgpd_status": "ALERTA",
+            "documentos_status": "OK",
+            "recomendacoes": [],
+            "pii": {
+              "cpfs_detectados": 38,
+              "cnpjs_detectados": 1,
+              "contas_detectadas": 37,
+              "total_pii": 191
+            },
+            "documentos": {
+              "documentos_validos": 50,
+              "pendencias": [],
+              "ie_valida": true,
+              "total_pendencias": 0
+            }
+          }
+        },
+        "S2": {
+          "status": "ESCALADO",
+          "confidence": 0.5,
+          "output": {
+            "score_risco": 65.2,
+            "nivel": "ALTO",
+            "tipologias": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "narrativa": "```json\n{\n  \"score_risco\": 65,\n  \"nivel\": \"ALTO\",\n  \"tipologias\": [\"AN-05\", \"AN-11\", \"AN-14\"],\n  \"narrativa\": \"Análise forense identifica 38 fornecedores com perfil fantasma na rede de relacionamentos (39 nós, 41 arestas, densidade 0,03), indicando estrutura societária rarefeita e artificial. Detectados 3 ciclos no grafo, sugerindo triangulação de operações com possível retorno de recursos ao contribuinte originário. A anomalia temporal sinaliza emissão ou escrituração de documentos fiscais fora",
+            "evidencias": [],
+            "acoes": []
+          }
+        },
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 50,
+              "validos": 50,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 738334.35,
+              "receita_lcdpr": 738334.35,
+              "despesa_lcdpr": 2297747.93,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -1559413.58,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 738334.35,
+              "saidas": 1980445.19,
+              "saldo": -1242110.84
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 50,
+            "total_valor": 3036082.28,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "ESCALADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "REVISAR",
+            "score_final": 65.2,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S1: lgpd_status=ALERTA | documentos_status=OK\nS2: nivel=ALTO\nS3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 65.2
+          }
+        }
+      },
+      "tokens_consumidos": 2786,
+      "custo_usd_estimado": 0.0269,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_FABIO.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_FABIO.json",
+      "latencia_ms": 35700
+    },
+    {
+      "produtor": "GEAN",
+      "erros": [],
+      "cpf": "989.697.301-68",
+      "nome_real": "GEAN",
+      "n_notas": 770,
+      "score_precalc": 49.6,
+      "pf": 0.496,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 770,
+              "validos": 770,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 11030004.88,
+              "receita_lcdpr": 11030004.88,
+              "despesa_lcdpr": 21940737.07,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -10910732.19,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 11030004.88,
+              "saidas": 11340729.21,
+              "saldo": -310724.33
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 770,
+            "total_valor": 32970741.95,
+            "divergencias": [],
+            "riscos": [
+              "carrossel",
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "ESCALADO",
+          "confidence": 0.78,
+          "output": {
+            "decisao": "REVISAR",
+            "score_final": 49.6,
+            "parecer_juridico": "Operação apresenta conformidade documental (LCDPR/CFOP/SEFAZ-GO), porém score de risco em patamar crítico (49,6%) e 3 criticidades pendentes exigem saneamento prévio. Valor material (R$11,03M) impõe dever reforçado de diligência (CTN art. 142; LC 87/96).",
+            "mda_executivo": "Contribuinte GEAN movimenta R$11,03M com conformidade fiscal verificada, mas score 49,6% e 3 alertas críticos sinalizam exposição relevante. Recomenda-se revisão técnica antes de aprovação, mitigando risco de autuação e protegendo margem operacional. Decisão escalada ao comitê fiscal para validação das criticidades remanescentes.",
+            "acoes_imediatas": [
+              "Detalhar e sanear as 3 criticidades apontadas pelos agentes S1-S6",
+              "Validar lastro documental da operação de R$11,03M",
+              "Submeter ao comitê fiscal para segunda opinião",
+              "Reexecutar scoring após mitigações",
+              "Registrar trilha de auditoria completa"
+            ],
+            "riscos_residuais": [
+              "Reclassificação fiscal pela SEFAZ-GO apesar de status CONFORME",
+              "Exposição material por valor elevado (R$11,03M)",
+              "Criticidades não endereçadas gerarem autuação retroativa",
+              "Score limítrofe próximo a 50% indica instabilidade do modelo",
+              "Risco reputacional em caso de aprovação sem revisão"
+            ],
+            "confianca": 0.78,
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 49.6
+          }
+        }
+      },
+      "tokens_consumidos": 1077,
+      "custo_usd_estimado": 0.0272,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GEAN.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GEAN.json",
+      "latencia_ms": 57253
+    },
+    {
+      "produtor": "GENIS",
+      "erros": [],
+      "cpf": "019.925.771-02",
+      "nome_real": "GENIS",
+      "n_notas": 198,
+      "score_precalc": 57.1,
+      "pf": 0.571,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 198,
+              "validos": 198,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 2315990.03,
+              "receita_lcdpr": 2315990.03,
+              "despesa_lcdpr": 3097457.02,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -781466.99,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 2315990.03,
+              "saidas": 1585913.14,
+              "saldo": 730076.89
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 198,
+            "total_valor": 5413447.05,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 57.1,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 57.1
+          }
+        }
+      },
+      "tokens_consumidos": 1577,
+      "custo_usd_estimado": 0.0167,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GENIS.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GENIS.json",
+      "latencia_ms": 39651
+    },
+    {
+      "produtor": "GEOVANE",
+      "erros": [],
+      "cpf": "018.320.561-80",
+      "nome_real": "GEOVANE",
+      "n_notas": 8,
+      "score_precalc": 47.2,
+      "pf": 0.472,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 8,
+              "validos": 8,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 137536.45,
+              "receita_lcdpr": 137536.45,
+              "despesa_lcdpr": 66378.6,
+              "divergencia": 0.0,
+              "saldo_lcdpr": 71157.85,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 137536.45,
+              "saidas": 0.0,
+              "saldo": 137536.45
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 8,
+            "total_valor": 203915.05,
+            "divergencias": [],
+            "riscos": [
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 47.2,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 47.2
+          }
+        }
+      },
+      "tokens_consumidos": 1078,
+      "custo_usd_estimado": 0.0085,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GEOVANE.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GEOVANE.json",
+      "latencia_ms": 17820
+    },
+    {
+      "produtor": "GERALDO",
+      "erros": [],
+      "cpf": "434.067.691-87",
+      "nome_real": "GERALDO",
+      "n_notas": 95,
+      "score_precalc": 66.1,
+      "pf": 0.661,
+      "agentes": {
+        "S1": {
+          "status": "APROVADO",
+          "confidence": 0.333,
+          "output": {
+            "lgpd_status": "ALERTA",
+            "documentos_status": "OK",
+            "recomendacoes": [],
+            "pii": {
+              "cpfs_detectados": 64,
+              "cnpjs_detectados": 2,
+              "contas_detectadas": 72,
+              "total_pii": 361
+            },
+            "documentos": {
+              "documentos_validos": 95,
+              "pendencias": [],
+              "ie_valida": true,
+              "total_pendencias": 0
+            }
+          }
+        },
+        "S2": {
+          "status": "ESCALADO",
+          "confidence": 0.5,
+          "output": {
+            "score_risco": 66.1,
+            "nivel": "ALTO",
+            "tipologias": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "narrativa": "```json\n{\n  \"score_risco\": 66,\n  \"nivel\": \"ALTO\",\n  \"tipologias\": [\"AN-05\", \"AN-11\", \"AN-14\"],\n  \"narrativa\": \"Análise forense identificou risco ALTO (score 66,1 / prob. autuação 66,1%) sustentado por duas criticidades convergentes: anomalia temporal nas operações fiscais (AN-14) e indicador de fornecedor fantasma com pontuação limiar de 50 (AN-05). O grafo de relacionamentos, embora de baixa densidade (0,02), apresenta 7 ciclos em rede de 62 nós e 68 arestas, sugerindo estrutura de conluio com ",
+            "evidencias": [],
+            "acoes": []
+          }
+        },
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 95,
+              "validos": 95,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 3073276.3,
+              "receita_lcdpr": 3073276.3,
+              "despesa_lcdpr": 3587331.54,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -514055.24,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 3073276.3,
+              "saidas": 3289108.4,
+              "saldo": -215832.1
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 95,
+            "total_valor": 6660607.84,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "ESCALADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "REVISAR",
+            "score_final": 66.1,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S1: lgpd_status=ALERTA | documentos_status=OK\nS2: nivel=ALTO\nS3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 66.1
+          }
+        }
+      },
+      "tokens_consumidos": 2973,
+      "custo_usd_estimado": 0.0301,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GERALDO.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GERALDO.json",
+      "latencia_ms": 42102
+    },
+    {
+      "produtor": "GLAUBER",
+      "erros": [],
+      "cpf": "401.301.001-10",
+      "nome_real": "GLAUBER",
+      "n_notas": 12,
+      "score_precalc": 47.3,
+      "pf": 0.473,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 12,
+              "validos": 12,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 196600.1,
+              "receita_lcdpr": 196600.1,
+              "despesa_lcdpr": 294975.7,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -98375.6,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 196600.1,
+              "saidas": 294975.7,
+              "saldo": -98375.6
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 12,
+            "total_valor": 491575.8,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 47.3,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 47.3
+          }
+        }
+      },
+      "tokens_consumidos": 1107,
+      "custo_usd_estimado": 0.008,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GLAUBER.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_GLAUBER.json",
+      "latencia_ms": 17512
+    },
+    {
+      "produtor": "HELIO JOSE",
+      "erros": [],
+      "cpf": "043.575.391-61",
+      "nome_real": "HELIO JOSE",
+      "n_notas": 343,
+      "score_precalc": 52.0,
+      "pf": 0.52,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 343,
+              "validos": 343,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 9638704.23,
+              "receita_lcdpr": 9638704.23,
+              "despesa_lcdpr": 14443494.67,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -4804790.44,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 9638704.23,
+              "saidas": 8703310.45,
+              "saldo": 935393.78
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 343,
+            "total_valor": 24082198.9,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 52.0,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 52.0
+          }
+        }
+      },
+      "tokens_consumidos": 1546,
+      "custo_usd_estimado": 0.0161,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_HELIO_JOSE.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_HELIO_JOSE.json",
+      "latencia_ms": 44219
+    },
+    {
+      "produtor": "HELLIDA",
+      "erros": [
+        {
+          "etapa": "extracao",
+          "erro": "PDFs vazios"
+        }
+      ],
+      "cpf": "024.979.491-82",
+      "nome_real": "HELLIDA",
+      "n_notas": 0
+    },
+    {
+      "produtor": "JOSE AILTON",
+      "erros": [],
+      "cpf": "784.576.881-20",
+      "nome_real": "JOSE AILTON",
+      "n_notas": 160,
+      "score_precalc": 53.8,
+      "pf": 0.538,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 160,
+              "validos": 160,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 4050409.17,
+              "receita_lcdpr": 4050409.17,
+              "despesa_lcdpr": 5400990.52,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -1350581.35,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 4050409.17,
+              "saidas": 1675434.95,
+              "saldo": 2374974.22
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 160,
+            "total_valor": 9451399.69,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 53.8,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 53.8
+          }
+        }
+      },
+      "tokens_consumidos": 1558,
+      "custo_usd_estimado": 0.0164,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_JOSE_AILTON.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_JOSE_AILTON.json",
+      "latencia_ms": 36626
+    },
+    {
+      "produtor": "JOSMAIR",
+      "erros": [],
+      "cpf": "000.173.871-24",
+      "nome_real": "JOSMAIR",
+      "n_notas": 39,
+      "score_precalc": 56.0,
+      "pf": 0.56,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 39,
+              "validos": 39,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 271020.2,
+              "receita_lcdpr": 271020.2,
+              "despesa_lcdpr": 2005265.7,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -1734245.5,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 271020.2,
+              "saidas": 481902.9,
+              "saldo": -210882.7
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 39,
+            "total_valor": 2276285.9,
+            "divergencias": [],
+            "riscos": [
+              "carrossel",
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "ESCALADO",
+          "confidence": 0.78,
+          "output": {
+            "decisao": "REVISAR",
+            "score_final": 56.0,
+            "parecer_juridico": "Operação em conformidade formal com LCDPR e CFOP aplicáveis, sem irregularidades fiscais perante SEFAZ-GO. Score de 56% e 3 críticas pendentes recomendam saneamento documental antes da homologação definitiva. Não há óbice jurídico imediato, porém a probabilidade indica risco moderado de questionamento futuro. Recomenda-se reforço probatório das críticas apontadas.",
+            "mda_executivo": "Contribuinte JOSMAIR apresenta exposição de R$271.020 com score 56%, classificado em zona de atenção. Conformidade SEFAZ-GO e LCDPR validadas pelos agentes S3 e S5, mitigando risco fiscal estrutural. As 3 críticas residuais demandam revisão antes de aprovação plena. Decisão de REVISAR preserva valor e mitiga contingências. Custo de revisão é inferior ao risco de autuação. Recomenda-se reanálise em ciclo curto.",
+            "acoes_imediatas": [
+              "Sanear as 3 críticas apontadas com documentação suporte",
+              "Reconciliar valor de R$271.020 com lançamentos LCDPR",
+              "Validar CFOP por item com nota fiscal de origem",
+              "Solicitar manifestação formal do contribuinte em 5 dias",
+              "Reagendar reanálise após saneamento documental"
+            ],
+            "riscos_residuais": [
+              "Score abaixo de 70% indica fragilidade probatória",
+              "Possível reclassificação fiscal após revisão das críticas",
+              "Exposição financeira relevante de R$271.020",
+              "Risco reputacional em caso de autuação futura",
+              "Prazo decadencial sobre operações correlatas"
+            ],
+            "confianca": 0.78,
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 56.0
+          }
+        }
+      },
+      "tokens_consumidos": 1453,
+      "custo_usd_estimado": 0.038,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_JOSMAIR.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_JOSMAIR.json",
+      "latencia_ms": 27417
+    },
+    {
+      "produtor": "LAELSON",
+      "erros": [],
+      "cpf": "341.041.271-91",
+      "nome_real": "LAELSON",
+      "n_notas": 61,
+      "score_precalc": 53.2,
+      "pf": 0.532,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 61,
+              "validos": 61,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 1485015.85,
+              "receita_lcdpr": 1485015.85,
+              "despesa_lcdpr": 2077574.04,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -592558.19,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 1485015.85,
+              "saidas": 969565.14,
+              "saldo": 515450.71
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 61,
+            "total_valor": 3562589.89,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 53.2,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 53.2
+          }
+        }
+      },
+      "tokens_consumidos": 1525,
+      "custo_usd_estimado": 0.0158,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_LAELSON.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_LAELSON.json",
+      "latencia_ms": 30352
+    },
+    {
+      "produtor": "LEANDRO",
+      "erros": [],
+      "cpf": "037.334.031-18",
+      "nome_real": "LEANDRO",
+      "n_notas": 35,
+      "score_precalc": 55.4,
+      "pf": 0.554,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 35,
+              "validos": 35,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 278062.66,
+              "receita_lcdpr": 278062.66,
+              "despesa_lcdpr": 560906.39,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -282843.73,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 278062.66,
+              "saidas": 405106.54,
+              "saldo": -127043.88
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 35,
+            "total_valor": 838969.05,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 55.4,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 55.4
+          }
+        }
+      },
+      "tokens_consumidos": 1623,
+      "custo_usd_estimado": 0.0174,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_LEANDRO.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_LEANDRO.json",
+      "latencia_ms": 31188
+    },
+    {
+      "produtor": "MARGARETH",
+      "erros": [],
+      "cpf": "548.382.581-00",
+      "nome_real": "MARGARETH",
+      "n_notas": 25,
+      "score_precalc": 54.9,
+      "pf": 0.549,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 25,
+              "validos": 25,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 1108461.58,
+              "receita_lcdpr": 1108461.58,
+              "despesa_lcdpr": 237492.53,
+              "divergencia": 0.0,
+              "saldo_lcdpr": 870969.05,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 1108461.58,
+              "saidas": 139174.95,
+              "saldo": 969286.63
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 25,
+            "total_valor": 1345954.11,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 54.9,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 54.9
+          }
+        }
+      },
+      "tokens_consumidos": 1556,
+      "custo_usd_estimado": 0.0164,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_MARGARETH.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_MARGARETH.json",
+      "latencia_ms": 28211
+    },
+    {
+      "produtor": "MARILZA",
+      "erros": [],
+      "cpf": "013.459.521-12",
+      "nome_real": "MARILZA",
+      "n_notas": 12,
+      "score_precalc": 43.2,
+      "pf": 0.432,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 12,
+              "validos": 12,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 127044.2,
+              "receita_lcdpr": 127044.2,
+              "despesa_lcdpr": 133083.26,
+              "divergencia": 0.0,
+              "saldo_lcdpr": -6039.06,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 127044.2,
+              "saidas": 79523.26,
+              "saldo": 47520.94
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 12,
+            "total_valor": 260127.46,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma",
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 43.2,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 43.2
+          }
+        }
+      },
+      "tokens_consumidos": 1173,
+      "custo_usd_estimado": 0.0088,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_MARILZA.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_MARILZA.json",
+      "latencia_ms": 18633
+    },
+    {
+      "produtor": "MATHEUS",
+      "erros": [],
+      "cpf": "052.713.671-93",
+      "nome_real": "MATHEUS",
+      "n_notas": 7,
+      "score_precalc": 48.6,
+      "pf": 0.486,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 7,
+              "validos": 7,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 285910.0,
+              "receita_lcdpr": 285910.0,
+              "despesa_lcdpr": 223320.0,
+              "divergencia": 0.0,
+              "saldo_lcdpr": 62590.0,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 285910.0,
+              "saidas": 223320.0,
+              "saldo": 62590.0
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 7,
+            "total_valor": 509230.0,
+            "divergencias": [],
+            "riscos": [
+              "fornecedor_fantasma"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 48.6,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 48.6
+          }
+        }
+      },
+      "tokens_consumidos": 1122,
+      "custo_usd_estimado": 0.0095,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_MATHEUS.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_MATHEUS.json",
+      "latencia_ms": 19944
+    },
+    {
+      "produtor": "RAUL",
+      "erros": [],
+      "cpf": "793.042.061-20",
+      "nome_real": "RAUL",
+      "n_notas": 21,
+      "score_precalc": 62.2,
+      "pf": 0.622,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 21,
+              "validos": 21,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 1174774.02,
+              "receita_lcdpr": 1174774.02,
+              "despesa_lcdpr": 374162.32,
+              "divergencia": 0.0,
+              "saldo_lcdpr": 800611.7,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 1174774.02,
+              "saidas": 0.0,
+              "saldo": 1174774.02
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.375,
+          "output": {
+            "total_notas": 21,
+            "total_valor": 1548936.34,
+            "divergencias": [],
+            "riscos": [
+              "anomalia_temporal"
+            ],
+            "conformidade_sefaz_go": "CONFORME"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 62.2,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 62.2
+          }
+        }
+      },
+      "tokens_consumidos": 1621,
+      "custo_usd_estimado": 0.0173,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_RAUL.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_RAUL.json",
+      "latencia_ms": 30992
+    },
+    {
+      "produtor": "RICARDO LOBO",
+      "erros": [
+        {
+          "etapa": "extracao",
+          "erro": "PDFs vazios"
+        }
+      ],
+      "cpf": "470.774.761-20",
+      "nome_real": "RICARDO LOBO",
+      "n_notas": 0
+    },
+    {
+      "produtor": "WANDERLINA",
+      "erros": [],
+      "cpf": "661.074.071-20",
+      "nome_real": "WANDERLINA",
+      "n_notas": 2,
+      "score_precalc": 51.0,
+      "pf": 0.51,
+      "agentes": {
+        "S3": {
+          "status": "APROVADO",
+          "confidence": 0.94,
+          "output": {
+            "icms_status": "OK",
+            "itr_status": "OK",
+            "lcdpr_status": "CONFORME",
+            "cfop_status": "OK",
+            "cfop": {
+              "total": 2,
+              "validos": 2,
+              "divergentes": [],
+              "total_divergencias": 0
+            },
+            "lcdpr": {
+              "receita_notas": 56517.8,
+              "receita_lcdpr": 56517.8,
+              "despesa_lcdpr": 0.0,
+              "divergencia": 0.0,
+              "saldo_lcdpr": 56517.8,
+              "status_conformidade": "CONFORME"
+            },
+            "itr": {
+              "area_total_ha": 100.0,
+              "area_utilizada": 90.0,
+              "gu_pct": 90.0,
+              "subutilizado": false
+            },
+            "caixa": {
+              "entradas": 56517.8,
+              "saidas": 0.0,
+              "saldo": 56517.8
+            },
+            "deducoes_legais": [],
+            "alertas": [],
+            "total_divergencia": 0.0,
+            "fonte": "deterministico"
+          }
+        },
+        "S5": {
+          "status": "APROVADO",
+          "confidence": 0.93,
+          "output": {
+            "total_notas": 2,
+            "total_valor": 56517.8,
+            "divergencias": [],
+            "riscos": [],
+            "conformidade_sefaz_go": "CONFORME",
+            "fonte": "deterministico"
+          }
+        },
+        "S7": {
+          "status": "APROVADO",
+          "confidence": 0.5,
+          "output": {
+            "decisao": "APROVAR",
+            "score_final": 51.0,
+            "parecer_juridico": "Parecer indisponível (parse falhou).",
+            "mda_executivo": "MD&A indisponível.",
+            "acoes_imediatas": [],
+            "riscos_residuais": [],
+            "resumo_agentes": "S3: lcdpr_status=CONFORME | cfop_status=OK\nS5: conformidade_sefaz_go=CONFORME",
+            "precalc_score": 51.0
+          }
+        }
+      },
+      "tokens_consumidos": 598,
+      "custo_usd_estimado": 0.0069,
+      "pdf": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_WANDERLINA.pdf",
+      "parecer_json": "D:\\01_Projetos_Ativos\\OrgAudi\\reports_nfa\\laudos_pdf\\Laudo_WANDERLINA.json",
+      "latencia_ms": 13238
+    }
+  ],
+  "stats_inicio": {
+    "chamadas": {},
+    "tokens_input": {},
+    "tokens_output": {},
+    "custo_usd": {},
+    "economia_usd": 0.0,
+    "upgrades": 0,
+    "downgrades": 0,
+    "resumo": {
+      "chamadas_por_modelo": {},
+      "distribuicao": {},
+      "tokens_totais": {
+        "input": 0,
+        "output": 0
+      },
+      "custo_total_usd": 0,
+      "economia_vs_sonnet_usd": 0.0,
+      "economia_percentual": "0.0%",
+      "upgrades_para_opus": 0,
+      "downgrades_para_haiku": 0
+    }
+  },
+  "stats_fim": {
+    "chamadas": {
+      "sonnet": 35,
+      "haiku": 8,
+      "opus": 2
+    },
+    "tokens_input": {
+      "sonnet": 9281,
+      "haiku": 1919,
+      "opus": 340
+    },
+    "tokens_output": {
+      "sonnet": 17623,
+      "haiku": 1889,
+      "opus": 675
+    },
+    "custo_usd": {
+      "sonnet": 0.29218799999999995,
+      "haiku": 0.0090912,
+      "opus": 0.055725
+    },
+    "economia_usd": -0.0195792,
+    "upgrades": 2,
+    "downgrades": 5,
+    "resumo": {
+      "chamadas_por_modelo": {
+        "sonnet": 35,
+        "haiku": 8,
+        "opus": 2
+      },
+      "distribuicao": {
+        "sonnet": "77.8%",
+        "haiku": "17.8%",
+        "opus": "4.4%"
+      },
+      "tokens_totais": {
+        "input": 11540,
+        "output": 20187
+      },
+      "custo_total_usd": 0.357004,
+      "economia_vs_sonnet_usd": -0.019579,
+      "economia_percentual": "-5.8%",
+      "upgrades_para_opus": 2,
+      "downgrades_para_haiku": 5
+    }
+  },
+  "custo_total_usd": 0.357,
+  "tokens_total": 31727
+}

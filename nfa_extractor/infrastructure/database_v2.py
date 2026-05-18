@@ -87,15 +87,37 @@ class Laudo(Base):
     __tablename__ = "laudos"
 
     id: Mapped[int]              = mapped_column(Integer, primary_key=True)
-    cliente_id: Mapped[int]      = mapped_column(Integer, ForeignKey("clientes.id"), nullable=False)
+    cliente_id: Mapped[int]      = mapped_column(Integer, ForeignKey("clientes.id"), nullable=False, index=True)
     data_auditoria: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     veredito_ia: Mapped[str | None]  = mapped_column(Text)
     qtd_notas: Mapped[int | None]    = mapped_column(Integer)
     valor_total: Mapped[float | None] = mapped_column(Float)
     qtd_anomalias: Mapped[int | None] = mapped_column(Integer)
     pdf_path: Mapped[str | None]     = mapped_column(String(500))
+    # P0-6: integridade jurídica do PDF emitido (SHA-256 do binário)
+    pdf_sha256: Mapped[str | None]   = mapped_column(String(64))
 
     cliente = relationship("Cliente", back_populates="laudos")
+
+
+class AuditoriaResultado(Base):
+    """Resultado completo do pipeline NFA-e — substitui resultados_store in-memory.
+
+    P0-2: persistir para sobreviver a restart e suportar multi-instância.
+    Mantém JSON completo do output do pipeline; user_id é coluna para query
+    eficiente de "meus laudos".
+    """
+
+    __tablename__ = "auditoria_resultados"
+
+    result_id: Mapped[str]       = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str | None]  = mapped_column(String(64), index=True)
+    cliente_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("clientes.id"), index=True)
+    audit_hash: Mapped[str | None]  = mapped_column(String(64), index=True)
+    pdf_sha256: Mapped[str | None]  = mapped_column(String(64))
+    payload_json: Mapped[str]    = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
 
 class AuditTask(Base):
@@ -111,47 +133,149 @@ class AuditTask(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
 
-# ── Conexão resiliente ───────────────────────────────────────────────────────
+class LedgerEntry(Base):
+    """Ledger de eventos de agentes (substitui o JSONL append-only).
+
+    Cada chamada de agente, roteamento ou decisão crítica vira uma linha.
+    Imutável depois de criada — só inserts, sem updates.
+    """
+
+    __tablename__ = "ledger_entries"
+
+    id: Mapped[int]              = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ts: Mapped[datetime]         = mapped_column(DateTime, default=_utcnow, index=True)
+    requisicao_id: Mapped[str]   = mapped_column(String(64), nullable=False, index=True)
+    agent_id: Mapped[str]        = mapped_column(String(32), nullable=False, index=True)
+    acao: Mapped[str]            = mapped_column(String(255), nullable=False)
+    tier: Mapped[str | None]     = mapped_column(String(32))
+    status: Mapped[str]          = mapped_column(String(32), nullable=False, default="APROVADO")
+    audit_hash: Mapped[str | None] = mapped_column(String(64), index=True)
+    payload_json: Mapped[str | None] = mapped_column(Text)
+
+
+class ClaudeStats(Base):
+    """Agregado de uso/custo Claude por (periodo, modelo) — #27.
+
+    Substitui o relatório in-memory do token_router por agregação persistente
+    com upsert batched. Uma linha por (periodo_iso, modelo): N calls do mesmo
+    modelo num mesmo período somam tokens/custo na mesma linha. Periodicidade
+    padrão: hora UTC truncada (YYYY-MM-DDTHH:00:00Z).
+    """
+
+    __tablename__ = "claude_stats"
+
+    id: Mapped[int]              = mapped_column(Integer, primary_key=True, autoincrement=True)
+    periodo: Mapped[str]         = mapped_column(String(32), nullable=False, index=True)
+    modelo: Mapped[str]          = mapped_column(String(32), nullable=False, index=True)
+    calls: Mapped[int]           = mapped_column(Integer, nullable=False, default=0)
+    tokens_in: Mapped[int]       = mapped_column(Integer, nullable=False, default=0)
+    tokens_out: Mapped[int]      = mapped_column(Integer, nullable=False, default=0)
+    cost_usd_acumulado: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("periodo", "modelo", name="uq_claude_stats_periodo_modelo"),
+    )
+
+
+# ── Conexão: seleção de engine por DATABASE_URL ──────────────────────────────
+#
+# Política (#23):
+#   - DATABASE_URL define a URL completa (SQLAlchemy URL string).
+#   - ENV=production + ausência/falha de Postgres -> RuntimeError no startup.
+#   - ENV != production: SQLite (orgatec_sovereign.db) é fallback aceitável
+#     quando DATABASE_URL ausente; log de warning estruturado.
+#   - SQLite recebe PRAGMA WAL/synchronous=NORMAL para suportar concorrência leve.
+#   - Postgres recebe pool_pre_ping=True para detectar conexões mortas.
+
+_SQLITE_FALLBACK_URL = "sqlite:///./orgatec_sovereign.db"
+
 
 def _carregar_database_url() -> str:
-    db_url = os.getenv("DATABASE_URL", "")
+    """Lê DATABASE_URL do ambiente ou do config.env (em ordem)."""
+    db_url = os.getenv("DATABASE_URL", "").strip()
     if db_url:
         return db_url
+
+    # Em testes (PYTEST_CURRENT_TEST definido pelo pytest) não ler config.env
+    # para evitar que credenciais de produção vazem para testes de isolamento.
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        return ""
 
     env_path = Path(__file__).parent.parent.parent / "config.env"
     if env_path.exists():
         for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
             if line.startswith("DATABASE_URL=") and not line.startswith("#"):
                 return line.split("=", 1)[1].strip()
     return ""
 
 
-def get_engine():
-    db_url = _carregar_database_url()
+def _is_production() -> bool:
+    return os.getenv("ENV", "development").lower() == "production"
 
-    if db_url:
-        try:
-            if "postgresql" in db_url:
-                eng = create_engine(db_url, connect_args={"connect_timeout": 5})
-                with eng.connect():
-                    pass
-                logger.info("DB: PostgreSQL conectado.")
-                return eng
-        except Exception as exc:
-            logger.warning(f"Postgres indisponível ({exc}). Usando SQLite.")
 
-    sqlite_url = "sqlite:///./orgatec_sovereign.db"
-    eng = create_engine(sqlite_url, connect_args={"check_same_thread": False})
+def _build_postgres_engine(db_url: str):
+    eng = create_engine(
+        db_url,
+        pool_pre_ping=True,
+        pool_size=int(os.getenv("DB_POOL_SIZE", "5")),
+        max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "10")),
+        connect_args={"connect_timeout": 5},
+    )
+    with eng.connect():
+        pass
+    logger.info("DB: PostgreSQL conectado (%s).", db_url.split("@")[-1])
+    return eng
+
+
+def _build_sqlite_engine():
+    eng = create_engine(_SQLITE_FALLBACK_URL, connect_args={"check_same_thread": False})
 
     @event.listens_for(eng, "connect")
-    def set_sqlite_pragma(dbapi_conn, _):
+    def _set_sqlite_pragma(dbapi_conn, _):
         cur = dbapi_conn.cursor()
         cur.execute("PRAGMA journal_mode=WAL")
         cur.execute("PRAGMA synchronous=NORMAL")
         cur.close()
 
-    logger.info("DB: SQLite WAL conectado.")
+    logger.info("DB: SQLite WAL conectado (%s).", _SQLITE_FALLBACK_URL)
     return eng
+
+
+def get_engine():
+    """Constrói a engine conforme DATABASE_URL e ENV."""
+    db_url = _carregar_database_url()
+
+    if db_url.startswith(("postgresql://", "postgresql+psycopg2://")):
+        try:
+            return _build_postgres_engine(db_url)
+        except Exception as exc:
+            if _is_production():
+                raise RuntimeError(
+                    f"Postgres indisponível em produção ({exc}). "
+                    "Verifique DATABASE_URL e o cluster Postgres."
+                ) from exc
+            logger.warning(
+                "DB: Postgres falhou (%s) — caindo para SQLite (ENV=dev).", exc
+            )
+            return _build_sqlite_engine()
+
+    if _is_production():
+        raise RuntimeError(
+            "DATABASE_URL com Postgres é obrigatório em produção. "
+            "DATABASE_URL atual: %r" % (db_url or "(vazio)")
+        )
+
+    if db_url.startswith("sqlite:"):
+        eng = create_engine(db_url, connect_args={"check_same_thread": False})
+        logger.info("DB: SQLite custom (%s).", db_url)
+        return eng
+
+    if not db_url:
+        logger.warning("DB: DATABASE_URL ausente — usando SQLite fallback (dev only).")
+
+    return _build_sqlite_engine()
 
 
 engine = get_engine()

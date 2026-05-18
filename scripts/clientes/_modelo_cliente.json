@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "slug": "novo_cliente_2025",
+    "descricao": "Auditoria cruzada (Planilha IR vN × PDF GIEF) — período X — migrado para GIEF-only",
+    "documento_referencia": "(opcional — pdf original)"
+  },
+  "contribuinte_cpf": "000.000.000-00",
+  "contribuinte_nome": "NOME COMPLETO DO CONTRIBUINTE",
+  "contribuinte_ie": "000000000",
+  "municipio": "CIDADE",
+  "estado": "GO",
+  "periodo_inicio": "2025-01-01",
+  "periodo_fim": "2025-12-31",
+  "documento_base": "Relatório GIEF/SEFAZ-GO de DD/MM/AAAA",
+  "is_pj": false,
+  "is_segurado_especial": false,
+  "totais_pdf_gief": {
+    "volume_bruto_saidas": "0",
+    "receita_imediata": "0",
+    "transito_remessas": "0",
+    "cabecas_totais": 0,
+    "qtd_vendas": 0,
+    "qtd_remessas": 0,
+    "qtd_compras": 0,
+    "valor_compras": "0"
+  },
+  "funrural_estimado": "0",
+  "aliquota_funrural_pct": "1,50%",
+  "achados_criticos": []
+}

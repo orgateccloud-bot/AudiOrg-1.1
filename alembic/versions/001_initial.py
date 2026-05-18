@@ -1,8 +1,14 @@
-"""migração inicial — schema completo v7.1
+"""migração inicial — schema completo v8.0 (cross-DB: SQLite + Postgres)
 
 Revision ID: 001_initial
 Revises:
 Create Date: 2026-04-28
+
+Notas de compatibilidade:
+- `sa.true()` / `sa.false()` substitui `sa.text("1")` para que `server_default`
+  de Boolean funcione tanto em SQLite (renderiza `1`) quanto Postgres (`TRUE`).
+- `sa.func.now()` é cross-DB.
+- `audit_tasks` movida para migração 002_audit_results_and_pdf_hash (evita duplicação).
 """
 from typing import Sequence, Union
 
@@ -24,7 +30,7 @@ def upgrade() -> None:
         sa.Column("email", sa.String(255), unique=True, nullable=False, index=True),
         sa.Column("hashed_password", sa.String(255), nullable=False),
         sa.Column("role", sa.String(50), server_default="user"),
-        sa.Column("is_active", sa.Boolean(), server_default=sa.text("1")),
+        sa.Column("is_active", sa.Boolean(), server_default=sa.true()),
         sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
     )
 
@@ -38,6 +44,9 @@ def upgrade() -> None:
     )
 
     # Notas
+    # UniqueConstraint inline porque SQLite não suporta ALTER TABLE ADD CONSTRAINT;
+    # alembic.op.create_unique_constraint exigiria batch mode. Cross-DB fica mais
+    # simples declarando dentro do create_table.
     op.create_table(
         "notas",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
@@ -47,8 +56,8 @@ def upgrade() -> None:
         sa.Column("natureza", sa.String()),
         sa.Column("laudo_ia", sa.Text()),
         sa.Column("data_auditoria", sa.DateTime(), server_default=sa.func.now()),
+        sa.UniqueConstraint("numero", "emissao", name="uq_nota_numero_emissao"),
     )
-    op.create_unique_constraint("uq_nota_numero_emissao", "notas", ["numero", "emissao"])
 
     # Produtos
     op.create_table(

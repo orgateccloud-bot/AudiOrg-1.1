@@ -1,0 +1,839 @@
+[
+  {
+    "produtor": "ADELA",
+    "pdfs_origem": [
+      "ADELA DEST.pdf",
+      "ADELA REM.pdf"
+    ],
+    "n_notas": 26,
+    "valor_total": 1596510.08,
+    "status": "OK",
+    "duracao_s": 1.27,
+    "chamadas": [
+      {
+        "agent_id": "A-01",
+        "modelo": "haiku",
+        "tokens_in": 284,
+        "tokens_out": 334,
+        "custo_usd": 0.001563
+      },
+      {
+        "agent_id": "A-02",
+        "modelo": "haiku",
+        "tokens_in": 480,
+        "tokens_out": 420,
+        "custo_usd": 0.002064
+      },
+      {
+        "agent_id": "A-03",
+        "modelo": "haiku",
+        "tokens_in": 1646,
+        "tokens_out": 653,
+        "custo_usd": 0.003929
+      },
+      {
+        "agent_id": "A-04",
+        "modelo": "haiku",
+        "tokens_in": 334,
+        "tokens_out": 390,
+        "custo_usd": 0.001827
+      },
+      {
+        "agent_id": "A-05",
+        "modelo": "haiku",
+        "tokens_in": 116,
+        "tokens_out": 374,
+        "custo_usd": 0.001589
+      },
+      {
+        "agent_id": "A-06",
+        "modelo": "haiku",
+        "tokens_in": 30,
+        "tokens_out": 374,
+        "custo_usd": 0.00152
+      },
+      {
+        "agent_id": "A-07",
+        "modelo": "sonnet",
+        "tokens_in": 1186,
+        "tokens_out": 561,
+        "custo_usd": 0.011973
+      },
+      {
+        "agent_id": "A-08",
+        "modelo": "opus",
+        "tokens_in": 15014,
+        "tokens_out": 2372,
+        "custo_usd": 0.40311
+      },
+      {
+        "agent_id": "A-09",
+        "modelo": "haiku",
+        "tokens_in": 948,
+        "tokens_out": 513,
+        "custo_usd": 0.00281
+      },
+      {
+        "agent_id": "A-10",
+        "modelo": "haiku",
+        "tokens_in": 948,
+        "tokens_out": 513,
+        "custo_usd": 0.00281
+      },
+      {
+        "agent_id": "A-11",
+        "modelo": "haiku",
+        "tokens_in": 410,
+        "tokens_out": 406,
+        "custo_usd": 0.001952
+      },
+      {
+        "agent_id": "A-12",
+        "modelo": "haiku",
+        "tokens_in": 916,
+        "tokens_out": 507,
+        "custo_usd": 0.002761
+      },
+      {
+        "agent_id": "A-13",
+        "modelo": "haiku",
+        "tokens_in": 1766,
+        "tokens_out": 677,
+        "custo_usd": 0.004121
+      },
+      {
+        "agent_id": "A-14",
+        "modelo": "haiku",
+        "tokens_in": 954,
+        "tokens_out": 514,
+        "custo_usd": 0.002819
+      },
+      {
+        "agent_id": "A-15",
+        "modelo": "sonnet",
+        "tokens_in": 964,
+        "tokens_out": 516,
+        "custo_usd": 0.006008
+      },
+      {
+        "agent_id": "A-16",
+        "modelo": "haiku",
+        "tokens_in": 922,
+        "tokens_out": 508,
+        "custo_usd": 0.00277
+      },
+      {
+        "agent_id": "A-17",
+        "modelo": "haiku",
+        "tokens_in": 314,
+        "tokens_out": 386,
+        "custo_usd": 0.001795
+      },
+      {
+        "agent_id": "A-18",
+        "modelo": "haiku",
+        "tokens_in": 2806,
+        "tokens_out": 885,
+        "custo_usd": 0.005785
+      },
+      {
+        "agent_id": "A-19",
+        "modelo": "haiku",
+        "tokens_in": 11868,
+        "tokens_out": 2697,
+        "custo_usd": 0.020282
+      },
+      {
+        "agent_id": "A-20",
+        "modelo": "haiku",
+        "tokens_in": 344,
+        "tokens_out": 392,
+        "custo_usd": 0.001843
+      },
+      {
+        "agent_id": "A-21",
+        "modelo": "haiku",
+        "tokens_in": 702,
+        "tokens_out": 464,
+        "custo_usd": 0.002418
+      },
+      {
+        "agent_id": "A-22",
+        "modelo": "haiku",
+        "tokens_in": 262,
+        "tokens_out": 376,
+        "custo_usd": 0.001714
+      },
+      {
+        "agent_id": "A-23",
+        "modelo": "sonnet",
+        "tokens_in": 880,
+        "tokens_out": 500,
+        "custo_usd": 0.01014
+      },
+      {
+        "agent_id": "A-24",
+        "modelo": "haiku",
+        "tokens_in": 1246,
+        "tokens_out": 573,
+        "custo_usd": 0.003289
+      },
+      {
+        "agent_id": "A-25",
+        "modelo": "haiku",
+        "tokens_in": 210,
+        "tokens_out": 374,
+        "custo_usd": 0.001664
+      },
+      {
+        "agent_id": "A-26",
+        "modelo": "haiku",
+        "tokens_in": 14950,
+        "tokens_out": 836,
+        "custo_usd": 0.015304
+      },
+      {
+        "agent_id": "A-27",
+        "modelo": "sonnet",
+        "tokens_in": 224,
+        "tokens_out": 374,
+        "custo_usd": 0.006282
+      },
+      {
+        "agent_id": "A-00",
+        "modelo": "opus",
+        "tokens_in": 30933,
+        "tokens_out": 512,
+        "custo_usd": 0.502395
+      }
+    ],
+    "totais": {
+      "tokens_in": 91657,
+      "tokens_out": 18001,
+      "custo_usd": 1.026536,
+      "custo_baseline_sonnet": 0.544986,
+      "economia_pct": -88.36,
+      "distribuicao": {
+        "haiku": 45,
+        "sonnet": 7,
+        "opus": 3
+      }
+    },
+    "resultados": {
+      "A-01": {
+        "status": "APROVADO",
+        "confidence": 0.95,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-02": {
+        "status": "APROVADO",
+        "confidence": 0.9,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-03": {
+        "status": "ESCALADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-04": {
+        "status": "APROVADO",
+        "confidence": 0.88,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-05": {
+        "status": "ESCALADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-06": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-07": {
+        "status": "ESCALADO",
+        "confidence": 0.8,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-08": {
+        "status": "APROVADO",
+        "confidence": 0.95,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-09": {
+        "status": "APROVADO",
+        "confidence": 0.5,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-10": {
+        "status": "APROVADO",
+        "confidence": 0.88,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-11": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-12": {
+        "status": "APROVADO",
+        "confidence": 0.9,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-13": {
+        "status": "APROVADO",
+        "confidence": 0.88,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-14": {
+        "status": "APROVADO",
+        "confidence": 0.89,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-15": {
+        "status": "APROVADO",
+        "confidence": 0.91,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-16": {
+        "status": "APROVADO",
+        "confidence": 0.33,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-17": {
+        "status": "APROVADO",
+        "confidence": 0.82,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-18": {
+        "status": "APROVADO",
+        "confidence": 0.2,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-19": {
+        "status": "APROVADO",
+        "confidence": 0.0,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-20": {
+        "status": "APROVADO",
+        "confidence": 0.08,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-21": {
+        "status": "APROVADO",
+        "confidence": 0.87,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-22": {
+        "status": "APROVADO",
+        "confidence": 0.86,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-23": {
+        "status": "APROVADO",
+        "confidence": 0.42,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-24": {
+        "status": "APROVADO",
+        "confidence": 0.9,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-25": {
+        "status": "APROVADO",
+        "confidence": 0.89,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-26": {
+        "status": "APROVADO",
+        "confidence": 0.91,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-27": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-00": {
+        "status": "APROVADO",
+        "confidence": 0.0,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      }
+    }
+  },
+  {
+    "produtor": "CLEITON",
+    "pdfs_origem": [
+      "CLEITON DEST.pdf"
+    ],
+    "n_notas": 3,
+    "valor_total": 33284.33,
+    "status": "OK",
+    "duracao_s": 0.18,
+    "chamadas": [
+      {
+        "agent_id": "A-01",
+        "modelo": "haiku",
+        "tokens_in": 284,
+        "tokens_out": 334,
+        "custo_usd": 0.001563
+      },
+      {
+        "agent_id": "A-02",
+        "modelo": "haiku",
+        "tokens_in": 478,
+        "tokens_out": 419,
+        "custo_usd": 0.002058
+      },
+      {
+        "agent_id": "A-03",
+        "modelo": "haiku",
+        "tokens_in": 500,
+        "tokens_out": 424,
+        "custo_usd": 0.002096
+      },
+      {
+        "agent_id": "A-04",
+        "modelo": "haiku",
+        "tokens_in": 334,
+        "tokens_out": 390,
+        "custo_usd": 0.001827
+      },
+      {
+        "agent_id": "A-05",
+        "modelo": "haiku",
+        "tokens_in": 116,
+        "tokens_out": 374,
+        "custo_usd": 0.001589
+      },
+      {
+        "agent_id": "A-06",
+        "modelo": "haiku",
+        "tokens_in": 30,
+        "tokens_out": 374,
+        "custo_usd": 0.00152
+      },
+      {
+        "agent_id": "A-07",
+        "modelo": "sonnet",
+        "tokens_in": 796,
+        "tokens_out": 483,
+        "custo_usd": 0.009633
+      },
+      {
+        "agent_id": "A-08",
+        "modelo": "opus",
+        "tokens_in": 2136,
+        "tokens_out": 751,
+        "custo_usd": 0.088365
+      },
+      {
+        "agent_id": "A-09",
+        "modelo": "haiku",
+        "tokens_in": 948,
+        "tokens_out": 513,
+        "custo_usd": 0.00281
+      },
+      {
+        "agent_id": "A-10",
+        "modelo": "haiku",
+        "tokens_in": 948,
+        "tokens_out": 513,
+        "custo_usd": 0.00281
+      },
+      {
+        "agent_id": "A-11",
+        "modelo": "haiku",
+        "tokens_in": 408,
+        "tokens_out": 405,
+        "custo_usd": 0.001946
+      },
+      {
+        "agent_id": "A-12",
+        "modelo": "haiku",
+        "tokens_in": 916,
+        "tokens_out": 507,
+        "custo_usd": 0.002761
+      },
+      {
+        "agent_id": "A-13",
+        "modelo": "haiku",
+        "tokens_in": 1766,
+        "tokens_out": 677,
+        "custo_usd": 0.004121
+      },
+      {
+        "agent_id": "A-14",
+        "modelo": "haiku",
+        "tokens_in": 954,
+        "tokens_out": 514,
+        "custo_usd": 0.002819
+      },
+      {
+        "agent_id": "A-15",
+        "modelo": "sonnet",
+        "tokens_in": 964,
+        "tokens_out": 516,
+        "custo_usd": 0.006008
+      },
+      {
+        "agent_id": "A-16",
+        "modelo": "haiku",
+        "tokens_in": 922,
+        "tokens_out": 508,
+        "custo_usd": 0.00277
+      },
+      {
+        "agent_id": "A-17",
+        "modelo": "haiku",
+        "tokens_in": 314,
+        "tokens_out": 386,
+        "custo_usd": 0.001795
+      },
+      {
+        "agent_id": "A-18",
+        "modelo": "haiku",
+        "tokens_in": 2808,
+        "tokens_out": 885,
+        "custo_usd": 0.005786
+      },
+      {
+        "agent_id": "A-19",
+        "modelo": "haiku",
+        "tokens_in": 2130,
+        "tokens_out": 750,
+        "custo_usd": 0.004704
+      },
+      {
+        "agent_id": "A-20",
+        "modelo": "haiku",
+        "tokens_in": 344,
+        "tokens_out": 392,
+        "custo_usd": 0.001843
+      },
+      {
+        "agent_id": "A-21",
+        "modelo": "haiku",
+        "tokens_in": 378,
+        "tokens_out": 399,
+        "custo_usd": 0.001898
+      },
+      {
+        "agent_id": "A-22",
+        "modelo": "haiku",
+        "tokens_in": 262,
+        "tokens_out": 376,
+        "custo_usd": 0.001714
+      },
+      {
+        "agent_id": "A-23",
+        "modelo": "sonnet",
+        "tokens_in": 856,
+        "tokens_out": 495,
+        "custo_usd": 0.009993
+      },
+      {
+        "agent_id": "A-24",
+        "modelo": "haiku",
+        "tokens_in": 276,
+        "tokens_out": 379,
+        "custo_usd": 0.001737
+      },
+      {
+        "agent_id": "A-25",
+        "modelo": "haiku",
+        "tokens_in": 204,
+        "tokens_out": 374,
+        "custo_usd": 0.001659
+      },
+      {
+        "agent_id": "A-26",
+        "modelo": "haiku",
+        "tokens_in": 2100,
+        "tokens_out": 744,
+        "custo_usd": 0.004656
+      },
+      {
+        "agent_id": "A-27",
+        "modelo": "sonnet",
+        "tokens_in": 222,
+        "tokens_out": 374,
+        "custo_usd": 0.006276
+      },
+      {
+        "agent_id": "A-00",
+        "modelo": "opus",
+        "tokens_in": 11628,
+        "tokens_out": 512,
+        "custo_usd": 0.21282
+      }
+    ],
+    "totais": {
+      "tokens_in": 34022,
+      "tokens_out": 13768,
+      "custo_usd": 0.389579,
+      "custo_baseline_sonnet": 0.308586,
+      "economia_pct": -26.25,
+      "distribuicao": {
+        "haiku": 45,
+        "sonnet": 7,
+        "opus": 3
+      }
+    },
+    "resultados": {
+      "A-01": {
+        "status": "APROVADO",
+        "confidence": 0.95,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-02": {
+        "status": "APROVADO",
+        "confidence": 0.9,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-03": {
+        "status": "ESCALADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-04": {
+        "status": "APROVADO",
+        "confidence": 0.88,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-05": {
+        "status": "ESCALADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-06": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-07": {
+        "status": "ESCALADO",
+        "confidence": 0.8,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-08": {
+        "status": "APROVADO",
+        "confidence": 0.95,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-09": {
+        "status": "APROVADO",
+        "confidence": 0.5,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-10": {
+        "status": "APROVADO",
+        "confidence": 0.88,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-11": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-12": {
+        "status": "APROVADO",
+        "confidence": 0.9,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-13": {
+        "status": "APROVADO",
+        "confidence": 0.88,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-14": {
+        "status": "APROVADO",
+        "confidence": 0.89,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-15": {
+        "status": "APROVADO",
+        "confidence": 0.91,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-16": {
+        "status": "APROVADO",
+        "confidence": 0.33,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-17": {
+        "status": "APROVADO",
+        "confidence": 0.82,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-18": {
+        "status": "APROVADO",
+        "confidence": 0.2,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-19": {
+        "status": "APROVADO",
+        "confidence": 0.0,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-20": {
+        "status": "APROVADO",
+        "confidence": 0.08,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-21": {
+        "status": "APROVADO",
+        "confidence": 0.87,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-22": {
+        "status": "APROVADO",
+        "confidence": 0.86,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-23": {
+        "status": "APROVADO",
+        "confidence": 0.42,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-24": {
+        "status": "APROVADO",
+        "confidence": 0.9,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-25": {
+        "status": "APROVADO",
+        "confidence": 0.89,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      },
+      "A-26": {
+        "status": "APROVADO",
+        "confidence": 0.91,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-27": {
+        "status": "APROVADO",
+        "confidence": 0.85,
+        "recomendacao_geral": "",
+        "resumo_executivo": "",
+        "score": 0
+      },
+      "A-00": {
+        "status": "APROVADO",
+        "confidence": 0.0,
+        "recomendacao_geral": "Mock — sem chamada real",
+        "resumo_executivo": "Mock",
+        "score": 50
+      }
+    }
+  }
+]

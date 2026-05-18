@@ -1,103 +1,155 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Shield, Lock, Mail } from 'lucide-react';
-import MatrixBackground from '../components/MatrixBackground';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../services/api';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [email, setEmail]       = useState('');
+  const [senha, setSenha]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [erro, setErro]         = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      if (email.includes('@orgatec.com.br') || (email === 'admin' && password === 'admin123')) {
-        localStorage.setItem('orgatec_token', 'mock_jwt_token');
-        window.location.href = '/dashboard';
+    setErro('');
+    try {
+      const res = await login(email, senha);
+      const token = res.data?.access_token || res.data?.token;
+      if (token) {
+        localStorage.setItem('orgatec_token', token);
+        navigate('/dashboard');
       } else {
-        alert('Credenciais não autorizadas pelo Protocolo ORGATEC.');
+        setErro('Resposta inválida do servidor.');
       }
+    } catch (err) {
+      const msg = err.response?.data?.detail || err.response?.data?.message || 'Credenciais inválidas.';
+      setErro(msg);
+    } finally {
       setLoading(false);
-    }, 800)
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-sovereign-950 relative overflow-hidden">
-      <MatrixBackground />
-      
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full relative z-10"
-      >
-        <div className="text-center mb-6">
-          {/* Imagem Estratégica Reduzida (Diretriz do Usuário) */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="mb-4 overflow-hidden rounded-xl border border-sovereign-800 shadow-2xl max-w-[240px] mx-auto"
-          >
-            <img 
-              src="/orgatecIA.jpg" 
-              alt="ORGATEC AI" 
-              className="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700"
-            />
-          </motion.div>
+    <div style={{
+      minHeight: '100vh', display: 'flex', background: '#020c18',
+      fontFamily: 'IBM Plex Sans, sans-serif',
+    }}>
+      {/* Coluna esquerda — Manifesto */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        padding: '3rem 4rem', background: 'rgba(0,12,24,0.95)',
+        borderRight: '1px solid rgba(0,196,255,0.1)',
+        '@media (max-width: 768px)': { display: 'none' },
+      }}>
+        <div style={{ maxWidth: 400 }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%', marginBottom: '2rem',
+            background: 'radial-gradient(circle at 35% 35%, #4fc3f7, #0277bd, #002f6c)',
+            boxShadow: '0 0 30px rgba(0,196,255,0.3)',
+          }} />
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+            ORGATEC
+          </h1>
+          <p style={{ fontSize: '0.7rem', color: '#00c4ff', letterSpacing: '0.3em', marginBottom: '2.5rem' }}>
+            AUDITORIA FISCAL SOBERANA
+          </p>
 
-          <div className="flex justify-center items-center gap-3 mb-1">
-            <Shield size={24} className="text-sovereign-cyan" />
-            <h1 className="text-3xl font-black tracking-tighter">ORGATEC</h1>
+          <blockquote style={{ borderLeft: '2px solid rgba(0,196,255,0.3)', paddingLeft: '1rem', marginBottom: '2rem' }}>
+            <p style={{ fontSize: '0.95rem', color: '#b0cfe0', lineHeight: 1.7, fontStyle: 'italic' }}>
+              "Toda operação fiscal é auditável. Todo dado é rastreável. Toda decisão é justificada."
+            </p>
+          </blockquote>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {[
+              { label: 'Pipeline', value: 'RE-1 → XGBoost → F1-F6 → A-07 → A-08' },
+              { label: 'Protocolo', value: '@Delta — anonimização CPF/CNPJ' },
+              { label: 'Trilha', value: 'SHA-256 íntegra em cada laudo' },
+              { label: 'Score', value: '9.0/10 · Build a9f4b2e' },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem' }}>
+                <span style={{ color: '#4a6b8a', minWidth: 72, fontFamily: 'IBM Plex Mono, monospace' }}>{label}</span>
+                <span style={{ color: '#7bafc4' }}>{value}</span>
+              </div>
+            ))}
           </div>
-          <p className="text-sovereign-600 font-bold tracking-[0.2em] text-[10px]">SOVEREIGN AUDIT SYSTEM</p>
         </div>
+      </div>
 
-        <div className="sovereign-card p-8 bg-sovereign-950/80 backdrop-blur-md">
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-[10px] font-bold text-sovereign-500 mb-2 tracking-widest uppercase">E-mail Corporativo</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 text-sovereign-700" size={16} />
-                <input 
-                  type="text"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-transparent border border-sovereign-800 rounded-lg py-2.5 pl-10 pr-4 text-white focus:border-sovereign-cyan transition-all outline-none text-sm"
-                  placeholder="exemplo@orgatec.com.br"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-bold text-sovereign-500 mb-2 tracking-widest uppercase">Senha</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 text-sovereign-700" size={16} />
-                <input 
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-transparent border border-sovereign-800 rounded-lg py-2.5 pl-10 pr-4 text-white focus:border-sovereign-cyan transition-all outline-none text-sm"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-            </div>
-
-            <button 
-              type="submit"
-              disabled={loading}
-              className="w-full bg-sovereign-cyan/20 hover:bg-sovereign-cyan border border-sovereign-cyan/40 text-sovereign-cyan hover:text-white font-black py-3 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 text-sm"
-            >
-              {loading ? 'AUTENTICANDO...' : 'ACESSAR PORTAL'}
-            </button>
-          </form>
-        </div>
-        
-        <p className="text-center mt-8 text-[9px] text-sovereign-800 tracking-[0.4em] font-bold">
-          ORGATEC SOVEREIGN SHIELD V6.3
+      {/* Coluna direita — Formulário */}
+      <div style={{
+        width: 480, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        padding: '3rem 3rem', background: '#020f1e',
+      }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '0.25rem' }}>
+          Acesso ao Sistema
+        </h2>
+        <p style={{ fontSize: '0.8rem', color: '#4a6b8a', marginBottom: '2rem', fontFamily: 'IBM Plex Mono, monospace' }}>
+          HORIZON-BLUE ONE · v8.0.0
         </p>
-      </motion.div>
+
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.7rem', color: '#4a6b8a', letterSpacing: '0.15em', marginBottom: '0.4rem', fontFamily: 'IBM Plex Mono, monospace' }}>
+              E-MAIL
+            </label>
+            <input
+              type="email" value={email} onChange={e => setEmail(e.target.value)} required
+              placeholder="auditor@orgatec.com.br"
+              style={{
+                width: '100%', padding: '0.75rem 1rem', background: 'rgba(0,196,255,0.04)',
+                border: '1px solid rgba(0,196,255,0.2)', borderRadius: 4,
+                color: '#e0f4ff', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box',
+                fontFamily: 'IBM Plex Sans, sans-serif',
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.7rem', color: '#4a6b8a', letterSpacing: '0.15em', marginBottom: '0.4rem', fontFamily: 'IBM Plex Mono, monospace' }}>
+              SENHA
+            </label>
+            <input
+              type="password" value={senha} onChange={e => setSenha(e.target.value)} required
+              placeholder="••••••••"
+              style={{
+                width: '100%', padding: '0.75rem 1rem', background: 'rgba(0,196,255,0.04)',
+                border: '1px solid rgba(0,196,255,0.2)', borderRadius: 4,
+                color: '#e0f4ff', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box',
+                fontFamily: 'IBM Plex Sans, sans-serif',
+              }}
+            />
+          </div>
+
+          {erro && (
+            <div style={{
+              padding: '0.75rem 1rem', background: 'rgba(255,71,87,0.1)',
+              border: '1px solid rgba(255,71,87,0.3)', borderRadius: 4,
+              color: '#ff6b7a', fontSize: '0.8rem',
+            }}>
+              {erro}
+            </div>
+          )}
+
+          <button
+            type="submit" disabled={loading}
+            style={{
+              marginTop: '0.5rem', padding: '0.875rem', background: loading ? 'rgba(0,196,255,0.05)' : 'rgba(0,196,255,0.1)',
+              border: '1px solid rgba(0,196,255,0.4)', borderRadius: 4,
+              color: '#00c4ff', fontSize: '0.8rem', letterSpacing: '0.2em',
+              fontFamily: 'IBM Plex Mono, monospace', cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            {loading ? 'AUTENTICANDO...' : 'ENTRAR COM MFA →'}
+          </button>
+        </form>
+
+        <p style={{ marginTop: '2rem', fontSize: '0.65rem', color: '#2a4a5e', textAlign: 'center', letterSpacing: '0.15em', fontFamily: 'IBM Plex Mono, monospace' }}>
+          PROTOCOLO @DELTA ATIVO · DADOS PROTEGIDOS · LGPD
+        </p>
+      </div>
     </div>
   );
 };

@@ -1,0 +1,282 @@
+{
+  "A-00": {
+    "chamadas": 56,
+    "tokens_in": 816986,
+    "tokens_out": 28672,
+    "custo_usd": 2.881038,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-01": {
+    "chamadas": 56,
+    "tokens_in": 16184,
+    "tokens_out": 18704,
+    "custo_usd": 0.087767,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-02": {
+    "chamadas": 56,
+    "tokens_in": 26818,
+    "tokens_out": 21359,
+    "custo_usd": 0.106878,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-03": {
+    "chamadas": 56,
+    "tokens_in": 125580,
+    "tokens_out": 40071,
+    "custo_usd": 0.260749,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-04": {
+    "chamadas": 56,
+    "tokens_in": 18697,
+    "tokens_out": 20944,
+    "custo_usd": 0.098721,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-05": {
+    "chamadas": 56,
+    "tokens_in": 6552,
+    "tokens_out": 20944,
+    "custo_usd": 0.08904,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-06": {
+    "chamadas": 56,
+    "tokens_in": 1736,
+    "tokens_out": 20944,
+    "custo_usd": 0.085176,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-07": {
+    "chamadas": 56,
+    "tokens_in": 61063,
+    "tokens_out": 25332,
+    "custo_usd": 0.563169,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-08": {
+    "chamadas": 56,
+    "tokens_in": 501648,
+    "tokens_out": 106542,
+    "custo_usd": 15.51537,
+    "modelo_predominante": "opus",
+    "%_haiku": 0.0,
+    "%_sonnet": 0.0,
+    "%_opus": 100.0
+  },
+  "A-09": {
+    "chamadas": 56,
+    "tokens_in": 53088,
+    "tokens_out": 26880,
+    "custo_usd": 0.149968,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-10": {
+    "chamadas": 56,
+    "tokens_in": 53032,
+    "tokens_out": 26768,
+    "custo_usd": 0.14952,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-11": {
+    "chamadas": 56,
+    "tokens_in": 23236,
+    "tokens_out": 20944,
+    "custo_usd": 0.102372,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-12": {
+    "chamadas": 56,
+    "tokens_in": 51240,
+    "tokens_out": 26768,
+    "custo_usd": 0.148064,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-13": {
+    "chamadas": 56,
+    "tokens_in": 50008,
+    "tokens_out": 25872,
+    "custo_usd": 0.143472,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-14": {
+    "chamadas": 56,
+    "tokens_in": 53368,
+    "tokens_out": 26880,
+    "custo_usd": 0.150192,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-15": {
+    "chamadas": 56,
+    "tokens_in": 53984,
+    "tokens_out": 26880,
+    "custo_usd": 0.306208,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-16": {
+    "chamadas": 56,
+    "tokens_in": 51576,
+    "tokens_out": 26768,
+    "custo_usd": 0.148344,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-17": {
+    "chamadas": 56,
+    "tokens_in": 17584,
+    "tokens_out": 20944,
+    "custo_usd": 0.097832,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-18": {
+    "chamadas": 56,
+    "tokens_in": 78679,
+    "tokens_out": 31387,
+    "custo_usd": 0.188494,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-19": {
+    "chamadas": 56,
+    "tokens_in": 499702,
+    "tokens_out": 115174,
+    "custo_usd": 0.860456,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-20": {
+    "chamadas": 56,
+    "tokens_in": 19499,
+    "tokens_out": 20944,
+    "custo_usd": 0.099375,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-21": {
+    "chamadas": 56,
+    "tokens_in": 33956,
+    "tokens_out": 22680,
+    "custo_usd": 0.117889,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-22": {
+    "chamadas": 56,
+    "tokens_in": 14906,
+    "tokens_out": 20944,
+    "custo_usd": 0.095704,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-23": {
+    "chamadas": 56,
+    "tokens_in": 50588,
+    "tokens_out": 26936,
+    "custo_usd": 0.555804,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-24": {
+    "chamadas": 56,
+    "tokens_in": 117861,
+    "tokens_out": 48546,
+    "custo_usd": 0.288474,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-25": {
+    "chamadas": 56,
+    "tokens_in": 11622,
+    "tokens_out": 20944,
+    "custo_usd": 0.093065,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-26": {
+    "chamadas": 56,
+    "tokens_in": 1454528,
+    "tokens_out": 45541,
+    "custo_usd": 1.345789,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-27": {
+    "chamadas": 56,
+    "tokens_in": 12472,
+    "tokens_out": 20944,
+    "custo_usd": 0.351576,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  }
+}

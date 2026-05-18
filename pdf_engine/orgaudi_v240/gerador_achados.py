@@ -448,6 +448,23 @@ def gerar_etapas_recomendacoes(resumo: ResumoFiscal) -> list[Etapa]:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+#  PAUTA SEFAZ-GO — Faixa de valor unitário (R$/cabeça) por categoria de gado
+#  Fonte: skill_rural v1.1.0 (2026-05-04). Usada por T-06 (Compatibilidade
+#  com Pauta SEFAZ-GO). Subfaturamento se vlr_unit < pauta_min × 0,70;
+#  superfaturamento se vlr_unit > pauta_max × 1,30.
+# ═══════════════════════════════════════════════════════════════════════════
+
+PAUTA_SEFAZ_GO: dict[str, dict[str, int]] = {
+    "bezerro_macho_ate_12m":     {"min": 2040, "max": 2730},
+    "bezerra_femea_ate_12m":     {"min": 1385, "max": 2080},
+    "garrote_novilha_13_24m":    {"min": 2680, "max": 3490},
+    "boi_vaca_adulto_25_36m":    {"min": 3100, "max": 4200},
+    "matriz_acima_36m":          {"min": 2776, "max": 4800},
+    "touro_reprodutor":          {"min": 4200, "max": 8500},
+}
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 #  REGRA 5 — Cruzamentos com Bases Externas (lista de fontes recomendadas)
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -476,6 +493,21 @@ REGRA_5_CRUZAMENTOS_EXTERNOS: list[dict[str, str]] = [
         "fonte": "SEFAZ-GO + SiCAR + JUCEG",
         "o_que_confirmar": "IEs ativas, capacidade do imóvel, vínculos",
         "como_cruzar": "Cabeças/UA ≤ Área CAR; vínculo + venda atípica",
+    },
+    {
+        "fonte": "SEFAZ-GO — Pauta NPF mensal",
+        "o_que_confirmar": "Compatibilidade do valor unitário declarado com a pauta de valores por categoria de gado",
+        "como_cruzar": "Vlr.Unit declarado dentro da faixa pauta_min × 0,70 ≤ vlr ≤ pauta_max × 1,30 (T-06)",
+    },
+    {
+        "fonte": "SEFAZ-GO — Cadastro de IE",
+        "o_que_confirmar": "Validade e titularidade da Inscrição Estadual do contribuinte e dos destinatários PF",
+        "como_cruzar": "Status ATIVA + município batendo + CPF/IE titular (T-05)",
+    },
+    {
+        "fonte": "SEFAZ-GO — Consulta NFA-e",
+        "o_que_confirmar": "Status individual de cada NFA-e (válida, cancelada, denegada)",
+        "como_cruzar": "Sequência numérica sem buracos; nenhuma NFA-e cancelada somada a F1/F2",
     },
 ]
 

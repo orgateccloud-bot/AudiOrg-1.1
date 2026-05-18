@@ -1,0 +1,11 @@
+{
+  "descricao": "5 notas, 3 com mesmo valor (R$ 7.500,00) e CFOP 5102 dominante (5/5 = 100% >= 85%). Aciona detectar_carrossel.",
+  "esperado": "carrossel: true",
+  "notas": [
+    {"numero": "C001", "valor_total": 7500.00, "cfop": "5102", "data": "2026-01-05"},
+    {"numero": "C002", "valor_total": 7500.00, "cfop": "5102", "data": "2026-01-12"},
+    {"numero": "C003", "valor_total": 7500.00, "cfop": "5102", "data": "2026-01-19"},
+    {"numero": "C004", "valor_total": 8200.00, "cfop": "5102", "data": "2026-01-26"},
+    {"numero": "C005", "valor_total": 9100.00, "cfop": "5102", "data": "2026-02-02"}
+  ]
+}

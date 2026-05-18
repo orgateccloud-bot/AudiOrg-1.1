@@ -40,13 +40,7 @@ from fastapi import (
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-# Auth: reutiliza o mesmo utilitário das outras rotas
-try:
-    from api.routes.auth import verificar_token  # type: ignore
-except ImportError:
-    # Fallback para dev sem auth
-    async def verificar_token():  # type: ignore
-        return {"sub": "dev"}
+from api.auth.security import TokenData, get_current_user
 
 from nfa_extractor.domain.nfa_parser_ai import NFAParserAI
 from nfa_extractor.domain.nfa_ai_schemas import ResultadoExtracaoPDF
@@ -170,7 +164,7 @@ async def parse_sync(
         "claude-haiku-4-5-20251001",
         description="Modelo Claude para fallback"
     ),
-    _token = Depends(verificar_token),
+    _: TokenData = Depends(get_current_user),
 ):
     if not files:
         raise HTTPException(400, "Envie ao menos um arquivo PDF.")
@@ -218,7 +212,7 @@ async def parse_async(
     files:   Annotated[list[UploadFile], File(description="1–2 PDFs GIEF")],
     usar_ia: bool = Query(True,  description="Ativar fallback Claude"),
     modelo:  str  = Query("claude-haiku-4-5-20251001"),
-    _token = Depends(verificar_token),
+    _: TokenData = Depends(get_current_user),
 ):
     if not files:
         raise HTTPException(400, "Envie ao menos um arquivo PDF.")
@@ -268,7 +262,7 @@ async def parse_async(
 )
 async def parse_status(
     task_id: str,
-    _token = Depends(verificar_token),
+    _: TokenData = Depends(get_current_user),
 ):
     job = _jobs.get(task_id)
     if not job:
@@ -288,7 +282,7 @@ async def parse_status(
 )
 async def parse_result(
     task_id: str,
-    _token = Depends(verificar_token),
+    _: TokenData = Depends(get_current_user),
 ):
     job = _jobs.get(task_id)
     if not job:
@@ -308,7 +302,7 @@ async def parse_result(
 )
 async def parse_delete(
     task_id: str,
-    _token = Depends(verificar_token),
+    _: TokenData = Depends(get_current_user),
 ):
     if task_id not in _jobs:
         raise HTTPException(404, f"Job '{task_id}' não encontrado.")

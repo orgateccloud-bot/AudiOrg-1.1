@@ -1,0 +1,56 @@
+# STAGING Environment
+global:
+  environment: staging
+  domain: staging-orgaudi.exemplo.com.br
+
+backend:
+  replicaCount: 2
+  image:
+    tag: latest
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+frontend:
+  replicaCount: 2
+  image:
+    tag: latest
+
+# PostgreSQL local — DESATIVADO em staging
+# Banco gerenciado pelo Supabase (cloud). Injete DATABASE_URL via Secret orgaudi-supabase.
+postgresql:
+  enabled: false
+
+redis:
+  enabled: true
+  master:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+
+autoscaling:
+  enabled: true
+  backend:
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+  frontend:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+
+monitoring:
+  enabled: true

@@ -1,0 +1,141 @@
+# Configuração Global
+global:
+  environment: production
+  domain: orgaudi.example.com
+
+# Backend API (FastAPI)
+backend:
+  replicaCount: 3
+  image:
+    repository: ghcr.io/orgateccloud-bot/orgaudi-api
+    tag: v8.0.0
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8082
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+  env:
+    - name: LOG_LEVEL
+      value: "INFO"
+    - name: WORKERS
+      value: "4"
+    # ── Supabase ──────────────────────────────────────────────────────────────
+    # Os valores reais devem ser injetados via Kubernetes Secret, não hardcoded aqui.
+    # Crie o secret com:
+    #   kubectl create secret generic orgaudi-supabase     #     --from-literal=SUPABASE_URL=https://<ref>.supabase.co     #     --from-literal=SUPABASE_ANON_KEY=<anon_key>     #     --from-literal=SUPABASE_SERVICE_ROLE_KEY=<service_role_key>     #     --from-literal=SUPABASE_JWT_SECRET=<jwt_secret>     #     --from-literal=DATABASE_URL=postgresql://...     #     -n orgaudi
+    - name: SUPABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: SUPABASE_URL
+    - name: SUPABASE_ANON_KEY
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: SUPABASE_ANON_KEY
+    - name: SUPABASE_SERVICE_ROLE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: SUPABASE_SERVICE_ROLE_KEY
+    - name: SUPABASE_JWT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: SUPABASE_JWT_SECRET
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: orgaudi-supabase
+          key: DATABASE_URL
+
+# Frontend (React)
+frontend:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/orgateccloud-bot/orgaudi-frontend
+    tag: v8.0.0
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# PostgreSQL local — DESATIVADO
+# Banco de dados gerenciado pelo Supabase (cloud).
+# Para migrations use: DATABASE_URL_DIRECT + alembic upgrade head
+postgresql:
+  enabled: false
+
+# Redis (Cache + Rate Limit)
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: changeme
+
+  master:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# Qdrant (Vector DB para embeddings)
+qdrant:
+  enabled: true
+  image:
+    repository: qdrant/qdrant
+    tag: latest
+
+  service:
+    port: 6333
+
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+
+# Ingress
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+  hosts:
+    - host: orgaudi.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          backend: backend
+        - path: /
+          pathType: Prefix
+          backend: frontend
+
+  tls:
+    - secretName: orgaudi-tls
+      hosts:
+        - orgaudi.example.com

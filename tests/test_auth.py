@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from api.auth.security import (
     hash_password,
+    needs_rehash,
     verify_password,
     create_access_token,
     create_refresh_token,
@@ -27,16 +28,45 @@ from jose import jwt as jose_jwt
 from fastapi import HTTPException
 
 
-class TestBcrypt:
+class TestArgon2:
 
     def test_hash_e_verify(self):
         plain = "SenhaForte123!"
         hashed = hash_password(plain)
+        assert hashed.startswith("$argon2")
         assert verify_password(plain, hashed) is True
 
     def test_senha_errada_falha(self):
         hashed = hash_password("correta")
         assert verify_password("errada", hashed) is False
+
+    def test_hash_argon2_nao_precisa_rehash(self):
+        hashed = hash_password("qualquer")
+        assert needs_rehash(hashed) is False
+
+
+class TestBcryptLegacy:
+    """Hashes bcrypt antigos continuam verificáveis até o usuário logar de novo."""
+
+    def test_verify_bcrypt_legacy_funciona(self):
+        import bcrypt as bcrypt_mod
+        plain = "SenhaAntiga2024"
+        hashed = bcrypt_mod.hashpw(plain.encode("utf-8"), bcrypt_mod.gensalt()).decode("utf-8")
+        assert hashed.startswith("$2b$")
+        assert verify_password(plain, hashed) is True
+
+    def test_verify_bcrypt_legacy_senha_errada(self):
+        import bcrypt as bcrypt_mod
+        hashed = bcrypt_mod.hashpw(b"correta", bcrypt_mod.gensalt()).decode("utf-8")
+        assert verify_password("errada", hashed) is False
+
+    def test_hash_bcrypt_precisa_rehash(self):
+        import bcrypt as bcrypt_mod
+        hashed = bcrypt_mod.hashpw(b"x", bcrypt_mod.gensalt()).decode("utf-8")
+        assert needs_rehash(hashed) is True
+
+    def test_hash_invalido_precisa_rehash(self):
+        assert needs_rehash("nao-eh-um-hash") is True
 
 
 class TestAccessToken:

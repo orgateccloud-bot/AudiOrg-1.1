@@ -9,8 +9,9 @@ Conteúdo:
   • classificar_nota() — Regra 1 OrgAudi 1.0 (Receita / Trânsito / Despesa)
   • apurar_resumo() — calcula F1-F6 e tributos derivados
   • construir_planilha_mensal() — agrupa notas por mês
-  • Testes forenses T-01 (concentração), T-02 (smurfing), T-04 (concentração PF),
-    T-07 (documental — dígito verificador)
+  • Testes forenses T-01 (concentração), T-02 (smurfing), T-03 (trânsito órfão),
+    T-04 (concentração PF), T-05 (IE inconsistente), T-07 (documental —
+    dígito verificador), T-08 (cruzamento de planilha)
   • hash_laudo() — SHA-256 determinístico para auditabilidade
 
 Dependências internas: orgaudi.domain, orgaudi.validators
@@ -29,6 +30,7 @@ from typing import Optional
 from .domain import (
     CategoriaContabil,
     Contribuinte,
+    Leiloeiro,
     NaturezaNota,
     NotaFiscal,
     Periodo,
@@ -347,6 +349,25 @@ class ResultadoT02:
 
 
 @dataclass
+class ResultadoT03:
+    """T-03 Trânsito órfão: REMESSA/LEILÃO sem NF-e modelo 55 subsequente.
+
+    Sem o cruzamento documental com NF-e modelo 55 dos leiloeiros (que só
+    chega por cruzamento externo via ACTs), todas as remessas emitidas pelo
+    contribuinte ficam classificadas como TRÂNSITO em aberto — receita
+    potencial não materializada. O teste agrupa por leiloeiro (destinatário)
+    para evidenciar concentração.
+    """
+    notas_orfas: list["NotaFiscal"] = field(default_factory=list)
+    valor_total_orfao: Decimal = Decimal("0")
+    cabecas_orfas: int = 0
+    leiloeiros: list["Leiloeiro"] = field(default_factory=list)
+
+    def detectado(self) -> bool:
+        return len(self.notas_orfas) > 0
+
+
+@dataclass
 class ResultadoT04:
     """Concentração em PFs com perfil de revenda."""
     pfs_recorrentes: list[PFRecorrente] = field(default_factory=list)
@@ -357,11 +378,76 @@ class ResultadoT04:
 
 
 @dataclass
+class IEInconsistente:
+    """Destinatário (PF/PJ) que aparece com 2+ IEs distintas."""
+    cpf_cnpj: str
+    nome: str
+    ies: list[str] = field(default_factory=list)
+    qtd_notas: int = 0
+    valor_total: Decimal = Decimal("0")
+
+
+@dataclass
+class ResultadoT05:
+    """T-05 IE inconsistente: mesmo CPF/CNPJ vinculado a 2+ Inscrições Estaduais.
+
+    Compatível com produtor que tenha fazendas em municípios distintos, mas
+    merece verificação cadastral ativa na SEFAZ-GO e CAEPF em todos os
+    municípios envolvidos (pode indicar erro cadastral ou simulação).
+    """
+    inconsistencias: list[IEInconsistente] = field(default_factory=list)
+
+    def detectado(self) -> bool:
+        return len(self.inconsistencias) > 0
+
+
+@dataclass
 class ResultadoT07:
     """Validação de dígitos verificadores."""
     cpfs_invalidos: list[str] = field(default_factory=list)
     cnpjs_invalidos: list[str] = field(default_factory=list)
     total_documentos_verificados: int = 0
+
+
+@dataclass
+class DivergenciaCruzamento:
+    """Uma divergência entre Planilha IR v5 e PDF GIEF no T-08."""
+    indicador: str
+    valor_planilha: Optional[Decimal]
+    valor_pdf_gief: Optional[Decimal]
+    delta: Optional[Decimal]
+    status: str  # "CONFORME" | "DIVERGENTE" | "ATENCAO" | "DADO_NOVO"
+    observacao: str = ""
+
+
+@dataclass
+class ResultadoT08:
+    """T-08 Cruzamento de planilha: confronto entre Planilha IR v5 e PDF GIEF.
+
+    A bateria de testes T-08 valida a integridade entre duas fontes do
+    cruzamento — Planilha de Gado para IR (manutenção contábil interna) e
+    Relatório GIEF/SEFAZ-GO (fonte fazendária). Qualquer divergência acima da
+    tolerância indica:
+      • Erro de digitação/agregação na planilha; OU
+      • Notas faltando em uma das fontes; OU
+      • Manipulação proposital de totais.
+    """
+    itens: list[DivergenciaCruzamento] = field(default_factory=list)
+    total_indicadores_comparados: int = 0
+
+    @property
+    def divergencias(self) -> list[DivergenciaCruzamento]:
+        """Apenas os itens com status DIVERGENTE."""
+        return [i for i in self.itens if i.status == "DIVERGENTE"]
+
+    @property
+    def atencoes(self) -> list[DivergenciaCruzamento]:
+        """Itens marcados como ATENCAO (dado novo, ausente em uma fonte)."""
+        return [i for i in self.itens if i.status in ("ATENCAO", "DADO_NOVO")]
+
+    def detectado(self) -> bool:
+        """Retorna True se houver divergência (não conta ATENCAO)."""
+        return len(self.divergencias) > 0
 
 
 def teste_t01_concentracao(
@@ -416,6 +502,54 @@ def teste_t02_smurfing(
     return ResultadoT02(grupos=grupos)
 
 
+def teste_t03_transito_orfao(
+    notas: list[NotaFiscal], cpf: str
+) -> ResultadoT03:
+    """T-03: identifica REMESSA/LEILÃO emitidas pelo contribuinte que
+    permanecem em aberto (sem confirmação de NF-e modelo 55 do leiloeiro).
+
+    Estratégia: como o cruzamento documental com a NF-e modelo 55 depende
+    de coleta externa (ACTs), considera-se órfã toda nota de TRÂNSITO emitida
+    pelo contribuinte. A função agrega também por leiloeiro (destinatário)
+    para evidenciar concentração.
+    """
+    orfas: list[NotaFiscal] = []
+    total = Decimal("0")
+    cabecas = 0
+    por_leiloeiro: dict[tuple[str, str], list[NotaFiscal]] = defaultdict(list)
+
+    for n in notas:
+        if classificar_nota(n, cpf) != CategoriaContabil.TRANSITO:
+            continue
+        # Só notas REMETIDAS pelo contribuinte (saídas para leilão)
+        if n.natureza not in (NaturezaNota.REMESSA, NaturezaNota.LEILAO):
+            continue
+        orfas.append(n)
+        total += n.valor
+        cabecas += n.cabecas
+        chave = (re.sub(r"\D", "", n.destinatario_cpf or ""),
+                 n.destinatario_nome or "DESTINATÁRIO NÃO IDENTIFICADO")
+        por_leiloeiro[chave].append(n)
+
+    leiloeiros: list[Leiloeiro] = []
+    for (cnpj, nome), notas_l in por_leiloeiro.items():
+        valor_l = sum((n.valor for n in notas_l), Decimal("0"))
+        leiloeiros.append(Leiloeiro(
+            nome=nome,
+            cnpj=mascara_cnpj(cnpj) if len(cnpj) == 14 else mascara_cpf(cnpj),
+            qtd_notas=len(notas_l),
+            valor_total=valor_l,
+        ))
+    leiloeiros.sort(key=lambda l: l.valor_total, reverse=True)
+
+    return ResultadoT03(
+        notas_orfas=orfas,
+        valor_total_orfao=total,
+        cabecas_orfas=cabecas,
+        leiloeiros=leiloeiros,
+    )
+
+
 def teste_t04_concentracao_pf(
     notas: list[NotaFiscal], cpf: str, min_aquisicoes: int = 3
 ) -> ResultadoT04:
@@ -451,6 +585,46 @@ def teste_t04_concentracao_pf(
     return ResultadoT04(pfs_recorrentes=pfs, pct_vendas_pf=pct_pf)
 
 
+def teste_t05_ie_inconsistente(notas: list[NotaFiscal]) -> ResultadoT05:
+    """T-05: detecta o mesmo CPF/CNPJ vinculado a 2+ IEs distintas (entre
+    destinatários OU remetentes que não sejam o próprio contribuinte).
+    """
+    # Mapa: cpf/cnpj → {ies_set, nome, notas}
+    bucket: dict[str, dict] = {}
+    for n in notas:
+        for cpf_raw, nome, ie in (
+            (n.destinatario_cpf, n.destinatario_nome, n.ie_destinatario),
+            (n.remetente_cpf,    n.remetente_nome,    n.ie_remetente),
+        ):
+            cpf = re.sub(r"\D", "", cpf_raw or "")
+            ie_clean = (ie or "").strip()
+            if not cpf or not ie_clean:
+                continue
+            entry = bucket.setdefault(cpf, {
+                "ies": set(),
+                "nome": nome or "",
+                "qtd": 0,
+                "valor": Decimal("0"),
+            })
+            entry["ies"].add(ie_clean)
+            entry["qtd"] += 1
+            entry["valor"] += n.valor
+
+    inconsistencias: list[IEInconsistente] = []
+    for cpf, d in bucket.items():
+        if len(d["ies"]) >= 2:
+            mask = mascara_cpf(cpf) if len(cpf) == 11 else mascara_cnpj(cpf)
+            inconsistencias.append(IEInconsistente(
+                cpf_cnpj=mask,
+                nome=d["nome"],
+                ies=sorted(d["ies"]),
+                qtd_notas=d["qtd"],
+                valor_total=d["valor"],
+            ))
+    inconsistencias.sort(key=lambda i: i.valor_total, reverse=True)
+    return ResultadoT05(inconsistencias=inconsistencias)
+
+
 def teste_t07_documental(notas: list[NotaFiscal]) -> ResultadoT07:
     """T-07: dígitos verificadores de todos os CPF/CNPJ envolvidos."""
     docs: set[str] = set()
@@ -474,20 +648,116 @@ def teste_t07_documental(notas: list[NotaFiscal]) -> ResultadoT07:
         total_documentos_verificados=len(docs))
 
 
+# Indicadores comparados no T-08 — pareados como (rótulo legível, chave do dict)
+INDICADORES_T08: list[tuple[str, str]] = [
+    ("Volume bruto total",               "volume_bruto_saidas"),
+    ("Receita imediata (vendas)",        "receita_imediata"),
+    ("Trânsito (remessas para leilão)",  "transito_remessas"),
+    ("Cabeças totais movimentadas",      "cabecas_totais"),
+    ("Qtd notas de venda",               "qtd_vendas"),
+    ("Qtd notas de remessa",             "qtd_remessas"),
+    ("Qtd notas de compra",              "qtd_compras"),
+    ("Valor total de compras",           "valor_compras"),
+]
+
+
+def teste_t08_cruzamento_planilha(
+    totais_planilha: dict,
+    totais_pdf_gief: dict,
+    tolerancia: Decimal = Decimal("0.01"),
+) -> ResultadoT08:
+    """T-08 — Cruzamento de planilha: confronta Planilha IR v5 × PDF GIEF.
+
+    Args:
+      totais_planilha: indicadores agregados extraídos da Planilha de Gado v5.
+        Chaves esperadas: volume_bruto_saidas, receita_imediata, transito_remessas,
+        cabecas_totais, qtd_vendas, qtd_remessas, qtd_compras, valor_compras.
+        Valores podem ser Decimal, float, int ou string numérica.
+      totais_pdf_gief: idem, extraídos do Relatório GIEF/SEFAZ-GO.
+      tolerancia: diferença absoluta tolerada (default R$ 0,01).
+
+    Returns:
+      ResultadoT08 com a lista completa de itens (CONFORME + divergências).
+      Indicadores ausentes em uma das fontes ficam marcados como DADO_NOVO
+      ou ATENCAO (ex: compras estão na planilha mas costumam estar fora do
+      escopo do PDF GIEF — vira ATENCAO).
+    """
+    itens: list[DivergenciaCruzamento] = []
+    for rotulo, chave in INDICADORES_T08:
+        v_pl = totais_planilha.get(chave)
+        v_pd = totais_pdf_gief.get(chave)
+
+        # Caso 1: ambos ausentes → ignora (não compõe a comparação)
+        if v_pl is None and v_pd is None:
+            continue
+
+        # Caso 2: presente em apenas uma fonte → DADO_NOVO (geralmente compras)
+        if v_pl is None or v_pd is None:
+            valor_disponivel = _to_decimal(v_pl if v_pl is not None else v_pd)
+            fonte = "Planilha IR v5" if v_pl is not None else "PDF GIEF"
+            itens.append(DivergenciaCruzamento(
+                indicador=rotulo,
+                valor_planilha=_to_decimal(v_pl),
+                valor_pdf_gief=_to_decimal(v_pd),
+                delta=None,
+                status="DADO_NOVO",
+                observacao=f"Indicador presente apenas em {fonte} "
+                           f"(R$ {valor_disponivel} / referência única).",
+            ))
+            continue
+
+        # Caso 3: presentes em ambas → confronta
+        pl = _to_decimal(v_pl)
+        pd_ = _to_decimal(v_pd)
+        delta = pl - pd_
+        status = "CONFORME" if abs(delta) <= tolerancia else "DIVERGENTE"
+        itens.append(DivergenciaCruzamento(
+            indicador=rotulo,
+            valor_planilha=pl,
+            valor_pdf_gief=pd_,
+            delta=delta,
+            status=status,
+        ))
+
+    return ResultadoT08(
+        itens=itens,
+        total_indicadores_comparados=len(itens),
+    )
+
+
+def _to_decimal(v) -> Optional[Decimal]:
+    """Coerção segura para Decimal. Aceita None, int, float, str ou Decimal."""
+    if v is None:
+        return None
+    if isinstance(v, Decimal):
+        return v
+    return Decimal(str(v))
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  HASH DO LAUDO — para auditabilidade
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def payload_hash_canonico(contribuinte: Contribuinte, periodo: Periodo,
+                          resumo: ResumoFiscal) -> str:
+    """Payload JSON canônico (ordenado, separadores compactos) para o SHA-256."""
+    import json as _json
+    return _json.dumps({
+        "F1": str(resumo.F1_receita_imediata),
+        "F2": str(resumo.F2_transito),
+        "F4": str(resumo.F4_receita_bruta),
+        "F5": str(resumo.F5_resultado_rural),
+        "F6": str(resumo.F6_despesa),
+        "cpf": contribuinte.cpf,
+        "data_audit": str(periodo.data_auditoria),
+        "fim": periodo.fim,
+        "inicio": periodo.inicio,
+        "nome": contribuinte.nome,
+    }, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+
+
 def hash_laudo(contribuinte: Contribuinte, periodo: Periodo,
                resumo: ResumoFiscal, notas: list[NotaFiscal]) -> str:
-    """SHA-256 dos dados financeiros — comprova que dois laudos são idênticos."""
-    h = hashlib.sha256()
-    h.update(f"{contribuinte.cpf}|{contribuinte.nome}".encode())
-    h.update(f"|{periodo.inicio}|{periodo.fim}".encode())
-    h.update(f"|F1={resumo.F1_receita_imediata}".encode())
-    h.update(f"|F2={resumo.F2_transito}".encode())
-    h.update(f"|F4={resumo.F4_receita_bruta}".encode())
-    h.update(f"|F5={resumo.F5_resultado_rural}".encode())
-    h.update(f"|F6={resumo.F6_despesa}".encode())
-    h.update(f"|N={len(notas)}".encode())
-    return h.hexdigest()[:16].upper()  # 16 chars são suficientes
+    """SHA-256 completo (64 hex) sobre payload JSON canônico — verificável externamente."""
+    payload = payload_hash_canonico(contribuinte, periodo, resumo)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()

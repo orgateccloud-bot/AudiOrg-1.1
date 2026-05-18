@@ -1,9 +1,8 @@
 """Apuração Fiscal Rural — F1–F6, Funrural e IRPF estimado.
 
-Alíquotas FUNRURAL 2026 (corte: 01/04/2026):
-  PJ:               2,23% (antes: 2,05%)
-  PF:               1,63% (antes: 1,50%)
-  Segurado Especial: 1,50% (excepcionado pela RFB 03/2026)
+As alíquotas FUNRURAL e IRPF vivem em `data/funrural_aliquotas.yaml`,
+carregadas via `aliquotas_loader.carregar_tabela()` (com fallback hard-coded
+para resiliência). Mudanças de alíquota → editar o YAML + bump de versão.
 
 Fórmulas:
   F1 = Receita Imediata (VENDA/RECEITA)
@@ -12,12 +11,14 @@ Fórmulas:
   F4 = F1 + F3
   F5 = F4 - F6  (resultado rural)
   F6 = Despesas dedutíveis (COMPRA/DESPESA)
-  FUNRURAL = F1 × alíquota
-  IRPF     = max(F5 × 20%, 0)
+  FUNRURAL = F1 × alíquota (tabela)
+  IRPF     = max(F5 × alíquota_irpf, 0)
 """
 from dataclasses import dataclass, asdict
 from datetime import date
 from typing import List
+
+from .aliquotas_loader import carregar_tabela
 
 
 @dataclass
@@ -46,13 +47,12 @@ def apurar_resumo(
     if data_referencia is None:
         data_referencia = date.today()
 
-    corte = date(2026, 4, 1)
-    if eh_pj:
-        aliq = 0.0223 if data_referencia >= corte else 0.0205
-    elif eh_segurado_especial:
-        aliq = 0.0150
-    else:
-        aliq = 0.0163 if data_referencia >= corte else 0.0150
+    tabela = carregar_tabela()
+    aliq = tabela.aliquota(
+        eh_pj=eh_pj,
+        eh_segurado_especial=eh_segurado_especial,
+        data_referencia=data_referencia,
+    )
 
     r = ResumoFiscal(aliquota_funrural=aliq, total_notas=len(notas))
 
@@ -69,5 +69,5 @@ def apurar_resumo(
     r.f4_receita_bruta   = r.f1_receita_imediata + r.f3_receita_leilao
     r.f5_resultado_rural = r.f4_receita_bruta - r.f6_despesa
     r.funrural           = round(r.f1_receita_imediata * aliq, 2)
-    r.irpf_estimado      = round(max(r.f5_resultado_rural * 0.20, 0), 2)
+    r.irpf_estimado      = round(max(r.f5_resultado_rural * tabela.irpf_resultado_rural, 0), 2)
     return r

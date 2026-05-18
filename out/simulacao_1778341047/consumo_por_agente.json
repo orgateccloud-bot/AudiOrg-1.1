@@ -1,0 +1,282 @@
+{
+  "A-00": {
+    "chamadas": 5,
+    "tokens_in": 94069,
+    "tokens_out": 2560,
+    "custo_usd": 1.603035,
+    "modelo_predominante": "opus",
+    "%_haiku": 0.0,
+    "%_sonnet": 0.0,
+    "%_opus": 100.0
+  },
+  "A-01": {
+    "chamadas": 5,
+    "tokens_in": 1442,
+    "tokens_out": 1670,
+    "custo_usd": 0.007834,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-02": {
+    "chamadas": 5,
+    "tokens_in": 2392,
+    "tokens_out": 2096,
+    "custo_usd": 0.010296,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-03": {
+    "chamadas": 5,
+    "tokens_in": 4886,
+    "tokens_out": 2596,
+    "custo_usd": 0.014293,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-04": {
+    "chamadas": 5,
+    "tokens_in": 1670,
+    "tokens_out": 1950,
+    "custo_usd": 0.009135,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-05": {
+    "chamadas": 5,
+    "tokens_in": 580,
+    "tokens_out": 1870,
+    "custo_usd": 0.007945,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-06": {
+    "chamadas": 5,
+    "tokens_in": 150,
+    "tokens_out": 1870,
+    "custo_usd": 0.0076,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-07": {
+    "chamadas": 5,
+    "tokens_in": 4938,
+    "tokens_out": 2606,
+    "custo_usd": 0.053904,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-08": {
+    "chamadas": 5,
+    "tokens_in": 34632,
+    "tokens_out": 7497,
+    "custo_usd": 1.081755,
+    "modelo_predominante": "opus",
+    "%_haiku": 0.0,
+    "%_sonnet": 0.0,
+    "%_opus": 100.0
+  },
+  "A-09": {
+    "chamadas": 5,
+    "tokens_in": 4740,
+    "tokens_out": 2565,
+    "custo_usd": 0.01405,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-10": {
+    "chamadas": 5,
+    "tokens_in": 4740,
+    "tokens_out": 2565,
+    "custo_usd": 0.01405,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-11": {
+    "chamadas": 5,
+    "tokens_in": 2066,
+    "tokens_out": 2032,
+    "custo_usd": 0.009781,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-12": {
+    "chamadas": 5,
+    "tokens_in": 4580,
+    "tokens_out": 2535,
+    "custo_usd": 0.013805,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-13": {
+    "chamadas": 5,
+    "tokens_in": 8830,
+    "tokens_out": 3385,
+    "custo_usd": 0.020605,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-14": {
+    "chamadas": 5,
+    "tokens_in": 4770,
+    "tokens_out": 2570,
+    "custo_usd": 0.014095,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-15": {
+    "chamadas": 5,
+    "tokens_in": 4820,
+    "tokens_out": 2580,
+    "custo_usd": 0.03004,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-16": {
+    "chamadas": 5,
+    "tokens_in": 4610,
+    "tokens_out": 2540,
+    "custo_usd": 0.01385,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-17": {
+    "chamadas": 5,
+    "tokens_in": 1570,
+    "tokens_out": 1930,
+    "custo_usd": 0.008975,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-18": {
+    "chamadas": 5,
+    "tokens_in": 14056,
+    "tokens_out": 4429,
+    "custo_usd": 0.028961,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-19": {
+    "chamadas": 5,
+    "tokens_in": 31446,
+    "tokens_out": 7908,
+    "custo_usd": 0.056788,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-20": {
+    "chamadas": 5,
+    "tokens_in": 1740,
+    "tokens_out": 1966,
+    "custo_usd": 0.009256,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-21": {
+    "chamadas": 5,
+    "tokens_in": 2594,
+    "tokens_out": 2136,
+    "custo_usd": 0.010619,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-22": {
+    "chamadas": 5,
+    "tokens_in": 1326,
+    "tokens_out": 1883,
+    "custo_usd": 0.008593,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-23": {
+    "chamadas": 5,
+    "tokens_in": 4310,
+    "tokens_out": 2481,
+    "custo_usd": 0.050145,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  },
+  "A-24": {
+    "chamadas": 5,
+    "tokens_in": 3190,
+    "tokens_out": 2256,
+    "custo_usd": 0.011576,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-25": {
+    "chamadas": 5,
+    "tokens_in": 1032,
+    "tokens_out": 1870,
+    "custo_usd": 0.008305,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-26": {
+    "chamadas": 5,
+    "tokens_in": 34424,
+    "tokens_out": 3997,
+    "custo_usd": 0.043528,
+    "modelo_predominante": "haiku",
+    "%_haiku": 100.0,
+    "%_sonnet": 0.0,
+    "%_opus": 0.0
+  },
+  "A-27": {
+    "chamadas": 5,
+    "tokens_in": 1114,
+    "tokens_out": 1870,
+    "custo_usd": 0.031392,
+    "modelo_predominante": "sonnet",
+    "%_haiku": 0.0,
+    "%_sonnet": 100.0,
+    "%_opus": 0.0
+  }
+}

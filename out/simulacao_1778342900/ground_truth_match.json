@@ -1,0 +1,138 @@
+{
+  "ADELA": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_ADELA_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 20355,
+    "tamanho_novo": 666
+  },
+  "CLEITON": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_CLEITON_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 21870,
+    "tamanho_novo": 666
+  },
+  "CLEUZENIR": {
+    "tem_gt": false,
+    "motivo": "produtor_ausente_no_gt"
+  },
+  "ETERVALDO": {
+    "tem_gt": false,
+    "motivo": "produtor_ausente_no_gt"
+  },
+  "FABIO": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_FABIO_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 21583,
+    "tamanho_novo": 666
+  },
+  "GEAN": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_GEAN_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 20574,
+    "tamanho_novo": 666
+  },
+  "GENIS": {
+    "tem_gt": false,
+    "motivo": "produtor_ausente_no_gt"
+  },
+  "GEOVANE": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_GEOVANE_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 14949,
+    "tamanho_novo": 666
+  },
+  "GERALDO": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_GERALDO_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 14969,
+    "tamanho_novo": 666
+  },
+  "GLAUBER": {
+    "tem_gt": false,
+    "motivo": "produtor_ausente_no_gt"
+  },
+  "HELIO JOSE": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_HELIO_JOSE_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 16275,
+    "tamanho_novo": 666
+  },
+  "HELLIDA": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_HELLIDA_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 9226,
+    "tamanho_novo": 0
+  },
+  "JOSE AILTON": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_JOSE_AILTON_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 16009,
+    "tamanho_novo": 666
+  },
+  "JOSMAIR": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_JOSMAIR_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 17243,
+    "tamanho_novo": 666
+  },
+  "LAELSON": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_LAELSON_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 14687,
+    "tamanho_novo": 666
+  },
+  "LEANDRO": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_LEANDRO_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 15855,
+    "tamanho_novo": 666
+  },
+  "MARGARETH": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_MARGARETH_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 14992,
+    "tamanho_novo": 666
+  },
+  "MARILZA": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_MARILZA_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 15446,
+    "tamanho_novo": 666
+  },
+  "MATHEUS": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_MATHEUS_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 16676,
+    "tamanho_novo": 666
+  },
+  "RAUL": {
+    "tem_gt": false,
+    "motivo": "produtor_ausente_no_gt"
+  },
+  "RICARDO LOBO": {
+    "tem_gt": true,
+    "gt_pdf": "AUDITORIA_RICARDO_LOBO_2026.pdf",
+    "similaridade": 0.0,
+    "tamanho_gt": 9236,
+    "tamanho_novo": 0
+  },
+  "WANDERLINA": {
+    "tem_gt": false,
+    "motivo": "produtor_ausente_no_gt"
+  }
+}

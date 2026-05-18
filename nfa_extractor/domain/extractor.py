@@ -31,8 +31,14 @@ class NFA(BaseModel):
     valor_total: float = 0.0
     valor_icms: float = 0.0
     quantidade_total: float = 0.0
+    # P1-B: campo cabecas adicionado — ausencia causava distorcao silenciosa no XGBoost
+    # xgboost_scorer.py usa n.get("cabecas", 0) — sem este campo, score era sempre 0
+    cabecas: float = 0.0
     chave_acesso: Optional[str] = None
     local_emissao: Optional[str] = None
+    cfop: Optional[str] = None  # P1-B: CFOP adicionado para feature de consistencia_cfop no XGBoost
+    destinatario_cpf: Optional[str] = None  # P1-B: alias para xgboost_scorer (proporcao_pf, concentracao_dest)
+    regra_aplicada: Optional[str] = None  # rastreabilidade RE-1
     
     remetente: Parte = Field(default_factory=Parte)
     destinatario: Parte = Field(default_factory=Parte)
@@ -48,6 +54,20 @@ class NFA(BaseModel):
             except: return 0.0
         return float(v or 0.0)
 
+
+    @field_validator("cabecas", "quantidade_total", mode="before")
+    @classmethod
+    def parse_quantity(cls, v: Any) -> float:
+        if isinstance(v, str):
+            v = v.replace(".", "").replace(",", ".").strip()
+            try: return float(v)
+            except: return 0.0
+        return float(v or 0.0)
+
+    def sync_destinatario_cpf(self) -> None:
+        """Sincroniza destinatario_cpf a partir do destinatario.cpf_cnpj para uso no XGBoost."""
+        if self.destinatario and self.destinatario.cpf_cnpj:
+            object.__setattr__(self, 'destinatario_cpf', self.destinatario.cpf_cnpj)
 # --- LOGIC ---
 
 def classificar_natureza(natureza: str) -> str:
@@ -166,10 +186,10 @@ def resumo_geral(notas: List[NFA], nome_contribuinte: str = "") -> Dict[str, Any
     """Gera métricas consolidadas exigidas pelo dashboard e relatórios."""
     total_valor = sum(n.valor_total for n in notas)
     total_cabecas = sum(n.quantidade_total for n in notas)
-    
-    por_mes = {}
-    por_natureza = {}
-    destinatarios = {}
+
+    por_mes: Dict[str, Dict[str, Any]] = {}
+    por_natureza: Dict[str, int] = {}
+    destinatarios: Dict[str, Dict[str, Any]] = {}
     
     for n in notas:
         # Mes
@@ -198,10 +218,10 @@ def resumo_geral(notas: List[NFA], nome_contribuinte: str = "") -> Dict[str, Any
         if d_nome not in destinatarios:
             destinatarios[d_nome] = {'nome': d_nome, 'notas': 0, 'cabecas': 0.0, 'valor': 0.0}
         destinatarios[d_nome]['notas'] += 1
-        destinatarios[d_nome]['cabecas'] += n.quantidade_total
-        destinatarios[d_nome]['valor'] += n.valor_total
+        destinatarios[d_nome]['cabecas'] += float(n.quantidade_total)
+        destinatarios[d_nome]['valor'] += float(n.valor_total)
 
-    top_dest = sorted(destinatarios.values(), key=lambda x: x['valor'], reverse=True)
+    top_dest: List[Dict[str, Any]] = sorted(destinatarios.values(), key=lambda x: float(x['valor']), reverse=True)
 
     return {
         'total_notas': len(notas),

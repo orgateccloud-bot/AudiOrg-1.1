@@ -128,7 +128,12 @@ class Periodo:
 
 @dataclass
 class NotaFiscal:
-    """Uma NFA-e individual. Todas as outras estatísticas derivam disto."""
+    """Uma NFA-e individual. Todas as outras estatísticas derivam disto.
+
+    Campos `ie_*` e `municipio_*` são opcionais (foram introduzidos para
+    suportar o teste T-05 IE Inconsistente). Notas legadas sem esses campos
+    seguem funcionando normalmente.
+    """
     numero: str
     data: date
     natureza: NaturezaNota
@@ -138,6 +143,10 @@ class NotaFiscal:
     remetente_nome: str = ""
     destinatario_cpf: str = ""
     destinatario_nome: str = ""
+    # Campos cadastrais opcionais (usados em T-05 IE inconsistente e A-02)
+    ie_remetente: str = ""
+    ie_destinatario: str = ""
+    municipio_destinatario: str = ""
 
     def __post_init__(self):
         if isinstance(self.data, str):

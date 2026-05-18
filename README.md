@@ -1,7 +1,7 @@
-# OrgAudi Sovereign — Plataforma de Auditoria Fiscal
+# OrgAudi — Plataforma de Auditoria Fiscal
 
-**Versão:** 8.0.0  
-**Stack:** FastAPI · React 19 · LangGraph · Claude/Gemini · XGBoost · SQLite · ReportLab  
+**Versão:** 1.0.0  
+**Pilha:** FastAPI · React 19 · LangGraph · Claude/Gemini · XGBoost · Supabase Postgres (SQLite em dev) · ReportLab  
 **Responsável:** ORGATEC IA
 
 ---
@@ -10,7 +10,7 @@
 
 OrgAudi é a plataforma unificada de auditoria de Notas Fiscais Avulsas (NFA-e) da ORGATEC. Integra extração de PDF, pipeline analítico determinístico, agentes de IA e geração de relatórios em um único sistema multi-módulo.
 
-O projeto consolida três bases de código anteriores (NFA Extractor, Horizon-Blue, worktree `great-hypatia`) em uma estrutura limpa de quatro módulos.
+O projeto consolida três bases de código anteriores (NFA Extractor, Horizon-Blue e worktree `great-hypatia`) em uma estrutura limpa de quatro módulos.
 
 ---
 
@@ -18,263 +18,151 @@ O projeto consolida três bases de código anteriores (NFA Extractor, Horizon-Bl
 
 ```
 OrgAudi/
-├── horizon_blue_one/     # Pipeline de auditoria HORIZON-BLUE ONE
-├── nfa_extractor/        # Extração de PDF e infraestrutura de dados
-├── pdf_engine/           # Geração de relatórios OrgAudi v2.4–v2.5
-├── api/                  # FastAPI v8.0.0 — Backend unificado
-├── frontend/             # React 19 + Vite + Tailwind v4
-└── orgatec_sovereign.db  # SQLite — clientes e laudos
+├── horizonte_azul_um/      # Pipeline de auditoria HORIZON-BLUE ONE
+├── extrator nfa/           # Extração de PDF e infraestrutura de dados
+├── pdf_engine/             # Geração de relatórios OrgAudi
+├── relatórios_nfa/         # Templates e ativos de relatório
+├── API/                    # FastAPI — Backend unificado
+├── front-end/              # React 19 + Vite + Tailwind v4
+├── alambique/              # Migrações Alembic
+├── k8s/                    # Manifests Kubernetes
+├── dados/                  # Dados versionados (alíquotas FUNRURAL etc.)
+├── documentos/             # Documentação técnica
+├── roteiros/               # Scripts utilitários
+├── testes/                 # Suíte de testes
+└── orgatec_sovereign.db    # SQLite (fallback dev) — clientes e laudos quando DATABASE_URL ausente
 ```
 
 ---
 
-## Módulo 1 — horizon_blue_one
+## Módulo 1 — horizonte_azul_um
 
 Pipeline sequencial de auditoria fiscal: **RE-1 → XGBoost → F1-F6 → A-07 → A-08**
 
 ```
-horizon_blue_one/
+horizonte_azul_um/
 ├── agents/
 │   ├── base_agent.py            # AgentResult (Pydantic v2, SHA-256 audit_hash)
-│   ├── a07_auditoria_assurance.py  # Agente forense — 5 detectores determinísticos
-│   ├── a08_auditor_nfa.py       # Agente auditor NFA-e com Protocolo @Delta
-│   └── detectores_forenses.py   # CARROSSEL_FISCAL, SMURFING_RURAL, FORNECEDOR_FANTASMA,
-│                                #   DEVOLUCAO_POSTERIOR, ANOMALIA_TEMPORAL
+│   ├── a07_auditoria_assurance.py
+│   ├── a08_auditor_nfa.py
+│   └── detectores_forenses.py
 ├── core/
-│   ├── config.py                # Env vars e constantes do sistema
-│   ├── model_adapter.py         # Claude Sonnet 4.6 / Haiku 4.5 / Opus 4.7
-│   │                            #   tenacity retry (3x, 1–8s backoff), prompt caching
+│   ├── config.py
+│   ├── model_adapter.py         # Claude Sonnet / Haiku / Opus + retry com tenacity
 │   └── privacy.py               # Protocolo @Delta — anonimização CPF/CNPJ/nomes
 ├── ml/
 │   └── xgboost_scorer.py        # 8 features × pesos SEFAZ-GO → score 0–100
-│                                #   Modo heurístico quando modelo .pkl não está presente
 └── orgaudi/
     ├── regra_especial_1.py      # RE-1: VENDA → COMPRA rural (aprovada CRC-GO)
-    └── resumo_fiscal.py         # F1-F6: FUNRURAL 2026 (PJ=2.23%, PF=1.63%, SE=1.50%)
+    └── resumo_fiscal.py         # F1-F6: FUNRURAL 2026
 ```
 
 ### Pipeline de Auditoria
 
-| Etapa | Componente | Descrição |
-|-------|-----------|-----------|
-| RE-1 | `regra_especial_1.py` | Reclassifica VENDA em COMPRA rural para destinatário PF |
-| Score | `xgboost_scorer.py` | Score de risco 0–100 com 8 features calibradas |
-| Fiscal | `resumo_fiscal.py` | Apuração F1–F6: FUNRURAL, IRPF, resultado rural |
-| A-07 | `a07_auditoria_assurance.py` | Detectores forenses — 5 tipologias determinísticas |
-| A-08 | `a08_auditor_nfa.py` | Análise qualitativa via LLM (fallback determinístico) |
-
-### Agentes — Resiliência
-
-Ambos os agentes (A-07 e A-08) possuem `try/except` que retornam `AgentResult(status="ERRO")` caso a API Claude esteja indisponível. O pipeline nunca quebra por falha de LLM.
+| Etapa  | Componente                  | Descrição                                                   |
+|--------|-----------------------------|-------------------------------------------------------------|
+| RE-1   | regra_especial_1.py         | Reclassifica VENDA em COMPRA rural para destinatário PF     |
+| Score  | xgboost_scorer.py           | Score de risco 0–100 com 8 features calibradas              |
+| Fiscal | resumo_fiscal.py            | Apuração F1–F6: FUNRURAL, IRPF, resultado rural             |
+| A-07   | a07_auditoria_assurance.py  | Detectores forenses — 5 tipologias determinísticas          |
+| A-08   | a08_auditor_nfa.py          | Análise qualitativa via LLM (com fallback determinístico)   |
 
 ### Detectores Forenses (A-07)
 
-Todos são **determinísticos** — sem dependência de LLM:
+Todos são determinísticos — sem dependência de LLM:
 
-- **CARROSSEL_FISCAL**: mesmo CNPJ aparece como emitente E destinatário
-- **SMURFING_RURAL**: múltiplas notas abaixo do limiar de tributação no mesmo dia
-- **FORNECEDOR_FANTASMA**: fornecedor com volume alto mas sem histórico recorrente
-- **DEVOLUCAO_POSTERIOR**: nota de devolução emitida muito depois da original
-- **ANOMALIA_TEMPORAL**: concentração de emissões em finais de semana ou feriados
+- **CARROSSEL_FISCAL**: mesmo CNPJ aparece como emitente E destinatário.
+- **SMURFING_RURAL**: múltiplas notas abaixo do limiar de tributação no mesmo dia.
+- **FORNECEDOR_FANTASMA**: fornecedor com volume alto, sem histórico recorrente.
+- **DEVOLUCAO_POSTERIOR**: nota de devolução emitida muito depois da original.
+- **ANOMALIA_TEMPORAL**: concentração de emissões em finais de semana ou feriados.
 
 ---
 
-## Módulo 2 — nfa_extractor
-
-Extração de PDFs e infraestrutura de dados.
+## Módulo 2 — extrator nfa
 
 ```
-nfa_extractor/
+extrator nfa/
 ├── domain/
-│   ├── extractor.py         # extrair_notas() — pdfplumber, regex, NFA dataclass
-│   ├── schemas.py           # Pydantic v2: NotaFiscal, LoteAuditoria, ResultadoAuditoria
-│   ├── constants.py         # CFOP rurais, limites tributários, enums
-│   ├── nfa_ai_schemas.py    # Schemas para parser IA
-│   └── nfa_parser_ai.py     # Parser NFA com Gemini/Claude
+│   ├── extractor.py             # Campos: cabeças, destinatario_cpf, regra_aplicada
+│   ├── schemas.py
+│   ├── constants.py
+│   ├── nfa_ai_schemas.py
+│   └── nfa_parser_ai.py
 ├── infrastructure/
-│   ├── database_v2.py       # SQLAlchemy 2.0: Cliente, Laudo (SQLite)
-│   ├── logging_config.py    # structlog com timestamp + nível + contexto
-│   ├── ai_client.py         # Cliente unificado Anthropic/Gemini
-│   ├── audit_task_repo.py   # Repositório de tarefas assíncronas
-│   └── supabase/            # Integração Supabase (opcional)
+│   ├── database_v2.py
+│   ├── logging_config.py
+│   ├── ai_client.py
+│   ├── claude_validator.py
+│   ├── audit_task_repo.py
+│   └── supabase/
 ├── application/
-│   ├── agents_engine.py     # rodar_auditoria_completa() — orquestrador LangGraph
-│   ├── analytics_engine.py  # processar_para_dataframe() — pandas/numpy
-│   ├── audit_service.py     # Serviço de auditoria síncrono
-│   └── sovereign_engine.py  # Motor soberano — coordenação de módulos
+│   ├── agents_engine.py
+│   ├── analytics_engine.py
+│   ├── audit_service.py
+│   ├── extraction_orchestrator.py
+│   └── sovereign_engine.py
 └── utils/
-    └── validators.py        # Validação CPF, CNPJ, chave NF-e
-```
-
-### Modelos de Banco de Dados
-
-```python
-class Cliente(Base):
-    id, nome, cpf, created_at
-
-class Laudo(Base):
-    id, cliente_id, resultado_json, score, created_at
+    └── validators.py
 ```
 
 ---
 
 ## Módulo 3 — pdf_engine
 
-Geração de relatórios fiscais em PDF.
-
-```
-pdf_engine/
-├── orgaudi_v240/        # Motor v2.4.0 — relatório completo OrgAudi
-│   ├── domain/          # Enums: TipoNota, RegimeTributario, Tipologia
-│   ├── catalog/         # Catálogo de tipologias e regras
-│   ├── data_processing/ # Processamento e agregação de dados
-│   ├── handlers/        # Handlers por seção do relatório
-│   ├── pages/           # Renderização de páginas PDF
-│   ├── report_builder/  # Construtor principal do relatório
-│   ├── styles/          # Estilos ReportLab
-│   └── validators/      # Validação de dados de entrada
-├── orgaudi_v250/        # Motor v2.5.0 — relatório simplificado
-│   ├── renderer.py
-│   ├── report_builder.py
-│   └── template_builder.py
-├── orgaudi_v4/          # Adaptador v4 para integração com HORIZON-BLUE
-│   ├── orgaudi_adapter.py
-│   ├── orgaudi_tipologias.py
-│   └── orgaudi_v4.py
-├── pdf_report.py        # Geração de laudo PDF via ReportLab (legacy)
-├── ir_report.py         # Relatório IRPF rural
-└── excel_export.py      # Export Excel via openpyxl
-```
+Geração de relatórios fiscais em PDF via ReportLab.
 
 ---
 
-## Módulo 4 — api (Worktree)
+## Módulo 4 — API
 
-Backend FastAPI v8.0.0 unificado.
-
-```
-api/
-├── main.py              # Entry point — lifespan, middlewares, routers
-├── middleware/
-│   └── rate_limit.py    # 60 req/60s por IP
-├── routes/
-│   ├── auth.py          # JWT: /auth/login, /auth/register, /auth/me
-│   ├── auditoria.py     # Pipeline NFA-e: /nfae, /resultado/{id}, /relatorio/{id}/pdf
-│   ├── clientes.py      # CRUD clientes: /clientes
-│   ├── agente.py        # Chat agente: /agente/chat
-│   ├── nfa_ai_parser.py # Parser IA: /nfa/parse
-│   ├── metrics.py       # Métricas internas
-│   └── finance.py       # Endpoints financeiros
-└── services/
-    ├── auditoria_nfae.py    # Orquestrador HORIZON-BLUE ONE + geração de PDF
-    └── auditoria_bigfour.py # Motor Big Four forense (triangulações, leilões, inventário)
-```
+Backend FastAPI unificado com JWT, rate limiting e pipeline NFA-e.
 
 ### Endpoints Principais
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/nfae` | Executa pipeline completo de auditoria NFA-e |
-| `GET` | `/resultado/{id}` | Recupera resultado de auditoria |
-| `GET` | `/relatorio/{id}/pdf` | Download do relatório em PDF |
-| `POST` | `/nfae/relatorio` | Gera PDF direto a partir do payload |
-| `POST` | `/upload/{client_id}` | Upload de PDFs para processamento em lote |
-| `GET` | `/status/{task_id}` | Status de processamento assíncrono |
-| `POST` | `/auth/login` | Autenticação JWT |
-| `GET` | `/ping` | Health check |
-| `GET` | `/stats` | Estatísticas acumuladas do sistema |
-
-### Middlewares
-
-- **RateLimitMiddleware**: 60 requisições por 60 segundos por IP
-- **CORSMiddleware**: `localhost:5173–5175` com credentials
-
----
-
-## Frontend
-
-```
-frontend/frontend/
-├── src/
-│   ├── pages/
-│   │   ├── LoginPage.jsx        # Autenticação com animação Matrix
-│   │   ├── Dashboard.jsx        # Painel principal com estatísticas
-│   │   └── AuditoriaModule.jsx  # Módulo completo de auditoria NFA-e
-│   ├── components/
-│   │   └── MatrixBackground.jsx # Efeito visual chuva de código
-│   ├── services/
-│   │   └── api.js               # Axios + interceptor JWT
-│   └── App.jsx                  # Router + ProtectedRoute
-├── package.json                 # React 19, Framer Motion, Lucide, Tailwind v4
-└── vite.config.js               # Proxy → :8082 (dev)
-```
-
-### Funcionalidades do AuditoriaModule
-
-- Upload de notas fiscais (array JSON)
-- Formulário: CPF, nome, regime (PF/PJ/Segurado Especial)
-- Visualização de ScoreCard com nível de risco
-- Painel "Detectores Forenses" (5 tipologias)
-- Resumo Fiscal F1–F6 com valores monetários formatados
-- Download de relatório PDF via endpoint `/relatorio/{id}/pdf`
-- Indicador de status da IA (ATIVO / DEGRADADO)
-
----
-
-## Banco de Dados
-
-**Arquivo:** `orgatec_sovereign.db` (SQLite)
-
-| Tabela | Colunas | Estado |
-|--------|---------|--------|
-| `clientes` | id, nome, cpf, created_at | 2 registros ativos |
-| `laudos` | id, cliente_id, resultado_json, score, created_at | Limpo |
-
-Sincronização automática via `Base.metadata.create_all(bind=engine)` no lifespan da API.
+| Método | Rota                 | Descrição                                       |
+|--------|----------------------|-------------------------------------------------|
+| POST   | /nfae                | Executa pipeline completo de auditoria NFA-e    |
+| GET    | /resultado/{id}      | Recupera resultado de auditoria                 |
+| GET    | /relatorio/{id}/pdf  | Download do relatório em PDF                    |
+| POST   | /upload/{client_id}  | Upload de PDFs para processamento em lote       |
+| GET    | /status/{task_id}    | Status de processamento assíncrono              |
+| POST   | /auth/login          | Autenticação JWT                                |
+| GET    | /ping                | Health check                                    |
+| GET    | /stats               | Estatísticas acumuladas do sistema              |
 
 ---
 
 ## Como Executar
 
-### Pré-requisitos
-
-```bash
-Python 3.10+
-Node.js 20+
-```
-
 ### Backend
 
 ```bash
-cd D:\01_Projetos_Ativos\OrgAudi
-
-# Instalar dependências
-pip install fastapi uvicorn sqlalchemy pydantic anthropic \
-            xgboost numpy pdfplumber reportlab structlog tenacity
-
-# Executar
+pip install fastapi uvicorn sqlalchemy pydantic anthropic xgboost numpy \
+            pdfplumber reportlab structlog tenacity
 uvicorn api.main:app --host 127.0.0.1 --port 8082 --reload
 ```
 
-### Frontend
+### Front-end
 
 ```bash
-cd D:\01_Projetos_Ativos\OrgAudi\frontend\frontend
-
-npm install
-npm run dev   # :5173
+cd front-end && npm install && npm run dev
 ```
 
 ### Variáveis de Ambiente
 
 ```env
 ANTHROPIC_API_KEY=sk-ant-...
-OPENAI_API_KEY=sk-...          # opcional — Gemini parser
 SQUAD_MODEL=anthropic:claude-sonnet-4-6
 AUDITORIA_MODEL=anthropic:claude-sonnet-4-6
 AUDITORIA_MODEL_SIMPLES=anthropic:claude-haiku-4-5-20251001
-DATABASE_URL=sqlite:///./orgatec_sovereign.db
+# Produção (Supabase Postgres Transaction Pooler — porta 6543):
+DATABASE_URL=postgresql://postgres.<ref>:<pwd>@aws-1-sa-east-1.pooler.supabase.com:6543/postgres
+# Dev local (omita DATABASE_URL para usar SQLite fallback)
+# DATABASE_URL=sqlite:///./orgatec_sovereign.db
 ```
+
+Veja `.env.exemplo` na raiz para a lista completa.
 
 ---
 
@@ -282,69 +170,45 @@ DATABASE_URL=sqlite:///./orgatec_sovereign.db
 
 ```
 POST /nfae
-    │
-    ├── RE-1 (regra_especial_1.py)
-    │     └── Reclassifica VENDA → COMPRA para destinatário PF rural
-    │
-    ├── XGBoost (xgboost_scorer.py)
-    │     └── 8 features → score 0–100 + nível BAIXO/MÉDIO/ALTO/CRÍTICO
-    │
-    ├── F1-F6 (resumo_fiscal.py)
-    │     └── FUNRURAL + IRPF + resultado rural
-    │
-    ├── A-07 (a07_auditoria_assurance.py)
-    │     └── 5 detectores forenses determinísticos
-    │
-    └── A-08 (a08_auditor_nfa.py)
-          └── Análise qualitativa LLM (fallback determinístico se API indisponível)
-                └── Protocolo @Delta — CPF/CNPJ/nomes anonimizados antes do envio
+ ├── RE-1     → Reclassifica VENDA para COMPRA rural (PF)
+ ├── XGBoost  → score 0–100 + nível BAIXO/MÉDIO/ALTO/CRÍTICO
+ ├── F1-F6    → FUNRURAL + IRPF + resultado rural
+ ├── A-07     → 5 detectores forenses determinísticos
+ └── A-08     → Análise qualitativa LLM + Protocolo @Delta
 ```
 
 ---
 
 ## Privacidade — Protocolo @Delta
 
-Antes de enviar qualquer dado ao LLM (Claude/Gemini), o `privacy.py` substitui:
-
-- CPF/CNPJ reais → `@DELTA-001`, `@DELTA-002`, ...
-- Nomes de pessoas → `@PESSOA-001`, `@PESSOA-002`, ...
-- Razões sociais → `@EMPRESA-001`, `@EMPRESA-002`, ...
-
-O mapa de reversão é mantido em memória e aplicado na resposta antes de retornar ao cliente.
+Antes de enviar dados ao LLM, `privacy.py` substitui CPF/CNPJ/nomes por tokens `@DELTA-001`, `@PESSOA-001`, `@EMPRESA-001`. O mapa de reversão é aplicado na resposta.
 
 ---
 
 ## Modo Degradado
 
-Quando a API Claude está indisponível (créditos zerados, timeout, etc.):
-
-- A-07 retorna `AgentResult(status="ERRO", confidence=0.0)` com detalhe do erro
-- A-08 idem — pipeline continua com score XGBoost + fiscal F1-F6 íntegros
-- Frontend exibe badge "IA DEGRADADO" no módulo de auditoria
-- Score e resumo fiscal são sempre produzidos (sem dependência de LLM)
+Quando a API Claude está indisponível: A-07 e A-08 retornam `AgentResult(status="ERRO")`, o pipeline continua com score XGBoost e fiscal F1-F6 íntegros. O front-end exibe o emblema **"IA DEGRADADO"**.
 
 ---
 
 ## Segurança
 
-- JWT obrigatório em todas as rotas (exceto `/ping`, `/`, `/auth/login`)
-- Rate limiting: 60 req/min por IP
-- CPF/CNPJ nunca trafegam em logs ou para LLMs externos (Protocolo @Delta)
-- `.env` nunca versionado — secrets via variáveis de ambiente do OS
-- `audit_hash` SHA-256 em cada `AgentResult` para rastreabilidade
+- JWT obrigatório em todas as rotas (exceto `/ping`, `/`, `/auth/login`).
+- Rate limiting: 60 requisições/min por IP.
+- Protocolo @Delta: dados pessoais nunca trafegam para LLMs externos.
+- `audit_hash` SHA-256 em cada `AgentResult`.
+
+Detalhes em `SEGURANÇA.md`.
 
 ---
 
-## Origem dos Módulos
+## Governança do Projeto
 
-| Módulo | Origem | Observação |
-|--------|--------|-----------|
-| `horizon_blue_one/` | Worktree `backend/` | Imports migrados `backend.*` → `horizon_blue_one.*` |
-| `nfa_extractor/` | Projeto principal `src/` | Imports migrados `src.*` → `nfa_extractor.*` |
-| `pdf_engine/` | Projeto principal `src/application/reports/` | Imports migrados |
-| `api/` | Worktree `api/` | Serviços renomeados: `auditoria_nfae.py`, `auditoria_bigfour.py` |
-| `frontend/` | Worktree `frontend/` | Sem alteração de código |
-
----
-
-*OrgAudi Sovereign Shield — ORGATEC v8.0.0*
+- **Licença**: ver `LICENÇA`.
+- **Contribuição**: ver `CONTRIBUINDO.md`.
+- **Catálogo de agentes**: ver `CATÁLOGO_DE_AGENTES.md`.
+- **Integração / onboarding**: ver `INTEGRAÇÃO.md` e `CLAUDE.md`.
+- **Score de qualidade**: ver `ATUALIZADO_SCORE_9.0.md`.
+- **Migrações de banco**: Alembic em `alambique/` (`alembic.ini` na raiz).
+- **Docker**: `docker-compose.yml` (apenas Redis — Postgres migrado para Supabase cloud).
+- **Pré-commit**: `.pre-commit-config.yaml` (ruff, mypy, bandit).
