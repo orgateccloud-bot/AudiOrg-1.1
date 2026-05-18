@@ -50,80 +50,146 @@ cruzamentos_store: dict[str, dict] = {}
 
 
 def processar_auditoria_cruzada(request: Any) -> dict:
-    """Pipeline da auditoria cruzada.
+    """Pipeline da auditoria — modo GIEF-only (padrão) ou cruzado (legado).
 
-    Args:
-      request: instância do pydantic `CruzamentoRequest` (definido na rota).
+    Comportamento:
+      - Se `request.totais_planilha` for None → modo **GIEF-only**: usa apenas
+        o PDF GIEF como fonte. Sem Síntese Cruzada, sem T-08, sem Planilha IR v5.
+        Classificação determinada por `regra_classificacao`:
+        estado GO → NATUREZA do GIEF; outros → CFOP.
+      - Se `request.totais_planilha` estiver presente → modo **cruzado** (legado):
+        mantém Síntese P×G, T-08 e anexo Planilha IR v5.
 
     Returns:
-      Dicionário com: contribuinte, periodo, sintese_quantitativa,
-      teste_t08, severidades, audit_hash, timestamp.
+      Dicionário consumido por `gerar_pdf_auditoria_cruzada`.
     """
-    totais_pl = request.totais_planilha.model_dump()
+    modo_gief_only = request.totais_planilha is None
     totais_gief = request.totais_pdf_gief.model_dump()
 
-    # Executa T-08
-    t08 = teste_t08_cruzamento_planilha(totais_pl, totais_gief)
+    # Para cálculos internos (indicadores, achados M/AT, etapas, hash), usa
+    # a Planilha quando disponível; caso contrário, recai no próprio GIEF.
+    totais_base = totais_gief if modo_gief_only else request.totais_planilha.model_dump()
 
-    # Monta Síntese Quantitativa (linhas formatadas para a tabela do PDF)
-    sintese = _montar_sintese_quantitativa(t08)
+    estado = (getattr(request, "estado", "GO") or "GO").upper()
+    regra_classificacao = "NATUREZA_GIEF" if estado == "GO" else "CFOP"
 
-    # Gera achados estruturados de criticidade média (M-01, M-02) e AT-01
-    achados_medios = _gerar_achados_medios_serializados(request, totais_pl)
-    at01 = _gerar_at01_serializado(request, totais_pl)
+    # Achados, indicadores, severidades, hash — comuns aos dois modos
+    achados_medios = _gerar_achados_medios_serializados(request, totais_base)
+    at01 = _gerar_at01_serializado(request, totais_base)
     pontos_atencao = [at01] if at01 else []
-
-    # Achados críticos vindos do payload (C-01, C-10, C-03, A-01) — opcionais
     achados_criticos = _serializar_achados_criticos(request)
+    indicadores = _calcular_indicadores_principais(request, totais_base)
+    audit_hash = _calcular_hash_cruzamento(request, totais_base, totais_gief)
 
-    # Indicadores principais (KPIs F1-F6 + IRPF + Funrural) para a capa
-    indicadores = _calcular_indicadores_principais(request, totais_pl)
-
-    # Conta severidades por categoria (T-08 + achados estruturados + críticos)
-    severidades = _agregar_severidades(
-        t08, achados_medios + pontos_atencao + achados_criticos)
-
-    # Hash de auditabilidade (determinístico — mesmos totais → mesmo hash)
-    audit_hash = _calcular_hash_cruzamento(request, totais_pl, totais_gief)
-
-    return {
+    resultado: dict = {
         "contribuinte": {
             "cpf": request.contribuinte_cpf,
             "nome": request.contribuinte_nome,
             "ie": getattr(request, "contribuinte_ie", "") or "",
             "municipio": getattr(request, "municipio", "") or "",
-            "estado": getattr(request, "estado", "GO") or "GO",
+            "estado": estado,
         },
         "periodo": {
             "inicio": request.periodo_inicio,
             "fim": request.periodo_fim,
             "documento_base": getattr(request, "documento_base", "") or "",
         },
-        "sintese_quantitativa": sintese,
-        "teste_t08": {
-            "total_indicadores_comparados": t08.total_indicadores_comparados,
-            "qtd_divergencias": len(t08.divergencias),
-            "qtd_atencoes": len(t08.atencoes),
-            "detectado": t08.detectado(),
-            "itens": [_serializar_item_t08(it) for it in t08.itens],
-        },
-        "severidades": severidades,
+        "regra_classificacao": regra_classificacao,
+        "severidades": {},  # preenchido abaixo
         "indicadores_principais": indicadores,
         "achados_criticos": achados_criticos,
         "achados_medios": achados_medios,
         "pontos_atencao": pontos_atencao,
-        "etapas_recomendacoes": _gerar_etapas_serializadas(request, totais_pl),
+        "etapas_recomendacoes": _gerar_etapas_serializadas(request, totais_base),
         "regra_5_cruzamentos_externos": REGRA_5_CRUZAMENTOS_EXTERNOS,
         "tipologias_consideradas": TIPOLOGIAS_FORENSES,
         "catalogo_anomalias": CATALOGO_18_ANOMALIAS,
         "eixos_tipologias": EIXOS_TIPOLOGIAS,
         "regra_especial_1": REGRA_ESPECIAL_1,
-        "planilha_gado_ir": _serializar_planilha_gado_ir(request, totais_pl),
         "declaracao_alcance": DECLARACAO_ALCANCE_LIMITACOES,
         "audit_hash": audit_hash,
         "sistema": "OrgAudi 1.1",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+    if modo_gief_only:
+        # Planilha de Gado IR — sempre presente. Quando o JSON do cliente
+        # fornecer `vendas_mensais`/`remessas_mensais`/`compras_mensais`, o
+        # detalhamento mês a mês é renderizado; caso contrário, exibe só os
+        # TOTAIS extraídos do GIEF + a Fórmula F1-F6.
+        planilha = _serializar_planilha_gado_ir(request, totais_gief)
+        resultado["planilha_gado_ir"] = planilha
+
+        # Fallback de cabeças: se totais_gief.cabecas_totais == 0/None
+        # mas os detalhamentos mensais somam cabeças, usar essa soma na
+        # Síntese (evita "0 cabeças" quando há dados nos meses).
+        totais_gief_aug = dict(totais_gief)
+        if not int(totais_gief_aug.get("cabecas_totais") or 0):
+            cab_mensais = sum(
+                m.get("cabecas", 0)
+                for m in (planilha.get("vendas", []) +
+                          planilha.get("remessas", []))
+            )
+            if cab_mensais > 0:
+                totais_gief_aug["cabecas_totais"] = cab_mensais
+
+        resultado["sintese_gief"] = _montar_sintese_gief_only(totais_gief_aug)
+        resultado["severidades"] = _agregar_severidades_gief_only(
+            achados_medios + pontos_atencao + achados_criticos)
+    else:
+        # Modo legado — preserva Síntese Cruzada, T-08 e Planilha IR v5.
+        totais_pl = totais_base
+        t08 = teste_t08_cruzamento_planilha(totais_pl, totais_gief)
+        resultado["sintese_quantitativa"] = _montar_sintese_quantitativa(t08)
+        resultado["teste_t08"] = {
+            "total_indicadores_comparados": t08.total_indicadores_comparados,
+            "qtd_divergencias": len(t08.divergencias),
+            "qtd_atencoes": len(t08.atencoes),
+            "detectado": t08.detectado(),
+            "itens": [_serializar_item_t08(it) for it in t08.itens],
+        }
+        resultado["planilha_gado_ir"] = _serializar_planilha_gado_ir(request, totais_pl)
+        resultado["severidades"] = _agregar_severidades(
+            t08, achados_medios + pontos_atencao + achados_criticos)
+
+    return resultado
+
+
+def _montar_sintese_gief_only(totais_gief: dict) -> list[dict]:
+    """Síntese de uma fonte só (GIEF). Lista os indicadores presentes no PDF."""
+    def _fmt_brl(v) -> str:
+        if v is None:
+            return "—"
+        try:
+            d = Decimal(str(v))
+        except Exception:
+            return "—"
+        return f"R$ {_format_brl(d)}"
+
+    def _fmt_int(v) -> str:
+        return "—" if v is None else str(int(v))
+
+    linhas = [
+        ("Volume bruto total",             _fmt_brl(totais_gief.get("volume_bruto_saidas"))),
+        ("Receita imediata (vendas)",       _fmt_brl(totais_gief.get("receita_imediata"))),
+        ("Trânsito (remessas para leilão)", _fmt_brl(totais_gief.get("transito_remessas"))),
+        ("Cabeças totais movimentadas",     _fmt_int(totais_gief.get("cabecas_totais"))),
+        ("Qtd notas de venda",              _fmt_int(totais_gief.get("qtd_vendas"))),
+        ("Qtd notas de remessa",            _fmt_int(totais_gief.get("qtd_remessas"))),
+        ("Qtd notas de compra",             _fmt_int(totais_gief.get("qtd_compras"))),
+        ("Valor total de compras",          _fmt_brl(totais_gief.get("valor_compras"))),
+    ]
+    return [{"indicador": ind, "valor_pdf_gief": val} for ind, val in linhas]
+
+
+def _agregar_severidades_gief_only(achados: list[dict]) -> dict:
+    """Contagem por severidade no modo GIEF-only (sem divergências de T-08)."""
+    contagem = {"CRITICO": 0, "ALTO": 0, "MEDIO": 0, "ATENCAO": 0, "CONFORME": 0}
+    for a in (achados or []):
+        nivel = (a.get("severidade") or "").upper()
+        if nivel in contagem:
+            contagem[nivel] += 1
+    return contagem
 
 
 def _montar_sintese_quantitativa(t08: ResultadoT08) -> list[dict]:
@@ -204,10 +270,24 @@ def _calcular_hash_cruzamento(request, totais_pl: dict, totais_gief: dict) -> st
 
 def _construir_resumo_a_partir_dos_totais(request, totais_pl: dict) -> ResumoFiscal:
     """Adapta os totais agregados em um `ResumoFiscal` mínimo para alimentar
-    o gerador de achados M-01/M-02 e o gerador de etapas."""
+    o gerador de achados M-01/M-02 e o gerador de etapas.
+
+    Auto-detecção PF/PJ:
+      - CPF tem 11 dígitos (PF)
+      - CNPJ tem 14 dígitos (PJ)
+    Se `is_pj` não foi marcado no request mas o CPF/CNPJ tem 14 dígitos,
+    o flag é elevado automaticamente. Combinação ilegal PJ + Segurado
+    Especial é resolvida em favor de PJ (descarta segurado especial).
+    """
+    cpf_cnpj_digitos = "".join(c for c in (request.contribuinte_cpf or "") if c.isdigit())
+    eh_pj = bool(getattr(request, "is_pj", False)) or len(cpf_cnpj_digitos) == 14
+    eh_se = bool(getattr(request, "is_segurado_especial", False))
+    if eh_pj and eh_se:
+        eh_se = False  # PJ não é elegível a Segurado Especial
+
     resumo = ResumoFiscal(
-        eh_pj=getattr(request, "is_pj", False),
-        eh_segurado_especial=getattr(request, "is_segurado_especial", False),
+        eh_pj=eh_pj,
+        eh_segurado_especial=eh_se,
     )
     resumo.F1_receita_imediata = Decimal(str(totais_pl.get("receita_imediata") or 0))
     resumo.F2_transito = Decimal(str(totais_pl.get("transito_remessas") or 0))
@@ -379,7 +459,13 @@ def _serializar_achados_criticos(request) -> list[dict]:
 
 
 def _serializar_planilha_gado_ir(request, totais_pl: dict) -> dict:
-    """Tabelas mensais Vendas/Remessas/Compras + Fórmula F1-F6 aplicada."""
+    """Tabelas mensais Vendas/Remessas/Compras + Fórmula F1-F6 aplicada.
+
+    Quando o JSON do cliente NÃO fornece detalhamento mensal de uma seção,
+    mas há dados nos totais agregados (`totais_pdf_gief`), uma linha
+    sintética "Acumulado anual" é criada — assim a tabela sempre apresenta
+    pelo menos uma linha de dados (em vez de tabela só com cabeçalho).
+    """
     resumo = _construir_resumo_a_partir_dos_totais(request, totais_pl)
 
     def _dump(lista):
@@ -395,9 +481,35 @@ def _serializar_planilha_gado_ir(request, totais_pl: dict) -> dict:
             })
         return out
 
-    vendas = _dump(getattr(request, "vendas_mensais", []))
-    remessas = _dump(getattr(request, "remessas_mensais", []))
-    compras = _dump(getattr(request, "compras_mensais", []))
+    def _fallback_acumulado(mensais: list[dict], qtd: int, valor) -> list[dict]:
+        """Se mensais está vazio mas há dados nos totais, cria 1 linha sintética."""
+        if mensais:
+            return mensais
+        try:
+            valor_dec = Decimal(str(valor or 0))
+        except Exception:
+            valor_dec = Decimal("0")
+        if int(qtd or 0) <= 0 and valor_dec <= 0:
+            return []
+        return [{
+            "mes": "Acumulado anual",
+            "qtd_notas": int(qtd or 0),
+            "cabecas": 0,  # sem detalhamento de cabeças por nota
+            "valor": str(valor_dec),
+        }]
+
+    vendas = _fallback_acumulado(
+        _dump(getattr(request, "vendas_mensais", [])),
+        totais_pl.get("qtd_vendas"),
+        totais_pl.get("receita_imediata"))
+    remessas = _fallback_acumulado(
+        _dump(getattr(request, "remessas_mensais", [])),
+        totais_pl.get("qtd_remessas"),
+        totais_pl.get("transito_remessas"))
+    compras = _fallback_acumulado(
+        _dump(getattr(request, "compras_mensais", [])),
+        totais_pl.get("qtd_compras"),
+        totais_pl.get("valor_compras"))
 
     return {
         "vendas":   vendas,
@@ -413,7 +525,8 @@ def _serializar_planilha_gado_ir(request, totais_pl: dict) -> dict:
             "saidas_consolidadas": {
                 "qtd_notas": (totais_pl.get("qtd_vendas") or 0)
                              + (totais_pl.get("qtd_remessas") or 0),
-                "cabecas":   sum(m["cabecas"] for m in vendas + remessas),
+                "cabecas":   (sum(m["cabecas"] for m in vendas + remessas)
+                               or int(totais_pl.get("cabecas_totais") or 0)),
                 "valor":     str(resumo.F1_receita_imediata + resumo.F2_transito),
             },
         },

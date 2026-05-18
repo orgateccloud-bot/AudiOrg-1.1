@@ -137,8 +137,9 @@ def gerar_pdf_auditoria_cruzada(resultado: dict,
         story += [PageBreak()]
     story += _pagina_achados_medios(resultado)
     # Planilha de Gado IR (com Declaração + Assinatura ao final) — fecha o
-    # modo simplificado nas páginas 7-8.
-    if resultado.get("planilha_gado_ir", {}).get("vendas"):
+    # modo simplificado nas páginas 5-6. Sempre renderiza quando o dict
+    # `planilha_gado_ir` existe no resultado (mesmo só com TOTAIS).
+    if resultado.get("planilha_gado_ir"):
         story += [PageBreak()]
         story += _pagina_planilha_gado_ir(resultado)
 
@@ -307,14 +308,20 @@ def _pagina_capa_e_sintese(r: dict) -> list:
     sev = r["severidades"]
 
     # Cálculo do total real de notas (vendas + remessas + compras)
-    sintese_map = {item["indicador"]: item for item in r.get("sintese_quantitativa", [])}
+    # Fonte: sintese_quantitativa (modo cruzado) ou sintese_gief (GIEF-only).
+    sintese_fonte = r.get("sintese_quantitativa") or r.get("sintese_gief") or []
+    sintese_map = {item["indicador"]: item for item in sintese_fonte}
     qtd_vendas = _extrair_int(sintese_map.get("Qtd notas de venda"))
     qtd_remessas = _extrair_int(sintese_map.get("Qtd notas de remessa"))
     qtd_compras = _extrair_int(sintese_map.get("Qtd notas de compra"))
     total_notas = qtd_vendas + qtd_remessas + qtd_compras
 
-    volume_bruto = (sintese_map.get("Volume bruto total") or {}).get(
-        "valor_planilha", "—")
+    volume_item = sintese_map.get("Volume bruto total") or {}
+    volume_bruto = (
+        volume_item.get("valor_planilha")
+        or volume_item.get("valor_pdf_gief")
+        or "—"
+    )
     data_aud = r.get("timestamp", "")[:10] or datetime.now().strftime("%Y-%m-%d")
 
     # Logo grande centralizada na capa — PNG da logo ORGATEC (fundo
@@ -340,9 +347,15 @@ def _pagina_capa_e_sintese(r: dict) -> list:
             S("logo_s", fontName="Helvetica-Bold", fontSize=10,
               textColor=AZUL, alignment=TA_CENTER, leading=13)),
         sp(2),
-        Paragraph("RELATÓRIO DE AUDITORIA CRUZADA", ST["h1"]),
         Paragraph(
-            "<i>Cruzamento: Relatório GIEF/SEFAZ-GO × Planilha de Gado para IR v5</i>",
+            "RELATÓRIO DE AUDITORIA CRUZADA" if r.get("sintese_quantitativa")
+            else "RELATÓRIO DE AUDITORIA FISCAL",
+            ST["h1"]),
+        Paragraph(
+            ("<i>Cruzamento: Relatório GIEF/SEFAZ-GO × Planilha de Gado para IR v5</i>"
+             if r.get("sintese_quantitativa")
+             else "<i>Fonte única: Relatório GIEF/SEFAZ — classificação por "
+                  "NATUREZA (GO) ou CFOP (demais UFs)</i>"),
             ST["sub"]),
         sp(1),
     ]
@@ -379,10 +392,15 @@ def _pagina_capa_e_sintese(r: dict) -> list:
     ]))
     elementos += [tbl_id, sp(2)]
 
-    # Síntese Quantitativa Cruzada
-    elementos.append(section_header("SÍNTESE QUANTITATIVA CRUZADA"))
-    elementos.append(sp(1))
-    elementos.append(_tabela_sintese(r["sintese_quantitativa"]))
+    # Síntese — Cruzada (modo legado) ou GIEF-only (modo atual).
+    if r.get("sintese_quantitativa"):
+        elementos.append(section_header("SÍNTESE QUANTITATIVA CRUZADA"))
+        elementos.append(sp(1))
+        elementos.append(_tabela_sintese(r["sintese_quantitativa"]))
+    else:
+        elementos.append(section_header("SÍNTESE QUANTITATIVA (PDF GIEF)"))
+        elementos.append(sp(1))
+        elementos.append(_tabela_sintese_gief(r.get("sintese_gief", [])))
     elementos.append(sp(2))
 
     # Mapa de Severidades (cards horizontais)
@@ -462,7 +480,7 @@ def _extrair_int(item: dict | None) -> int:
     """Extrai número inteiro de uma linha da síntese (ex: '138' ou '1.344')."""
     if not item:
         return 0
-    s = str(item.get("valor_planilha", "") or "").strip()
+    s = str(item.get("valor_planilha") or item.get("valor_pdf_gief") or "").strip()
     # Remove R$, espaços, separador de milhar pt-BR
     s = s.replace("R$", "").replace(".", "").replace(",", ".").strip()
     if s == "" or s == "—":
@@ -503,6 +521,25 @@ def _tabela_sintese(linhas: list[dict]) -> Table:
             td(f"<b>{item['status']}</b>", color=cor_status, align=TA_CENTER),
         ])
     tbl = Table(corpo, colWidths=[W * 0.58, W * 0.24, W * 0.18])
+    tbl.setStyle(tsb(stripe=True))
+    return tbl
+
+
+def _tabela_sintese_gief(linhas: list[dict]) -> Table:
+    """Tabela GIEF-only: Indicador | Valor (sem coluna Status nem cruzamento).
+
+    Usada quando o laudo não tem Planilha IR v5 para cruzar — todos os dados
+    vêm de uma única fonte (PDF GIEF/SEFAZ). Cada linha exibe o indicador e
+    o valor diretamente extraído do GIEF.
+    """
+    cabecalho = [th("INDICADOR"), th("VALOR (PDF GIEF)", align=TA_RIGHT)]
+    corpo = [cabecalho]
+    for item in linhas:
+        corpo.append([
+            td(item.get("indicador", "—")),
+            td(item.get("valor_pdf_gief") or "—", align=TA_RIGHT),
+        ])
+    tbl = Table(corpo, colWidths=[W * 0.70, W * 0.30])
     tbl.setStyle(tsb(stripe=True))
     return tbl
 
@@ -702,20 +739,32 @@ def _pagina_achados_medios(r: dict) -> list:
 
 def _tabela_conformidades(r: dict) -> Table:
     """Tabela do modelo: # | Item verificado | Resultado."""
-    t08 = r.get("teste_t08", {})
-    sintese = r.get("sintese_quantitativa", [])
+    t08 = r.get("teste_t08") or {}
+    sintese = r.get("sintese_quantitativa") or r.get("sintese_gief") or []
     conformes = sum(1 for s in sintese if s.get("status") == "Conforme")
+    modo_gief_only = not r.get("teste_t08")
+
+    if modo_gief_only:
+        regra = r.get("regra_classificacao", "NATUREZA_GIEF")
+        rotulo_item1 = (
+            "Classificação por NATUREZA do PDF GIEF (estado GO)"
+            if regra == "NATUREZA_GIEF"
+            else "Classificação por CFOP por nota (estado fora de GO)"
+        )
+        item1_resultado = "APLICADA"
+    else:
+        rotulo_item1 = "Validação de totais entre Planilha IR v5 × PDF GIEF (T-08)"
+        item1_resultado = "CONFORME" if not t08.get("detectado") else "DIVERGENTE"
+    cor_item1 = CONFORME if item1_resultado != "DIVERGENTE" else CRITICO
 
     linhas = [
         [th("#", align=TA_CENTER), th("ITEM VERIFICADO"), th("RESULTADO", align=TA_CENTER)],
         [td("1", align=TA_CENTER, bold=True),
-         td("Validação de totais entre Planilha IR v5 × PDF GIEF (T-08)"),
-         td(f"<b>{'CONFORME' if not t08.get('detectado') else 'DIVERGENTE'}</b>",
-            color=CONFORME if not t08.get("detectado") else CRITICO,
-            align=TA_CENTER)],
+         td(rotulo_item1),
+         td(f"<b>{item1_resultado}</b>", color=cor_item1, align=TA_CENTER)],
         [td("2", align=TA_CENTER, bold=True),
-         td("Indicadores conformes na síntese quantitativa"),
-         td(f"<b>{conformes} / {len(sintese)}</b>", color=CONFORME, align=TA_CENTER)],
+         td("Indicadores da síntese quantitativa"),
+         td(f"<b>{len(sintese)} indicadores</b>", color=CONFORME, align=TA_CENTER)],
         [td("3", align=TA_CENTER, bold=True),
          td("Compatibilidade dos valores unitários com a pauta SEFAZ-GO"),
          td("<b>COMPATÍVEIS</b>", color=CONFORME, align=TA_CENTER)],
@@ -933,19 +982,32 @@ def _pagina_testes_e_cruzamentos_externos(r: dict) -> list:
     elementos.append(tbl)
     elementos.append(sp(2))
 
-    # Status atual do T-08
-    t08 = r.get("teste_t08", {})
-    cor_status = CONFORME if not t08.get("detectado") else CRITICO
-    rotulo = "CONFORME" if not t08.get("detectado") else "DIVERGENTE"
-    msg = (
-        f"<b>Status atual do T-08:</b> <font color='#{cor_status.hexval()[2:]}'>"
-        f"{rotulo}</font>. "
-        f"{t08.get('total_indicadores_comparados', 0)} indicadores comparados — "
-        f"{t08.get('qtd_divergencias', 0)} divergência(s) e "
-        f"{t08.get('qtd_atencoes', 0)} atenção(ões)."
-    )
-    elementos.append(info_box(msg, label="EXECUÇÃO T-08 NESTA AUDITORIA",
-                              border_color=cor_status))
+    # Status atual do T-08 — só renderiza no modo legado (cruzado).
+    t08 = r.get("teste_t08")
+    if t08:
+        cor_status = CONFORME if not t08.get("detectado") else CRITICO
+        rotulo = "CONFORME" if not t08.get("detectado") else "DIVERGENTE"
+        msg = (
+            f"<b>Status atual do T-08:</b> <font color='#{cor_status.hexval()[2:]}'>"
+            f"{rotulo}</font>. "
+            f"{t08.get('total_indicadores_comparados', 0)} indicadores comparados — "
+            f"{t08.get('qtd_divergencias', 0)} divergência(s) e "
+            f"{t08.get('qtd_atencoes', 0)} atenção(ões)."
+        )
+        elementos.append(info_box(msg, label="EXECUÇÃO T-08 NESTA AUDITORIA",
+                                  border_color=cor_status))
+    else:
+        regra = r.get("regra_classificacao", "NATUREZA_GIEF")
+        rotulo_regra = (
+            "NATUREZA do PDF GIEF (SEFAZ-GO)"
+            if regra == "NATUREZA_GIEF"
+            else "CFOP por nota (SEFAZ de outros estados)"
+        )
+        elementos.append(info_box(
+            f"<b>T-08 não aplicável</b> nesta auditoria — fonte única (PDF GIEF). "
+            f"A classificação das operações segue a regra <b>{rotulo_regra}</b>, "
+            "dispensando o cruzamento Planilha × GIEF.",
+            label="MODO GIEF-ONLY", border_color=AZUL_M))
     elementos.append(sp(2))
 
     # Regra 5 — Cruzamentos externos

@@ -505,15 +505,22 @@ async def processar_lote_auditoria(
         pdf_path = os.path.join("data", "laudos", pdf_filename)
 
         try:
-            from pdf_engine import gerar_laudo_orgaudi  # unificado em pdf_engine/orgaudi/
-            gerar_laudo_orgaudi(
+            # Gerador único OrgAudi 1.1 — schema auditoria_v2 (16 chaves).
+            # Adapta resultado do bigfour para o schema canônico.
+            from pdf_engine import gerar_pdf_auditoria_cruzada
+            from api.services.auditoria_bigfour_adapter import (
+                bigfour_para_schema_auditoria_v2,
+            )
+            resultado = bigfour_para_schema_auditoria_v2(
+                client_name=client_name,
+                client_cpf=client_cpf,
                 notas=notas_unicas,
-                cliente_nome=client_name,
-                cliente_cpf=client_cpf,
-                saida=pdf_path,
                 veredito_ia=veredito_completo or None,
                 triangulacoes=triangulacoes or None,
             )
+            pdf_bytes = gerar_pdf_auditoria_cruzada(resultado, modo="simplificado")
+            with open(pdf_path, "wb") as f:
+                f.write(pdf_bytes)
             logger.info("Laudo OrgAudi gerado: %s", pdf_path)
         except Exception as exc:
             logger.error("Erro ao gerar laudo OrgAudi: %s", exc, exc_info=True)

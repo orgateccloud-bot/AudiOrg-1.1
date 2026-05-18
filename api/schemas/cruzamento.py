@@ -1,11 +1,17 @@
 """
 api/schemas/cruzamento.py
 ═════════════════════════
-Schemas Pydantic para o fluxo de Auditoria Cruzada (Planilha IR v5 × PDF GIEF).
+Schemas Pydantic para o fluxo de Auditoria GIEF-only (a partir de 2026-05-17).
 
-Usados por:
-  - api/routes/auditoria_cruzada.py  (endpoints HTTP)
-  - scripts/gerar_laudos.py          (geração em lote, sem HTTP)
+Histórico:
+  - v1 (até 2026-05-16): Auditoria CRUZADA Planilha IR v5 × PDF GIEF.
+  - v2 (atual): Auditoria GIEF-only. Dados extraídos exclusivamente do PDF
+    GIEF/SEFAZ. Classificação:
+      * Estado = GO → usa campo NATUREZA do GIEF (VENDA / REMESSA-LEILAO / OUTRA).
+      * Outros estados → usa CFOP (5.101 venda, 5.914 remessa, 1.914 retorno).
+
+  Os campos da Planilha IR v5 (totais_planilha, vendas_mensais, remessas_mensais,
+  compras_mensais) foram tornados OPCIONAIS e estão em descontinuação.
 """
 from __future__ import annotations
 
@@ -16,7 +22,7 @@ from pydantic import BaseModel, Field
 
 
 class TotaisFonte(BaseModel):
-    """Indicadores agregados de uma fonte (Planilha IR v5 OU PDF GIEF)."""
+    """Indicadores agregados de uma fonte (GIEF ou — legado — Planilha IR v5)."""
 
     volume_bruto_saidas: Optional[Decimal] = None
     receita_imediata: Optional[Decimal] = None
@@ -29,7 +35,7 @@ class TotaisFonte(BaseModel):
 
 
 class PlanilhaMensalInput(BaseModel):
-    """Linha mensal para geração do .docx da Planilha IR v5."""
+    """[LEGADO] Linha mensal da Planilha IR v5. Mantido só para compat com JSONs antigos."""
 
     mes: str
     qtd_notas: int = 0
@@ -52,7 +58,13 @@ class AchadoCriticoInput(BaseModel):
 
 
 class CruzamentoRequest(BaseModel):
-    """Payload completo para auditoria cruzada — HTTP e geração em lote."""
+    """Payload de auditoria — modo GIEF-only (Planilha IR v5 descontinuada).
+
+    Campos obrigatórios: identificação do contribuinte, período e `totais_pdf_gief`.
+    Campos opcionais (legado): `totais_planilha`, `vendas_mensais`, `remessas_mensais`,
+    `compras_mensais`. Quando presentes, o pipeline produz o laudo no formato antigo
+    (cruzamento + Planilha IR v5). Quando ausentes, o laudo é GIEF-only.
+    """
 
     contribuinte_cpf: str
     contribuinte_nome: str
@@ -64,8 +76,8 @@ class CruzamentoRequest(BaseModel):
     documento_base: str = ""
     is_pj: bool = False
     is_segurado_especial: bool = False
-    totais_planilha: TotaisFonte
     totais_pdf_gief: TotaisFonte
+    totais_planilha: Optional[TotaisFonte] = None
     vendas_mensais: List[PlanilhaMensalInput] = Field(default_factory=list)
     remessas_mensais: List[PlanilhaMensalInput] = Field(default_factory=list)
     compras_mensais: List[PlanilhaMensalInput] = Field(default_factory=list)
