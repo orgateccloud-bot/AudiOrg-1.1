@@ -18,8 +18,13 @@ pip install -r requirements.txt
 #
 # Migrations dev (SQLite):
 alembic upgrade head
-# Migrations produção (requer direct URL :5432, não pooler — PowerShell):
-#   $env:DATABASE_URL=$env:DATABASE_URL_DIRECT; alembic upgrade head
+# Migrations produção:
+#   - Preferência: direct URL :5432 (PowerShell):
+#       $env:DATABASE_URL=$env:DATABASE_URL_DIRECT; alembic upgrade head
+#   - Fallback (rede IPv4-only): o host db.<ref>.supabase.co:5432 só resolve via IPv6.
+#     Se "could not translate host name", use o pooler :6543 mesmo — alembic
+#     funciona via pooler em modo transação:
+#       DATABASE_URL=$(grep ^DATABASE_URL= config.env | cut -d= -f2-) python -m alembic upgrade head
 alembic revision --autogenerate -m "msg"
 
 # Executar
@@ -72,7 +77,8 @@ Todos herdam de `base_agent.py::AgentResult` (Pydantic v2, com `audit_hash` SHA-
 
 ### 7. Banco de dados — dev vs prod
 - **Dev default**: SQLite em `orgatec_sovereign.db` (raiz). Auto-criado via `Base.metadata.create_all` no lifespan. Usado quando `ENV != production` e `DATABASE_URL` ausente.
-- **Prod**: Supabase Postgres (sa-east-1). `DATABASE_URL` aponta para Transaction Pooler `:6543`; `DATABASE_URL_DIRECT` (porta `:5432`) é usado apenas para `alembic upgrade head`.
+- **Prod**: Supabase Postgres (sa-east-1). `DATABASE_URL` aponta para Transaction Pooler `:6543`; `DATABASE_URL_DIRECT` (porta `:5432`) é o preferido para `alembic upgrade head`.
+- ⚠️ **DNS direct host**: `db.<ref>.supabase.co:5432` só resolve por IPv6. Em redes IPv4-only (a maioria das máquinas Windows/casa), o direct URL falha com `could not translate host name`. Nesses casos, use o **pooler `:6543` mesmo para alembic** — funciona em modo transação. Esta sessão confirmou (2026-05-18) que `alembic upgrade head` via pooler é funcional.
 - Schema controlado por `alembic/versions/` (4 migrations: initial, audit_results_and_pdf_hash, ledger_entries, claude_stats).
 - O `DATABASE_URL` controla qual backend é usado; SQLAlchemy é cross-DB. Em produção (`ENV=production`), Postgres é obrigatório — falha de conexão gera `RuntimeError` no startup.
 
