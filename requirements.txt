@@ -8,7 +8,7 @@ pydantic>=2.0.0
 email-validator>=2.0.0     # backend para pydantic.EmailStr
 
 # ── Banco de Dados ───────────────────────────────────────────────────────────
-sqlalchemy>=2.0.0
+sqlalchemy>=2.0.49
 psycopg2-binary>=2.9.12
 alembic>=1.13.0            # migrations cross-DB (SQLite dev / Postgres prod)
 supabase>=2.0.0            # cliente Supabase para infra de categorias/transações
