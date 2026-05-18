@@ -1,46 +1,46 @@
 """
-pdf_engine — Motor de geração de PDFs do OrgAudi
-═════════════════════════════════════════════════
-Pacote consolidado (v2.5.0) com toda a geração de laudos.
+pdf_engine — Motor único de geração de PDFs OrgAudi 1.1
+═══════════════════════════════════════════════════════════
 
-API pública:
-    from pdf_engine import gerar_laudo_v250          # padrão (HTML/Chrome)
-    from pdf_engine import gerar_laudo               # alias
-    from pdf_engine import LaudoOrgAudi              # alternativa (ReportLab)
-    from pdf_engine import gerar_laudo_orgaudi      # adapter nfa-repo
+A partir do OrgAudi 1.1, **um único gerador** é oficial e suportado:
 
-Estrutura:
-    pdf_engine/
-      ├─ orgaudi/        ⭐ motor unificado (v2.5 + v2.4)
-      ├─ excel_export.py    exportador Excel (auxiliar)
-      └─ _legacy/        versões antigas arquivadas (v240, v250, v4, ir_report, pdf_report)
+    from pdf_engine import gerar_pdf_auditoria_cruzada
+
+    pdf_bytes = gerar_pdf_auditoria_cruzada(resultado, modo="simplificado")
+    # modo="completo" → laudo com catálogo AN-01..AN-18 + RE-1 + tipologias
+
+O schema de `resultado` está documentado em:
+  • docs/schemas/auditoria_cruzada_v2.json    (16 chaves — modo simplificado)
+  • docs/schemas/auditoria_cruzada.json       (21 chaves — modo completo)
+
+Implementação:
+  api/services/auditoria_cruzada_pdf.py
+    └── pdf_engine/orgaudi_v240/{styles, domain, gerador_achados, ...}
+        (módulos auxiliares; não chamar diretamente)
+
+Geradores anteriores (orgaudi_v250 HTML/Chrome, LaudoOrgAudi ReportLab,
+scripts ad-hoc, etc.) foram movidos para `pdf_engine/_legacy/` e não
+devem ser referenciados em código novo.
 """
-from .orgaudi import (
-    gerar_laudo,
-    gerar_laudo_v250,
-    LaudoOrgAudi,
-    gerar_laudo_orgaudi,
-    Achado,
-    CategoriaContabil,
-    Contribuinte,
-    NaturezaNota,
-    NotaFiscal,
-    Periodo,
-    Severidade,
-)
+from __future__ import annotations
 
-__all__ = [
-    "gerar_laudo",
-    "gerar_laudo_v250",
-    "LaudoOrgAudi",
-    "gerar_laudo_orgaudi",
-    "Achado",
-    "CategoriaContabil",
-    "Contribuinte",
-    "NaturezaNota",
-    "NotaFiscal",
-    "Periodo",
-    "Severidade",
-]
+# Re-export do gerador canônico (importação preguiçosa evita acoplamento)
+def gerar_pdf_auditoria_cruzada(resultado: dict, modo: str = "completo") -> bytes:
+    """Gera o PDF do laudo a partir do dict-resposta da auditoria cruzada.
 
-__version__ = "2.5.0"
+    Args:
+        resultado: payload retornado por `processar_auditoria_cruzada` ou
+                    qualquer dict que respeite o schema auditoria_v2.json.
+        modo: "simplificado" (6 páginas) ou "completo" (16 páginas).
+
+    Returns:
+        bytes do PDF (A4, retrato).
+    """
+    from api.services.auditoria_cruzada_pdf import (
+        gerar_pdf_auditoria_cruzada as _impl,
+    )
+    return _impl(resultado, modo=modo)
+
+
+__all__ = ["gerar_pdf_auditoria_cruzada"]
+__version__ = "1.1.0"
