@@ -80,3 +80,15 @@ outputs/
 /auditoria_log.txt
 *.log
 output_relatorios/
+
+# Dados de cliente com PII (CPF, IE, nome) — só o modelo entra no git
+scripts/clientes/*.json
+!scripts/clientes/_modelo_cliente.json
+
+# PDFs de entrada de contribuintes (PII)
+data/*.pdf
+input_pdfs/
+
+# Relatórios PDF/HTML gerados em reports_nfa
+reports_nfa/*.pdf
+reports_nfa/*.html
